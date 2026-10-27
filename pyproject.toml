@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jobseek"
+version = "0.1.0"
+description = "Canada-remote job discovery, ranking, and daily digests"
+readme = "docs/discovery.md"
+requires-python = ">=3.9"
+dependencies = [
+  "PyYAML>=6.0",
+  "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+llm-anthropic = ["anthropic>=0.40"]
+llm-openai = ["openai>=1.40"]
+
+[project.scripts]
+jobseek = "jobseek.cli.main:main"
+
+[tool.setuptools.packages.find]
+include = ["jobseek*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "tools"]

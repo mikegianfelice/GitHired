@@ -1,0 +1,11 @@
+[
+  {
+    "id": "abc-123",
+    "text": "Staff Data Engineer",
+    "hostedUrl": "https://jobs.lever.co/example/abc-123",
+    "applyUrl": "https://jobs.lever.co/example/abc-123/apply",
+    "categories": {"location": "Remote (Canada)"},
+    "descriptionPlain": "Design data platforms. Candidates in Canada welcome. Spark and Python.",
+    "salaryRange": {"min": 140000, "max": 170000, "currency": "CAD"}
+  }
+]

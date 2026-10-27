@@ -1,0 +1,15 @@
+---
+description: Canada-remote job search rules; thin pointer to AGENTS.md and jobseek CLI
+alwaysApply: true
+---
+
+# Job search (Cursor)
+
+1. Load [`AGENTS.md`](AGENTS.md). Canonical workflow specs stay under [`.claude/`](.claude/) — do not duplicate command bodies.
+2. Prefer the `jobseek` CLI for discovery, ranking, and digests:
+   - `jobseek discover` / `rank` / `digest` / `email-digest` / `run-daily` / `prepare`
+3. Canada-remote policy (`config/search.yaml`):
+   - Prefer Canada remote; US employers only with explicit Canada/worldwide evidence in the posting.
+   - Never invent Canadian hiring eligibility or qualifications.
+4. Resume/CV generation and application submission require **explicit user approval**. `jobseek prepare` is briefing-only; `/apply` must ask before drafting.
+5. For full apply/interview/outcome flows, Read the matching file under `.claude/commands/` and follow it.

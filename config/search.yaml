@@ -1,0 +1,61 @@
+# Job discovery search configuration (Canada-remote engineering)
+
+target_titles:
+  - AI Engineer
+  - Senior AI Engineer
+  - Applied AI Engineer
+  - Forward Deployed Engineer
+  - Senior Data Engineer
+  - Staff Data Engineer
+  - AI Solutions Architect
+
+title_aliases:
+  - Machine Learning Engineer
+  - ML Engineer
+  - Generative AI Engineer
+  - LLM Engineer
+  - AI Platform Engineer
+  - Solutions Architect AI
+
+location:
+  preferred:
+    - Canada remote
+    - Remote Canada
+    - Remote - Canada
+    - Canada (Remote)
+    - Anywhere in Canada
+  # US employers are eligible only with explicit Canada / worldwide evidence in the posting.
+  allow_us_employer_remote_with_canada_evidence: true
+  reject_us_only_remote: true
+  # When location is silent / ambiguous: flag (hold) or reject
+  unknown_location_policy: flag  # flag | reject | pass
+
+salary:
+  # Missing salary does not auto-reject
+  reject_missing: false
+  floors:
+    CAD: 120000
+    USD: 90000
+
+sources:
+  greenhouse: true
+  lever: true
+  ashby: true
+  career_pages: true
+  linkedin_search_index: true
+  linkedin_alert_import: true
+  linkedin_guest: false   # ToS-warned Bun CLI; off for scheduled runs
+  freehire: false         # optional aggregator; validate before enabling
+
+recency_days: 30
+
+linkedin_search_queries:
+  - 'site:linkedin.com/jobs "AI Engineer" (Canada OR "Remote Canada" OR "remote in Canada")'
+  - 'site:linkedin.com/jobs "Applied AI" (Canada OR Remote) (Canada OR Canadian)'
+  - 'site:linkedin.com/jobs "Forward Deployed Engineer" (Canada OR Remote)'
+  - 'site:linkedin.com/jobs "Data Engineer" Senior OR Staff (Canada OR "Remote Canada")'
+  - 'site:linkedin.com/jobs "AI Solutions Architect" (Canada OR Remote)'
+
+digest:
+  top_n: 10
+  min_score: 60

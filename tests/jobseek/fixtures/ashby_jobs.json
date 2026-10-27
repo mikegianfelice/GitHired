@@ -1,0 +1,20 @@
+{
+  "jobs": [
+    {
+      "id": "ash-9",
+      "title": "Forward Deployed Engineer",
+      "jobUrl": "https://jobs.ashbyhq.com/example/ash-9",
+      "isRemote": true,
+      "location": "United States",
+      "descriptionPlain": "Must be located in the United States only. US work authorization required."
+    },
+    {
+      "id": "ash-10",
+      "title": "Applied AI Engineer",
+      "jobUrl": "https://jobs.ashbyhq.com/example/ash-10",
+      "isRemote": true,
+      "location": "Remote",
+      "descriptionPlain": "Work from anywhere. Worldwide remote. LLM applications."
+    }
+  ]
+}
