@@ -8,7 +8,7 @@
 For production Canada-remote discovery prefer the `jobseek` CLI (Greenhouse / Lever / Ashby registry +
 compliant LinkedIn sources). Keep portal CLIs for interactive sessions.
 
-Danish demo portals ship with `enabled: false`. Leave LinkedIn guest scrape off for scheduled runs
+Leave LinkedIn guest scrape off for scheduled runs
 (`sources.linkedin_guest: false` in `config/search.yaml`).
 
 The `site:` query templates below are the **WebSearch fallback**.

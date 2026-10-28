@@ -1,0 +1,19 @@
+# Copy to companies.local.yaml (gitignored). Overrides win over builtin/community/SQLite.
+# Automatic discovery never writes this file.
+
+# Per-company field overlays (matched by name, or by ats+board_token)
+companies:
+  # - name: Example Corp
+  #   enabled: false
+  # - name: Hugging Face
+  #   enabled: true
+  # - ats: greenhouse
+  #   board_token: anthropic
+  #   notes: "User note"
+
+# Hard exclusions (by name, domain, or ats+board_token)
+exclude:
+  # - Adept
+  # - domain: example.com
+  # - ats: greenhouse
+  #   board_token: some-board

@@ -86,7 +86,14 @@ CREATE TABLE IF NOT EXISTS companies (
     industry TEXT,
     enabled INTEGER NOT NULL DEFAULT 1,
     notes TEXT,
-    source TEXT NOT NULL DEFAULT 'yaml'
+    source TEXT NOT NULL DEFAULT 'yaml',
+    domain TEXT,
+    discovery_source TEXT,
+    last_validated_at TEXT,
+    last_job_fetch_at TEXT,
+    failure_count INTEGER NOT NULL DEFAULT 0,
+    validation_evidence_json TEXT,
+    excluded INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_companies_ats ON companies(ats, board_token);
@@ -117,7 +124,17 @@ CREATE TABLE IF NOT EXISTS digests (
 );
 """
 
-# Migrations for DBs created before score_kind / companies existed.
+# Migrations for DBs created before score_kind / companies Phase-2 columns existed.
 MIGRATIONS = [
     "ALTER TABLE job_scores ADD COLUMN score_kind TEXT NOT NULL DEFAULT 'deterministic'",
+]
+
+COMPANY_COLUMN_MIGRATIONS = [
+    ("domain", "ALTER TABLE companies ADD COLUMN domain TEXT"),
+    ("discovery_source", "ALTER TABLE companies ADD COLUMN discovery_source TEXT"),
+    ("last_validated_at", "ALTER TABLE companies ADD COLUMN last_validated_at TEXT"),
+    ("last_job_fetch_at", "ALTER TABLE companies ADD COLUMN last_job_fetch_at TEXT"),
+    ("failure_count", "ALTER TABLE companies ADD COLUMN failure_count INTEGER NOT NULL DEFAULT 0"),
+    ("validation_evidence_json", "ALTER TABLE companies ADD COLUMN validation_evidence_json TEXT"),
+    ("excluded", "ALTER TABLE companies ADD COLUMN excluded INTEGER NOT NULL DEFAULT 0"),
 ]

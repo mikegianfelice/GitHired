@@ -10,8 +10,8 @@ every portal CLI, and Step 4.75's degraded scan flags "company null or empty
 on every result" as a half-working parser. A CLI that quietly stops emitting
 those fields flags the portal as degraded on every /scrape run while CI stays
 green, breaks the seen_jobs.json dedupe (url_or_company_title_key), and leaves
-/rank without a posting URL. That failure class landed for real: jobnet-search
-emitted only the raw API schema and jobdanmark-search emitted companyName with
+/rank without a posting URL. That failure class landed for real: a portal CLI
+emitted only the raw API schema and another emitted companyName with
 no company/location/date keys until both were normalized.
 
 {helpers.ts, commands/search.ts} are the two files where every registered

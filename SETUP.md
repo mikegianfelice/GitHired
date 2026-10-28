@@ -41,12 +41,14 @@ Fill in:
 | `SERPAPI_KEY` | Optional LinkedIn search-index queries |
 | `JOBSEEK_DB_PATH` | SQLite path (default `data/jobseek.db`) |
 
-Edit `config/companies.yaml`, `config/search.yaml`, and `config/profile.yaml`.
+Edit `config/search.yaml` and `config/profile.yaml`. Builtin boards live in `config/companies.yaml`; personal enable/exclude overrides go in gitignored `config/companies.local.yaml` (see `companies.local.yaml.example`). Expand boards with `githired companies discover` (no hand-maintained list required).
 
 Daily run (cron / launchd):
 
 ```bash
-cd /path/to/GitHired && jobseek run-daily --email
+cd /path/to/GitHired && githired run-daily --email
+# Optional slower cadence for company expansion:
+# githired run-daily --companies --email
 ```
 
 Example crontab (08:00 local):
@@ -67,7 +69,7 @@ On Windows, `py --version` is often the most reliable check. If your system expo
 
 ### Bun (for job search tools)
 
-The job portal CLIs (four Danish portals plus the country-agnostic `linkedin-search` and `freehire-search` tools) are written in TypeScript and run with Bun.
+The job portal CLIs (`linkedin-search`, `freehire-search`, and any portals you add with `/add-portal`) are written in TypeScript and run with Bun.
 
 - macOS/Linux:
 
@@ -241,7 +243,7 @@ It runs `bun install` in every portal CLI under `.agents/skills/*/cli/` - discov
 
 For `linkedin-search` and `freehire-search` the install is optional: both have zero runtime dependencies and run with plain `bun`; `bun install` only pulls TypeScript dev types.
 
-If you're outside Denmark, you can generate an equivalent search skill for your local job board with `/add-portal` — it scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
+Generate a search skill for a local job board with `/add-portal` — it scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
 
 ## 4. Run the setup interview
 
@@ -308,7 +310,7 @@ This creates `salary_data.json` which the `/apply` workflow uses for salary benc
 Find a job posting you're interested in, then:
 
 ```
-/apply https://jobindex.dk/job/1234567
+/apply https://www.linkedin.com/jobs/view/1234567
 ```
 
 Or paste the job description directly:

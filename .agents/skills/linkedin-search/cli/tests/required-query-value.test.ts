@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { runSearchFixture } from "./helpers";
 
-const LOCATION = "Copenhagen, Denmark";
+const LOCATION = "Toronto, Canada";
 
 // parseFlags stores a value-less flag as `true` and an empty argument as "",
 // and the search took `--query` only when it was a non-empty string. So a

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<source>
+  <lastBuildDate><![CDATA[Wed, 28 Oct 2026 11:22:48 GMT]]></lastBuildDate>
+  <job>
+    <partnerJobId><![CDATA[job-1]]></partnerJobId>
+    <company><![CDATA[Shopify]]></company>
+    <title><![CDATA[Senior Software Engineer]]></title>
+    <description><![CDATA[<p>Build commerce infrastructure.</p>]]></description>
+    <applyUrl><![CDATA[https://www.shopify.com/careers/senior-software-engineer_job-1]]></applyUrl>
+    <location><![CDATA[Canada]]></location>
+    <workplaceTypes><![CDATA[Remote]]></workplaceTypes>
+    <listDate><![CDATA[2026-10-01]]></listDate>
+  </job>
+  <job>
+    <partnerJobId><![CDATA[job-2]]></partnerJobId>
+    <company><![CDATA[Shopify]]></company>
+    <title><![CDATA[Staff Data Engineer]]></title>
+    <description><![CDATA[<p>Data platforms.</p>]]></description>
+    <applyUrl><![CDATA[https://www.shopify.com/careers/staff-data-engineer_job-2]]></applyUrl>
+    <location><![CDATA[Toronto, Canada]]></location>
+    <workplaceTypes><![CDATA[Hybrid]]></workplaceTypes>
+    <listDate><![CDATA[2026-10-02]]></listDate>
+  </job>
+</source>

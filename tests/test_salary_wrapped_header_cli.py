@@ -24,7 +24,7 @@ class WrappedHeaderCLI(unittest.TestCase):
             book = openpyxl.Workbook()
             try:
                 book.active.append(header)
-                book.active.append(["Acme", "Aarhus", 12, 104.5])
+                book.active.append(["Acme", "Toronto", 12, 104.5])
                 book.save(workbook)
             finally:
                 book.close()

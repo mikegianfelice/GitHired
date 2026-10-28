@@ -39,7 +39,7 @@ class NotesSheetCLI(unittest.TestCase):
             if with_data:
                 sheet.title = "Data"
                 sheet.append(["Company", "City", "Count", "Index"])
-                sheet.append(["Acme", "Aarhus", 10, 105])
+                sheet.append(["Acme", "Toronto", 10, 105])
                 sheet = book.create_sheet("Notes")
             else:
                 sheet.title = "Notes"
@@ -64,7 +64,7 @@ class NotesSheetCLI(unittest.TestCase):
             [sys.executable, "salary_lookup.py", "--list-all"],
             cwd=self.root, capture_output=True, text=True,
         )
-        self.assertEqual(listed.stdout.splitlines(), ["Acme (Aarhus)"])
+        self.assertEqual(listed.stdout.splitlines(), ["Acme (Toronto)"])
 
     def test_notes_only_workbook_fails_without_writing_output(self):
         result = self.convert(with_data=False)

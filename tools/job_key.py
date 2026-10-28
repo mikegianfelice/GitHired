@@ -82,7 +82,7 @@ def _lost_letters(text: str) -> bool:
 
     Latin letters that also lack a decomposition ("ø", "æ", "ß", "ł") are
     deliberately NOT counted: "Ørsted" has keyed as "rsted" since the rule
-    existed, and treating it as lossy would re-key every Danish company in a
+    existed, and treating it as lossy would re-key every such company in a
     live seen_jobs.json for a collision that does not happen in practice.
     """
     if not text:

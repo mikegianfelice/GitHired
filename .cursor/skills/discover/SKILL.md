@@ -18,5 +18,5 @@ githired discover
 Fallback: `jobseek discover` or `python -m jobseek.cli.main discover`.
 
 3. Check source health: `githired sources` / `githired doctor`.
-4. For the legacy Danish portal `/scrape` agent workflow, Read `.claude/skills/job-scraper/SKILL.md` and follow it.
+4. For the legacy portal `/scrape` agent workflow, Read `.claude/skills/job-scraper/SKILL.md` and follow it.
 5. Do not enable LinkedIn guest scraping for scheduled runs. Use `githired import-alerts <file>` for saved alerts.

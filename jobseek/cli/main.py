@@ -170,6 +170,133 @@ def cmd_email_digest(args: argparse.Namespace) -> int:
         db.close()
 
 
+def cmd_companies(args: argparse.Namespace) -> int:
+    """Dispatch nested `githired companies …` subcommands."""
+    load_dotenv()
+    settings = Settings.from_env()
+    setup_logging(settings.log_level)
+    action = getattr(args, "companies_command", None)
+    db = _db(settings)
+    try:
+        if action == "discover":
+            from jobseek.companies.discover import run_companies_discover
+
+            summary = run_companies_discover(
+                db, settings=settings, validate=not args.no_validate
+            )
+            _print_json(summary)
+            return 0 if summary.get("ok", True) else 1
+
+        if action == "validate":
+            from jobseek.companies.discover import COMPANY_ADAPTERS
+            from jobseek.companies.registry import load_local_overrides, load_merged_companies
+            from jobseek.companies.validate import run_validate
+
+            search = load_search()
+            cd = search.get("company_discovery") or {}
+            companies = load_merged_companies(
+                db_rows=db.list_companies(),
+                overrides=load_local_overrides(),
+            )
+            if args.ats:
+                companies = [c for c in companies if (c.get("ats") or "").lower() == args.ats.lower()]
+            if args.status:
+                companies = [
+                    c for c in companies if (c.get("validation_status") or "") == args.status
+                ]
+            summary = run_validate(
+                db,
+                companies,
+                adapters=COMPANY_ADAPTERS,
+                force=bool(args.force),
+                auto_enable=bool(cd.get("auto_enable_validated", True)),
+                transient_cooldown_days=int(cd.get("transient_cooldown_days") or 7),
+            )
+            _print_json(summary)
+            return 0
+
+        if action == "list":
+            rows = db.list_companies(
+                ats=args.ats,
+                status=args.status,
+                enabled=None if args.enabled is None else args.enabled == "true",
+            )
+            if args.json:
+                _print_json(rows)
+                return 0
+            for c in rows:
+                en = "on" if c.get("enabled") else "off"
+                ex = " EXCLUDED" if c.get("excluded") else ""
+                print(
+                    f"  [{en}]{ex} {c['name']}: {c.get('ats')}/{c.get('board_token')} "
+                    f"status={c.get('validation_status')} "
+                    f"source={c.get('discovery_source') or c.get('source')} "
+                    f"failures={c.get('failure_count') or 0}"
+                )
+            print(f"\n{len(rows)} companies")
+            return 0
+
+        if action == "stats":
+            stats = db.company_stats()
+            _print_json(stats)
+            return 0
+
+        if action == "export":
+            from jobseek.companies.registry import company_to_community_export
+
+            rows = db.list_companies()
+            if args.validated:
+                rows = [r for r in rows if r.get("validation_status") in ("ok", "empty")]
+            doc = {
+                "version": 1,
+                "companies": [company_to_community_export(r) for r in rows],
+            }
+            import yaml
+
+            text = yaml.safe_dump(doc, sort_keys=False, allow_unicode=True)
+            if args.out:
+                Path(args.out).write_text(text, encoding="utf-8")
+                print(json.dumps({"wrote": args.out, "count": len(doc["companies"])}))
+            else:
+                print(text)
+            return 0
+
+        if action == "import":
+            from jobseek.companies.domain_util import canonical_domain
+            from jobseek.companies.registry import parse_community_document, validate_community_shape
+
+            path = Path(args.path)
+            companies = parse_community_document(path.read_text(encoding="utf-8"))
+            errors = validate_community_shape(companies)
+            if errors:
+                _print_json({"ok": False, "errors": errors})
+                return 1
+            n = 0
+            for company in companies:
+                db.upsert_company(
+                    name=str(company["name"]),
+                    careers_url=company.get("careers_url"),
+                    ats=company.get("ats") or "unknown",
+                    board_token=company.get("board_token"),
+                    validation_status=company.get("validation_status") or "unvalidated",
+                    notes=company.get("notes"),
+                    enabled=False,
+                    source="community",
+                    domain=company.get("domain")
+                    or canonical_domain(str(company.get("careers_url") or "")),
+                    discovery_source="community",
+                    last_validated_at=company.get("last_validated_at"),
+                )
+                n += 1
+            _print_json({"ok": True, "imported": n})
+            return 0
+
+        _err(f"unknown companies command: {action}")
+        return 2
+    finally:
+        db.close()
+
+
 def cmd_run_daily(args: argparse.Namespace) -> int:
     load_dotenv()
     settings = Settings.from_env()
@@ -179,6 +306,10 @@ def cmd_run_daily(args: argparse.Namespace) -> int:
     use_llm = bool(getattr(args, "llm", False)) or settings.rank_llm
     try:
         db.import_tracker_csv(tracker_path())
+        if getattr(args, "companies", False):
+            from jobseek.companies.discover import run_companies_discover
+
+            report["companies"] = run_companies_discover(db, settings=settings)
         report["discover"] = run_discover(db, settings=settings)
         search = load_search()
         profile = load_profile()
@@ -706,7 +837,44 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     daily.add_argument("--email", action="store_true")
     daily.add_argument("--quiet", action="store_true")
     daily.add_argument("--llm", action="store_true")
+    daily.add_argument(
+        "--companies",
+        action="store_true",
+        help="Run company discovery/validation before job discover (off by default)",
+    )
     daily.set_defaults(func=cmd_run_daily)
+
+    co = sub.add_parser("companies", help="Company registry discovery and validation")
+    co_sub = co.add_subparsers(dest="companies_command", required=True)
+
+    co_d = co_sub.add_parser("discover", help="Discover and validate company boards")
+    co_d.add_argument("--no-validate", action="store_true")
+    co_d.set_defaults(func=cmd_companies)
+
+    co_v = co_sub.add_parser("validate", help="Re-validate registry boards")
+    co_v.add_argument("--ats", default=None)
+    co_v.add_argument("--status", default=None)
+    co_v.add_argument("--force", action="store_true")
+    co_v.set_defaults(func=cmd_companies)
+
+    co_l = co_sub.add_parser("list", help="List companies in SQLite registry")
+    co_l.add_argument("--ats", default=None)
+    co_l.add_argument("--status", default=None)
+    co_l.add_argument("--enabled", choices=["true", "false"], default=None)
+    co_l.add_argument("--json", action="store_true")
+    co_l.set_defaults(func=cmd_companies)
+
+    co_s = co_sub.add_parser("stats", help="Company registry statistics")
+    co_s.set_defaults(func=cmd_companies)
+
+    co_e = co_sub.add_parser("export", help="Export companies in community YAML shape")
+    co_e.add_argument("--validated", action="store_true")
+    co_e.add_argument("--out", default=None)
+    co_e.set_defaults(func=cmd_companies)
+
+    co_i = co_sub.add_parser("import", help="Import community/user company YAML into SQLite")
+    co_i.add_argument("path")
+    co_i.set_defaults(func=cmd_companies)
 
     prep = sub.add_parser("prepare", help="Briefing only; no auto draft/submit")
     prep.add_argument("job_id", type=int)

@@ -233,15 +233,15 @@ class Sweep(RankStateCase):
         """Portals have shipped "ASAP", DD.MM.YYYY and free text into this field."""
         self.write_state(
             {
-                "asap": entry(status="ranked", deadline="ASAP", portal="jobindex-search"),
-                "euro": entry(status="ranked", deadline="31.08.2026", portal="jobbank-search"),
+                "asap": entry(status="ranked", deadline="ASAP", portal="linkedin-search"),
+                "euro": entry(status="ranked", deadline="31.08.2026", portal="freehire-search"),
             }
         )
         out = self.run_tool("sweep", "--write")
         self.assertEqual(out["newly_expired"], [])
         self.assertEqual(
             sorted(r["portal"] for r in out["unparseable_deadlines"]),
-            ["jobbank-search", "jobindex-search"],
+            ["freehire-search", "linkedin-search"],
             "a bad stored value is traced back to the portal that wrote it",
         )
         self.assertTrue(all(e["status"] == "ranked" for e in self.read_state().values()))

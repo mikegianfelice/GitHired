@@ -24,7 +24,7 @@ function searchCardWithMeta(id: string, datetimeAttr: string, listdateClass = "j
       <a class="base-card__full-link" href="https://www.linkedin.com/jobs/view/${id}"></a>
       <h3 class="base-search-card__title">Data Engineer</h3>
       <h4 class="base-search-card__subtitle"><a href="https://www.linkedin.com/company/acme">Acme</a></h4>
-      <span class="job-search-card__location">Copenhagen, Denmark</span>
+      <span class="job-search-card__location">Toronto, Canada</span>
       <time class="${listdateClass}" datetime="${datetimeAttr}">3 days ago</time>
     </div>
   </li>`;
@@ -45,7 +45,7 @@ describe("parseJobCards contract fields", () => {
 
   test("extracts location from the location span", () => {
     const [card] = parseJobCards(searchCardWithMeta("202", "2026-08-10"));
-    expect(card.location).toBe("Copenhagen, Denmark");
+    expect(card.location).toBe("Toronto, Canada");
   });
 
   test("date and location are null when the elements are absent", () => {

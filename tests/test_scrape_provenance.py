@@ -80,12 +80,12 @@ class ScrapeProvenanceSpec(unittest.TestCase):
 
 class TestRecencyFallback(unittest.TestCase):
     """Step 1b.3 says to scope to the last 14 days via the portal's recency
-    flag - but not every portal has one (jobdanmark offers no date filter or
-    sort at all), which left the instruction unsatisfiable there: the agent
-    either silently skipped the scoping or invented a flag, and inventing a
-    flag is exactly what the UNKNOWN_FLAG rejection now errors on (review
-    finding F32, 2026-08-19). Every portal emits a `date` field, so
-    client-side filtering is always available as the fallback."""
+    flag - but not every portal has one, which left the instruction
+    unsatisfiable there: the agent either silently skipped the scoping or
+    invented a flag, and inventing a flag is exactly what the UNKNOWN_FLAG
+    rejection now errors on (review finding F32, 2026-08-19). Every portal
+    emits a `date` field, so client-side filtering is always available as
+    the fallback."""
 
     def test_step1b_names_a_client_side_fallback_for_flagless_portals(self):
         text = SKILL.read_text(encoding="utf-8")

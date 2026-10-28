@@ -162,7 +162,7 @@ class MixedScriptNamesKeepTheirIdentity(unittest.TestCase):
     def test_latin_letters_without_a_decomposition_do_not_re_key(self):
         # "ø" and "æ" have no NFKD decomposition and are dropped by the fold,
         # but they are Latin letters: "Ørsted" has keyed as "rsted" since the
-        # rule existed, and a live Danish seen_jobs.json must not re-key.
+        # rule existed, and a live seen_jobs.json must not re-key.
         self.assertEqual(make_key("Ørsted A/S", "Senior Engineer"), "rsted-a-s_senior-engineer")
         self.assertEqual(make_key("Mærsk", "Søfarende"), "mrsk_sfarende")
 

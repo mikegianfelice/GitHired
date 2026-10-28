@@ -20,5 +20,5 @@ githired rank --limit 25 --llm
 ```
 
 3. List the shortlist: `githired jobs --min-score 60`.
-4. For the legacy Danish portal triage workflow, Read `.claude/commands/rank.md` (uses `tools/rank_state.py`). Prefer `githired` for Canada ATS jobs.
+4. For the legacy portal triage workflow, Read `.claude/commands/rank.md` (uses `tools/rank_state.py`). Prefer `githired` for Canada ATS jobs.
 5. Never invent Canada eligibility; hard filters require quoted evidence. Deterministic scores are not AI evaluations.

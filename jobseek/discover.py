@@ -7,9 +7,14 @@ from typing import Any
 
 from jobseek.adapters.ashby import AshbyAdapter
 from jobseek.adapters.detector import detect_careers_page
+from jobseek.adapters.gem import GemAdapter
 from jobseek.adapters.greenhouse import GreenhouseAdapter
 from jobseek.adapters.lever import LeverAdapter
 from jobseek.adapters.linkedin_compliant import LinkedInSearchIndexAdapter
+from jobseek.adapters.rippling import RipplingAdapter
+from jobseek.adapters.rss import RssAdapter
+from jobseek.adapters.workable import WorkableAdapter
+from jobseek.companies.registry import load_local_overrides, load_merged_companies
 from jobseek.config_loader import Settings, load_companies, load_search
 from jobseek.db.store import Database
 from jobseek.http_client import RateLimitedClient
@@ -20,16 +25,24 @@ ADAPTERS = {
     "greenhouse": GreenhouseAdapter,
     "lever": LeverAdapter,
     "ashby": AshbyAdapter,
+    "workable": WorkableAdapter,
+    "rss": RssAdapter,
+    "rippling": RipplingAdapter,
+    "gem": GemAdapter,
 }
+
+_FETCHABLE_ATS = tuple(ADAPTERS.keys())
 
 
 def _enabled_companies(companies: list[dict], sources: dict[str, Any]) -> list[dict]:
     out = []
     for company in companies:
+        if company.get("excluded"):
+            continue
         if not company.get("enabled", True):
             continue
         ats = (company.get("ats") or "unknown").lower()
-        if ats in ("greenhouse", "lever", "ashby") and not sources.get(ats, True):
+        if ats in _FETCHABLE_ATS and not sources.get(ats, True):
             continue
         out.append(company)
     return out
@@ -38,8 +51,18 @@ def _enabled_companies(companies: list[dict], sources: dict[str, Any]) -> list[d
 def _source_status(sources: dict[str, Any], settings: Settings) -> dict[str, Any]:
     enabled = []
     skipped = []
-    for name in ("greenhouse", "lever", "ashby", "career_pages"):
-        if sources.get(name, True):
+    for name in (
+        "greenhouse",
+        "lever",
+        "ashby",
+        "workable",
+        "rss",
+        "rippling",
+        "gem",
+        "career_pages",
+    ):
+        default = name != "gem"
+        if sources.get(name, default):
             enabled.append(name)
         else:
             skipped.append({"source": name, "reason": "disabled in search.yaml"})
@@ -83,7 +106,12 @@ def run_discover(
     sources = search.get("sources") or {}
     yaml_companies = load_companies()
     db.seed_companies_from_yaml(yaml_companies)
-    companies = _enabled_companies(yaml_companies, sources)
+    merged = load_merged_companies(
+        builtin=yaml_companies,
+        db_rows=db.list_companies(),
+        overrides=load_local_overrides(),
+    )
+    companies = _enabled_companies(merged, sources)
 
     run_id = db.start_run("discover")
     client = RateLimitedClient()
@@ -101,16 +129,8 @@ def run_discover(
     }
     boards_attempted = 0
     boards_ok = 0
-    seen_by_source: dict[str, set[int]] = {
-        "greenhouse": set(),
-        "lever": set(),
-        "ashby": set(),
-    }
-    fetched_companies: dict[str, set[str]] = {
-        "greenhouse": set(),
-        "lever": set(),
-        "ashby": set(),
-    }
+    seen_by_source: dict[str, set[int]] = {name: set() for name in ADAPTERS}
+    fetched_companies: dict[str, set[str]] = {name: set() for name in ADAPTERS}
 
     try:
         # Optional ATS auto-detect for unknown careers pages
@@ -178,14 +198,15 @@ def run_discover(
                     summary["warnings"].append(f"detect {company.get('name')}: {exc}")
 
         adapter_instances = {
-            name: cls(client) for name, cls in ADAPTERS.items() if sources.get(name, True)
+            name: cls(client)
+            for name, cls in ADAPTERS.items()
+            if sources.get(name, name != "gem")
         }
 
         for company in companies:
             ats = (company.get("ats") or "").lower()
             adapter = adapter_instances.get(ats)
             if not adapter:
-                # Unsupported ATS (workable, rippling, gem, …) — registry note only
                 summary["warnings"].append(
                     f"{company.get('name')}: ats={ats} has no fetch adapter "
                     "(registry entry retained; enable when adapter exists)"
@@ -201,7 +222,25 @@ def run_discover(
                     status_code=result.raw_status,
                     body=json.dumps([j.to_dict() for j in result.jobs], ensure_ascii=False)[:500000],
                 )
-            if result.raw_status == 200:
+            if result.raw_status == 200 and not result.errors:
+                boards_ok += 1
+                summary["boards_ok"].append(company_name)
+                if ats in fetched_companies and company_name:
+                    fetched_companies[ats].add(company_name)
+                db.mark_company_fetch(
+                    company_name,
+                    ok=True,
+                    ats=ats,
+                    board_token=company.get("board_token") or company.get("site_slug"),
+                    empty=not result.jobs,
+                )
+                # Empty successful board is not a failure
+                if not result.jobs:
+                    summary["warnings"].append(
+                        f"{company_name}: board OK but returned 0 jobs (empty board)"
+                    )
+            elif result.raw_status == 200 and result.jobs:
+                # Structure warnings but jobs parsed — treat as success
                 boards_ok += 1
                 summary["boards_ok"].append(company_name)
                 if ats in fetched_companies and company_name:
@@ -212,11 +251,6 @@ def run_discover(
                     ats=ats,
                     board_token=company.get("board_token") or company.get("site_slug"),
                 )
-                # Empty successful board is not a failure
-                if not result.jobs:
-                    summary["warnings"].append(
-                        f"{company_name}: board OK but returned 0 jobs (empty board)"
-                    )
             else:
                 detail = "; ".join(result.errors) or f"HTTP {result.raw_status}"
                 failure = {

@@ -38,7 +38,7 @@ class ConverterCLI(unittest.TestCase):
             first = book.active
             first.title = "All employees"
             first.append(["Company", "City", "Count", "Index"])
-            first.append(["Acme Corp", "Copenhagen", 500, 108.5])
+            first.append(["Acme Corp", "Toronto", 500, 108.5])
             first.append(["Café Étoile", "Paris", 12, "102,5"])
             second = book.create_sheet("Engineering")
             second.append(["Company", "City", "Engineering Count", "Engineering Index"])
@@ -58,7 +58,7 @@ class ConverterCLI(unittest.TestCase):
             "index_label": "Index", "baseline_description": "Index 100 = median salary",
         })
         self.assertEqual(data["companies"], [
-            {"company": "Acme Corp", "city": "Copenhagen", "categories": {
+            {"company": "Acme Corp", "city": "Toronto", "categories": {
                 "all_employees": {"count": 500, "index": 108.5}}},
             {"company": "Café Étoile", "city": "Paris", "categories": {
                 "all_employees": {"count": 12, "index": 102.5}}},

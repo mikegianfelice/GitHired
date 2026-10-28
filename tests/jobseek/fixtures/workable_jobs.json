@@ -1,0 +1,20 @@
+{
+  "name": "Example Corp",
+  "jobs": [
+    {
+      "title": "Senior Platform Engineer",
+      "shortcode": "ABC123",
+      "url": "https://apply.workable.com/example/j/ABC123/",
+      "location": {"city": "Toronto", "country": "Canada"},
+      "description": "Build platform services remotely from Canada.",
+      "published_on": "2026-10-01"
+    },
+    {
+      "title": "AI Engineer",
+      "shortcode": "DEF456",
+      "application_url": "https://apply.workable.com/example/j/DEF456/",
+      "city": "Remote",
+      "remote": true
+    }
+  ]
+}

@@ -240,7 +240,7 @@ class SearchCompanyTests(unittest.TestCase):
                 }
             ]
         }
-        results = search_company(data, "Acme", city="Aarhus")
+        results = search_company(data, "Acme", city="Toronto")
         self.assertEqual(results, [])
 
 
@@ -296,7 +296,7 @@ class ValidateDataTests(unittest.TestCase):
         self.assert_invalid_data({"companies": ["Example Corp"]}, "companies[1] must be an object")
 
     def test_company_name_is_required(self):
-        self.assert_invalid_data({"companies": [{"city": "Aarhus"}]}, "companies[1].company must be a non-empty string")
+        self.assert_invalid_data({"companies": [{"city": "Toronto"}]}, "companies[1].company must be a non-empty string")
 
     def test_company_name_must_not_be_blank(self):
         self.assert_invalid_data({"companies": [{"company": "  "}]}, "companies[1].company must be a non-empty string")
@@ -430,7 +430,7 @@ class NullShapeEndToEndTests(unittest.TestCase):
     def test_null_categories_passes_validate_then_renders(self):
         payload = (
             '{"metadata": {"index_label": "Index", "index_baseline": 100},'
-            ' "companies": [{"company": "Foo A/S", "city": "Aarhus",'
+            ' "companies": [{"company": "Foo A/S", "city": "Toronto",'
             ' "categories": null,'
             ' "engineering": {"count": 10, "index": 105}}]}'
         )
@@ -447,7 +447,7 @@ class NullShapeEndToEndTests(unittest.TestCase):
     def test_null_metadata_passes_validate_then_renders(self):
         payload = (
             '{"metadata": null,'
-            ' "companies": [{"company": "Foo A/S", "city": "Aarhus",'
+            ' "companies": [{"company": "Foo A/S", "city": "Toronto",'
             ' "categories": {"engineering": {"count": 10, "index": 105}}}]}'
         )
 
@@ -464,7 +464,7 @@ class UtilityTests(unittest.TestCase):
     def test_normalize_strips_suffix_and_noise(self):
         self.assertEqual(normalize("Novo Nordisk A/S"), "novonordisk")
         self.assertEqual(normalize("Ørsted (VG) Holding"), "ørsted")
-        self.assertEqual(normalize("Chr. Hansen, Denmark Division"), "chrhansen")
+        self.assertEqual(normalize("Chr. Hansen, Canada Division"), "chrhansen")
         self.assertEqual(normalize("Simple Corp ApS"), "simplecorp")
 
     def test_normalize_strips_dotted_amba_suffix_same_as_undotted(self):
@@ -512,7 +512,7 @@ class SearchCompanyRefactoredTests(unittest.TestCase):
             "companies": [
                 {"company": "Novo Nordisk A/S", "city": "Bagsværd"},
                 {"company": "Ørsted", "city": "Fredericia"},
-                {"company": "Vestas Wind Systems", "city": "Aarhus"},
+                {"company": "Vestas Wind Systems", "city": "Toronto"},
             ]
         }
 
@@ -538,13 +538,13 @@ class TestSearchCompanyBasicMatch(unittest.TestCase):
         self.assertEqual(results[0]["company"], "Novo Nordisk")
 
     def test_no_match_returns_empty_list(self):
-        data = _make_data(_entry("Vestas Wind Systems", "Aarhus"))
+        data = _make_data(_entry("Vestas Wind Systems", "Toronto"))
         results = search_company(data, "Apple")
         self.assertEqual(results, [])
 
     def test_multiple_candidates_all_returned(self):
         data = _make_data(
-            _entry("Carlsberg A/S", "Copenhagen"),
+            _entry("Carlsberg A/S", "Toronto"),
             _entry("Carlsberg Danmark", "Fredericia"),
             _entry("Unrelated Corp", "Odense"),
         )
@@ -559,11 +559,11 @@ class TestSearchCompanyCityFilter(unittest.TestCase):
     def test_matching_city_is_included(self):
         data = _make_data(
             _entry("Novo Nordisk", "Bagsværd"),
-            _entry("Novo Nordisk", "Aarhus"),
+            _entry("Novo Nordisk", "Toronto"),
         )
-        results = search_company(data, "Novo Nordisk", city="Aarhus")
+        results = search_company(data, "Novo Nordisk", city="Toronto")
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]["city"], "Aarhus")
+        self.assertEqual(results[0]["city"], "Toronto")
 
     def test_non_matching_city_is_excluded(self):
         data = _make_data(_entry("Novo Nordisk", "Bagsværd"))
@@ -573,7 +573,7 @@ class TestSearchCompanyCityFilter(unittest.TestCase):
     def test_no_city_filter_returns_all_cities(self):
         data = _make_data(
             _entry("Novo Nordisk", "Bagsværd"),
-            _entry("Novo Nordisk", "Aarhus"),
+            _entry("Novo Nordisk", "Toronto"),
         )
         results = search_company(data, "Novo Nordisk")
         self.assertEqual(len(results), 2)
@@ -583,7 +583,7 @@ class TestSearchCompanyCityFilter(unittest.TestCase):
         results = search_company(data, "Novo Nordisk", city="københavn")
         self.assertEqual(len(results), 1)
 
-    def test_anglicized_city_matches_danish_city(self):
+    def test_anglicized_city_matches_diacritic_city(self):
         data = _make_data(_entry("Novo Nordisk", "København"))
         results = search_company(data, "Novo Nordisk", city="kobenhavn")
         self.assertEqual(len(results), 1)

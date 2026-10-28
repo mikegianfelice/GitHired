@@ -541,7 +541,7 @@ class ArchiveNameIsOnePathComponent(unittest.TestCase):
         """The Subfolder naming rule, executed exactly as documented:
         lowercase, underscores for spaces, drop every character that is
         not a letter/digit/underscore, collapse runs, trim the ends.
-        (\\w is Unicode in Python 3, so Danish letters survive.)"""
+        (\\w is Unicode in Python 3, so accented letters survive.)"""
         name = f"{company}_{role}".lower().replace(" ", "_")
         name = re.sub(r"[^\w]", "", name)
         name = re.sub(r"_+", "_", name).strip("_")

@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 
-from jobseek.db.schema import SCHEMA_SQL
+from jobseek.db.schema import COMPANY_COLUMN_MIGRATIONS, SCHEMA_SQL
 from jobseek.identity import JobIdentity, normalize_text
 from jobseek.models import RawJob
 
@@ -43,7 +43,16 @@ class Database:
             self._conn.execute(
                 "ALTER TABLE job_scores ADD COLUMN score_kind TEXT NOT NULL DEFAULT 'deterministic'"
             )
-        # Ensure companies table exists (covered by SCHEMA_SQL IF NOT EXISTS)
+        company_cols = {
+            row["name"]
+            for row in self._conn.execute("PRAGMA table_info(companies)").fetchall()
+        }
+        for col_name, sql in COMPANY_COLUMN_MIGRATIONS:
+            if col_name not in company_cols:
+                self._conn.execute(sql)
+        self._conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_companies_domain ON companies(domain)"
+        )
 
     def close(self) -> None:
         self._conn.close()
@@ -581,13 +590,33 @@ class Database:
         enabled: bool = True,
         notes: str | None = None,
         source: str = "yaml",
+        domain: str | None = None,
+        discovery_source: str | None = None,
+        last_validated_at: str | None = None,
+        last_job_fetch_at: str | None = None,
+        failure_count: int | None = None,
+        validation_evidence_json: str | None = None,
+        excluded: bool | None = None,
+        preserve_enabled: bool = False,
     ) -> int:
         name_norm = normalize_text(name)
         with self.transaction():
             existing = self._conn.execute(
-                "SELECT id FROM companies WHERE name_norm = ?", (name_norm,)
+                "SELECT * FROM companies WHERE name_norm = ?", (name_norm,)
             ).fetchone()
             if existing:
+                next_enabled = int(existing["enabled"]) if preserve_enabled else (1 if enabled else 0)
+                if excluded is not None:
+                    next_excluded = 1 if excluded else 0
+                else:
+                    next_excluded = int(existing["excluded"] or 0) if "excluded" in existing.keys() else 0
+                next_failures = (
+                    int(failure_count)
+                    if failure_count is not None
+                    else int(existing["failure_count"] or 0)
+                    if "failure_count" in existing.keys()
+                    else 0
+                )
                 self._conn.execute(
                     """
                     UPDATE companies SET
@@ -600,7 +629,14 @@ class Database:
                         industry = COALESCE(?, industry),
                         enabled = ?,
                         notes = COALESCE(?, notes),
-                        source = COALESCE(?, source)
+                        source = COALESCE(?, source),
+                        domain = COALESCE(?, domain),
+                        discovery_source = COALESCE(?, discovery_source),
+                        last_validated_at = COALESCE(?, last_validated_at),
+                        last_job_fetch_at = COALESCE(?, last_job_fetch_at),
+                        failure_count = ?,
+                        validation_evidence_json = COALESCE(?, validation_evidence_json),
+                        excluded = ?
                     WHERE id = ?
                     """,
                     (
@@ -611,9 +647,16 @@ class Database:
                         last_success_at,
                         last_error,
                         industry,
-                        1 if enabled else 0,
+                        next_enabled,
                         notes,
                         source,
+                        domain,
+                        discovery_source,
+                        last_validated_at,
+                        last_job_fetch_at,
+                        next_failures,
+                        validation_evidence_json,
+                        next_excluded,
                         int(existing["id"]),
                     ),
                 )
@@ -622,8 +665,10 @@ class Database:
                 """
                 INSERT INTO companies (
                     name, name_norm, careers_url, ats, board_token, validation_status,
-                    last_success_at, last_error, industry, enabled, notes, source
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    last_success_at, last_error, industry, enabled, notes, source,
+                    domain, discovery_source, last_validated_at, last_job_fetch_at,
+                    failure_count, validation_evidence_json, excluded
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     name,
@@ -638,6 +683,13 @@ class Database:
                     1 if enabled else 0,
                     notes,
                     source,
+                    domain,
+                    discovery_source,
+                    last_validated_at,
+                    last_job_fetch_at,
+                    int(failure_count or 0),
+                    validation_evidence_json,
+                    1 if excluded else 0,
                 ),
             )
             return int(cur.lastrowid)
@@ -650,13 +702,25 @@ class Database:
                 continue
             name_norm = normalize_text(str(name))
             existing = self._conn.execute(
-                "SELECT validation_status FROM companies WHERE name_norm = ?",
+                "SELECT validation_status, failure_count FROM companies WHERE name_norm = ?",
                 (name_norm,),
             ).fetchone()
             # Preserve prior validation from successful discovers
             status = "unvalidated"
-            if existing and existing["validation_status"] in ("ok", "invalid"):
+            if existing and existing["validation_status"] in (
+                "ok",
+                "invalid",
+                "empty",
+                "unsupported",
+                "transient",
+                "excluded",
+            ):
                 status = str(existing["validation_status"])
+            from jobseek.companies.domain_util import canonical_domain
+
+            domain = company.get("domain") or canonical_domain(
+                str(company.get("careers_url") or "")
+            )
             self.upsert_company(
                 name=str(name),
                 careers_url=company.get("careers_url"),
@@ -666,7 +730,11 @@ class Database:
                 industry=company.get("industry"),
                 enabled=bool(company.get("enabled", True)),
                 notes=company.get("notes"),
-                source="yaml",
+                source=str(company.get("source") or "yaml"),
+                domain=domain or None,
+                discovery_source=company.get("discovery_source") or "builtin",
+                # Keep user/DB enablement across rediscovery seeds
+                preserve_enabled=existing is not None,
             )
             count += 1
         return count
@@ -679,23 +747,104 @@ class Database:
         ats: str | None = None,
         board_token: str | None = None,
         error: str | None = None,
+        empty: bool = False,
     ) -> None:
-        status = "ok" if ok else "invalid"
+        if ok:
+            status = "empty" if empty else "ok"
+            now = _utcnow()
+            self.upsert_company(
+                name=name,
+                ats=ats,
+                board_token=board_token,
+                validation_status=status,
+                last_success_at=now,
+                last_job_fetch_at=now,
+                last_error=None,
+                failure_count=0,
+                source="discover",
+                preserve_enabled=True,
+            )
+            return
+        existing = self._conn.execute(
+            "SELECT failure_count FROM companies WHERE name_norm = ?",
+            (normalize_text(name),),
+        ).fetchone()
+        failures = int(existing["failure_count"] or 0) + 1 if existing else 1
         self.upsert_company(
             name=name,
             ats=ats,
             board_token=board_token,
-            validation_status=status,
-            last_success_at=_utcnow() if ok else None,
-            last_error=None if ok else (error or "fetch failed"),
+            validation_status="invalid",
+            last_error=error or "fetch failed",
+            failure_count=failures,
             source="discover",
+            preserve_enabled=True,
         )
 
-    def list_companies(self) -> list[dict[str, Any]]:
+    def list_companies(
+        self,
+        *,
+        ats: str | None = None,
+        status: str | None = None,
+        enabled: bool | None = None,
+        excluded: bool | None = None,
+    ) -> list[dict[str, Any]]:
+        clauses: list[str] = []
+        params: list[Any] = []
+        if ats:
+            clauses.append("ats = ?")
+            params.append(ats)
+        if status:
+            clauses.append("validation_status = ?")
+            params.append(status)
+        if enabled is not None:
+            clauses.append("enabled = ?")
+            params.append(1 if enabled else 0)
+        if excluded is not None:
+            clauses.append("excluded = ?")
+            params.append(1 if excluded else 0)
+        where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
         rows = self._conn.execute(
-            "SELECT * FROM companies ORDER BY name COLLATE NOCASE"
+            f"SELECT * FROM companies {where} ORDER BY name COLLATE NOCASE",
+            params,
         ).fetchall()
         return [dict(r) for r in rows]
+
+    def company_stats(self) -> dict[str, Any]:
+        by_ats = {
+            row["ats"] or "unknown": row["n"]
+            for row in self._conn.execute(
+                "SELECT ats, COUNT(*) AS n FROM companies GROUP BY ats"
+            ).fetchall()
+        }
+        by_status = {
+            row["validation_status"] or "unvalidated": row["n"]
+            for row in self._conn.execute(
+                "SELECT validation_status, COUNT(*) AS n FROM companies GROUP BY validation_status"
+            ).fetchall()
+        }
+        enabled = self._conn.execute(
+            "SELECT COUNT(*) AS n FROM companies WHERE enabled = 1 AND IFNULL(excluded, 0) = 0"
+        ).fetchone()["n"]
+        failures = [
+            dict(r)
+            for r in self._conn.execute(
+                """
+                SELECT name, ats, failure_count, last_error, validation_status
+                FROM companies
+                WHERE IFNULL(failure_count, 0) > 0
+                ORDER BY failure_count DESC, name COLLATE NOCASE
+                LIMIT 20
+                """
+            ).fetchall()
+        ]
+        return {
+            "total": sum(by_status.values()),
+            "enabled": enabled,
+            "by_ats": by_ats,
+            "by_status": by_status,
+            "top_failures": failures,
+        }
 
     def import_seen_jobs_json(self, path: Path) -> int:
         if not path.is_file():

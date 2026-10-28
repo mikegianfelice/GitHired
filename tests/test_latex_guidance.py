@@ -11,7 +11,7 @@ files and the example sources are the only place a test can catch them:
 - F31: an unescaped `%` in body text silently truncates the rest of the
   line (`&` at least fails loudly). The guidance must name the escapes.
 - F34: `pdftotext` without `-enc UTF-8` emits Latin-1 on Xpdf builds,
-  so a correct Danish CV fails the documented "no replacement
+  so a correct non-ASCII CV fails the documented "no replacement
   characters" check and the agent is sent to "fix" a healthy document.
 """
 import re

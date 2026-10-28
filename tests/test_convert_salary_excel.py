@@ -110,7 +110,7 @@ class DetectColumnTypeTests(unittest.TestCase):
         self.assertEqual(detect_column_type("Lønindeks"), "index")
 
     def test_compound_patterns_match_as_substring_but_others_do_not(self):
-        # A compound token (Danish "løn") matches inside a glued header word.
+        # A compound token ("løn") matches inside a glued header word.
         self.assertTrue(header_matches("lønindeks", INDEX_PATTERNS))
         # A pattern that is not a compound token ("salary") only matches as a
         # whole token, so it must not match inside an unrelated glued word.
@@ -173,11 +173,11 @@ class DetectColumnTypeTests(unittest.TestCase):
         self.assertTrue(header_matches("Firmanavn og by", COMPANY_PATTERNS))
         ws = FakeWorksheet([
             ("Firmanavn og by", "Antal", "Indeks"),
-            ("Example A/S, Aarhus", 12, 105.0),
+            ("Example A/S, Toronto", 12, 105.0),
         ])
         companies = parse_sheet(ws)
         self.assertEqual(len(companies), 1)
-        self.assertEqual(companies[0]["company"], "Example A/S, Aarhus")
+        self.assertEqual(companies[0]["company"], "Example A/S, Toronto")
         self.assertEqual(companies[0]["categories"]["all_employees"], {"count": 12, "index": 105.0})
 
     def test_parse_sheet_detects_city_column_with_token_header(self):
@@ -190,11 +190,11 @@ class DetectColumnTypeTests(unittest.TestCase):
             with self.subTest(header=header):
                 ws = FakeWorksheet([
                     ("Company", header, "Salary"),
-                    ("Example Corp", "Aarhus", 105.5),
+                    ("Example Corp", "Toronto", 105.5),
                 ])
                 companies = parse_sheet(ws)
                 self.assertEqual(len(companies), 1)
-                self.assertEqual(companies[0]["city"], "Aarhus")
+                self.assertEqual(companies[0]["city"], "Toronto")
 
     def test_parse_sheet_handles_ragged_rows(self):
         # openpyxl's read_only mode yields ragged tuples for dimension-less
@@ -204,7 +204,7 @@ class DetectColumnTypeTests(unittest.TestCase):
         ws = FakeWorksheet([
             ("Company", "City", "Engineering Count", "Engineering Index"),
             ("Example Corp",),
-            ("Other Corp", "Aarhus", 12, 105.5),
+            ("Other Corp", "Toronto", 12, 105.5),
         ])
 
         companies = parse_sheet(ws)
@@ -267,7 +267,7 @@ class DetectColumnTypeTests(unittest.TestCase):
 
     def test_parse_sheet_accepts_comma_decimal_string_values(self):
         # Locale-formatted Excel exports can carry numeric cells as strings.
-        # Danish decimal commas must not be silently dropped by float().
+        # Locale decimal commas must not be silently dropped by float().
         ws = FakeWorksheet([
             ("Company", "Engineering Count", "Engineering Index"),
             ("Example Corp", "12,0", "108,5"),
@@ -308,7 +308,7 @@ class DetectColumnTypeTests(unittest.TestCase):
 
     def test_parse_sheet_skips_ambiguous_single_dot_thousands_string(self):
         # "1.234" is the dot-side mirror of the comma guard above: in a
-        # decimal-dot locale it is 1.234, while a Danish export (whole
+        # decimal-dot locale it is 1.234, while a European export (whole
         # thousands, no decimal comma, e.g. "60.000") means 1234/60000.
         # float() used to write the 1000x-smaller value silently - the
         # same never-guess policy must apply to both separators.
@@ -363,7 +363,7 @@ class DetectColumnTypeTests(unittest.TestCase):
 
     def test_parse_sheet_ignores_citation_row_mentioning_company_pattern_word(self):
         # A title/source-citation row above the real header - standard in
-        # real Danish union/statistics exports - can contain a stray
+        # real union/statistics exports - can contain a stray
         # company-pattern word ("arbejdsgiver" = employer) in running prose.
         # It must not be mistaken for the header: that misreads the real
         # header row as data (producing a bogus "Firma" company) and drops
@@ -430,7 +430,7 @@ class DetectColumnTypeTests(unittest.TestCase):
         # not silently reported as a successful conversion.
         ws = FakeWorksheet([
             ("Company", "City"),
-            ("Example Corp", "Aarhus"),
+            ("Example Corp", "Toronto"),
         ])
 
         stderr = io.StringIO()
@@ -467,7 +467,7 @@ class ParseNumericCellLocaleTests(unittest.TestCase):
 class BareCountIndexPairingTests(unittest.TestCase):
     """A count/index pair whose headers carry no category word is still a pair.
 
-    "Count" + "Index" (Danish "Antal" + "Lønindeks") both strip to an empty
+    "Count" + "Index" ("Antal" + "Lønindeks") both strip to an empty
     category name, and the pairing loop used to require a non-empty name on
     both sides, so the single-category layout the README describes as
     "auto-pairs count/index columns" came out as two unrelated standalone
@@ -482,7 +482,7 @@ class BareCountIndexPairingTests(unittest.TestCase):
     def test_bare_english_pair_is_paired_under_the_default_category(self):
         ws = FakeWorksheet([
             ("Company", "City", "Count", "Index"),
-            ("Acme Corp", "Copenhagen", 500, 108.5),
+            ("Acme Corp", "Toronto", 500, 108.5),
         ])
 
         companies = parse_sheet(ws)
@@ -495,7 +495,7 @@ class BareCountIndexPairingTests(unittest.TestCase):
     def test_bare_danish_pair_is_paired_under_the_default_category(self):
         ws = FakeWorksheet([
             ("Firma", "By", "Antal", "Lønindeks"),
-            ("Acme Corp", "Aarhus", 500, 108.5),
+            ("Acme Corp", "Toronto", 500, 108.5),
         ])
 
         companies = parse_sheet(ws)
@@ -531,7 +531,7 @@ class BareCountIndexPairingTests(unittest.TestCase):
         # row - the N/A* asserting a privacy suppression that never happened.
         ws = FakeWorksheet([
             ("Company", "City", "Count", "Index"),
-            ("Acme Corp", "Copenhagen", 500, 108.5),
+            ("Acme Corp", "Toronto", 500, 108.5),
         ])
         entry = parse_sheet(ws)[0]
 
@@ -549,8 +549,8 @@ class QualifiedCompanyHeaderNextToQualifiedSalaryHeader(unittest.TestCase):
     "Company Name | City | Company Count | Company Index" made the index
     column the company column and every row's company read "108.5". #571
     added an exact-match preference, which only helps when a header is
-    exactly "Company"; the qualified name header stayed exposed. The Danish
-    case below is a constructed header in the same shape, not the IDA
+    exactly "Company"; the qualified name header stayed exposed. The
+    case below is a constructed header in the same shape, not a real
     workbook, whose pairs are headed "Antal" and "Indeks" and already convert.
     """
 
@@ -608,7 +608,7 @@ class QualifiedCompanyHeaderNextToQualifiedSalaryHeader(unittest.TestCase):
         # was then cleared, dropping a real city column that followed.
         for headers, row, city in (
             (("Company and city", "City name", "Count", "Index"), ("Acme Corp", "Berlin", 25, 108.5), "Berlin"),
-            (("Firmanavn og by", "City name", "Antal", "Indeks"), ("Acme A/S", "Aarhus", 25, 108.5), "Aarhus"),
+            (("Firmanavn og by", "City name", "Antal", "Indeks"), ("Acme A/S", "Toronto", 25, 108.5), "Toronto"),
         ):
             with self.subTest(headers=headers):
                 entry = parse_sheet(FakeWorksheet([headers, row]))[0]

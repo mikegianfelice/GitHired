@@ -158,8 +158,8 @@ function parseIntFlag(name: string, raw: string | boolean | string[]): number | 
   // Number(), not parseInt(): parseInt truncates, so "--jobage 0.5" became 0,
   // which fails search.ts's `jobage > 0` guard and silently drops
   // posted_within_days from the outbound request while exiting 0 (#373).
-  // Whole numbers >= 1 only — the Danish CLIs' z.coerce.number().int().min(1)
-  // contract; 0 is rejected rather than kept as a "no filter" alias.
+  // Whole numbers >= 1 only — same int().min(1) contract as other portal CLIs;
+  // 0 is rejected rather than kept as a "no filter" alias.
   const val = typeof raw === "string" ? Number(raw.trim()) : NaN
   if (!Number.isInteger(val) || val < 1) {
     process.stderr.write(

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { runSearchFixture } from "./helpers";
 
-const LOCATION = "Copenhagen, Denmark";
+const LOCATION = "Toronto, Canada";
 
 // workTypeFlag() maps a mode it does not recognise to null, and the search
 // URL then carries no f_WT at all. So `--remote remote,hybrid`, a misspelt

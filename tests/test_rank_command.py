@@ -161,8 +161,8 @@ class RankCommandSpec(unittest.TestCase):
     def test_verdict_is_written_to_location_verdict_not_bare_location(self):
         """`location` meant two incompatible things in seen_jobs.json: a place
         (scraper search output, driving the commute filter) and a PASS/FAIL/FLAG
-        verdict (/rank Step 4), so a ranked entry could overwrite "Aarhus,
-        Denmark" with "PASS" and no reader could tell which meaning a stored
+        verdict (/rank Step 4), so a ranked entry could overwrite "Toronto,
+        Canada" with "PASS" and no reader could tell which meaning a stored
         value carried (review finding F27B, 2026-08-19)."""
         text = COMMAND.read_text(encoding="utf-8")
         self.assertIn('"location_verdict"', text, "Step 2's agent JSON must use location_verdict")
@@ -228,10 +228,10 @@ class RankCommandSpec(unittest.TestCase):
     def test_sweep_parses_stored_deadlines_defensively(self):
         """Rule 6's expiry sweep mutates status automatically from stored
         deadline values, and portals have shipped non-ISO shapes into
-        seen_jobs.json ("ASAP" from jobindex, DD.MM.YYYY from jobbank,
-        free text from jobdanmark's detail fallback). /outcome carries a
-        defensive date-parse rule for mere display; the command that
-        silently changes state needs one at least as much."""
+        seen_jobs.json ("ASAP", DD.MM.YYYY, free text from detail
+        fallbacks). /outcome carries a defensive date-parse rule for mere
+        display; the command that silently changes state needs one at least
+        as much."""
         text = COMMAND.read_text(encoding="utf-8")
         self.assertIn(
             "Parse stored deadlines defensively",

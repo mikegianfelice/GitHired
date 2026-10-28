@@ -1,0 +1,5 @@
+# Community-maintained company registry (v1).
+# Contribute via PR after validating a public ATS board — never invent board tokens.
+# Do not include personal data, API keys, or application history.
+version: 1
+companies: []

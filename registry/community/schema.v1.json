@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://githired.dev/registry/community/schema.v1.json",
+  "title": "GitHired community company registry v1",
+  "type": "object",
+  "required": ["version", "companies"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "companies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "ats"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "domain": { "type": ["string", "null"] },
+          "careers_url": { "type": ["string", "null"] },
+          "ats": {
+            "type": "string",
+            "enum": [
+              "greenhouse",
+              "lever",
+              "ashby",
+              "workable",
+              "rss",
+              "rippling",
+              "gem",
+              "unknown"
+            ]
+          },
+          "board_token": { "type": ["string", "null"] },
+          "notes": { "type": ["string", "null"] },
+          "validation_status": {
+            "type": ["string", "null"],
+            "enum": [
+              "ok",
+              "empty",
+              "invalid",
+              "unsupported",
+              "transient",
+              "unvalidated",
+              null
+            ]
+          },
+          "last_validated_at": { "type": ["string", "null"] },
+          "contributor": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

@@ -44,6 +44,11 @@ linkedin_Profile.pdf
 data/*.db
 data/*.db-*
 
+# User company overrides (never auto-written by discovery)
+config/companies.local.yaml
+**/companies.local.yaml
+!config/companies.local.yaml.example
+
 # Personal photos and signatures
 *.jpg
 *.jpeg

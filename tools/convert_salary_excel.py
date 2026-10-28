@@ -44,13 +44,11 @@ CITY_PATTERNS = {"by", "city", "kommune", "location", "lokation", "sted"}
 COUNT_PATTERNS = {"antal", "count", "number", "n", "employees", "medarbejdere"}
 INDEX_PATTERNS = {"indeks", "index", "idx", "salary", "løn", "median", "average", "gennemsnit"}
 # "Compound" tokens: pattern words allowed to match as a substring of a larger
-# header token, for languages that glue words together (e.g. Danish "lønindeks"
+# header token, for languages that glue words together (e.g. "lønindeks"
 # -> løn + indeks). Languages that write headers as separate words need none.
-# Ships populated for this repo's Danish demonstration data; a fork targeting
-# another locale edits this constant. "firma" is here because the IDA workbook
-# heads its company column "Firmanavn og by" (firma + navn glued together).
+# Edit this constant for your locale's compound header words.
 COMPOUND_PATTERNS = {"firma", "antal", "indeks", "løn", "gennemsnit", "medarbejdere"}
-# Identifier columns (employee id, Danish "personnummer", etc.) are never salary
+# Identifier columns (employee id, national id numbers, etc.) are never salary
 # data. They are dropped at classification so they are not mistaken for a salary
 # category. Matched as whole tokens only, like other pattern sets.
 ID_PATTERNS = {"id", "personnummer"}
@@ -250,7 +248,7 @@ def parse_sheet(ws, sheet_label=None):
             untyped_cols.append((col_idx, col_header))
 
     # Pair count/index columns by matching category name. A bare "Count" /
-    # "Index" pair (Danish "Antal" / "Lønindeks") strips to an empty name on
+    # "Index" pair ("Antal" / "Lønindeks") strips to an empty name on
     # both sides - the single-category layout the README's "auto-pairs
     # count/index columns" line describes. It is still one pair, so it gets
     # the README's default category name instead of being emitted as two

@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
+from jobseek.adapters.rss import discover_feed_url
 from jobseek.http_client import RateLimitedClient
 
 KNOWN_ATS_APEXES = {
@@ -16,6 +17,8 @@ KNOWN_ATS_APEXES = {
     "workday.com": "workday",
     "smartrecruiters.com": "smartrecruiters",
     "workable.com": "workable",
+    "rippling.com": "rippling",
+    "gem.com": "gem",
 }
 
 _GH_BOARD = re.compile(
@@ -23,6 +26,13 @@ _GH_BOARD = re.compile(
 )
 _LEVER_BOARD = re.compile(r"jobs\.lever\.co/([a-zA-Z0-9_-]+)", re.I)
 _ASHBY_BOARD = re.compile(r"jobs\.ashbyhq\.com/([a-zA-Z0-9_-]+)", re.I)
+_WORKABLE_BOARD = re.compile(
+    r"(?:apply|jobs)\.workable\.com/([a-zA-Z0-9_-]+)/?", re.I
+)
+_RIPPLING_BOARD = re.compile(
+    r"ats\.rippling\.com/(?:api/v2/board/)?([a-zA-Z0-9_-]+)", re.I
+)
+_GEM_BOARD = re.compile(r"jobs\.gem\.com/([a-zA-Z0-9_-]+)/?", re.I)
 
 
 @dataclass
@@ -33,27 +43,34 @@ class Detection:
     confidence: str  # high | medium | low
 
 
+def _token_from_url(provider: str, url: str) -> str | None:
+    patterns = {
+        "greenhouse": _GH_BOARD,
+        "lever": _LEVER_BOARD,
+        "ashby": _ASHBY_BOARD,
+        "workable": _WORKABLE_BOARD,
+        "rippling": _RIPPLING_BOARD,
+        "gem": _GEM_BOARD,
+    }
+    pattern = patterns.get(provider)
+    if not pattern:
+        return None
+    match = pattern.search(url)
+    return match.group(1) if match else None
+
+
 def classify_host(url: str) -> Detection | None:
     parts = urlsplit(url.strip())
     host = (parts.netloc or "").lower()
     if not host:
         return None
     for apex, provider in KNOWN_ATS_APEXES.items():
-        # Exact apex or real subdomain (boards.greenhouse.io). Reject
-        # lookalikes like evil-greenhouse.io and greenhouse.io.evil.com.
+        # Exact apex or real subdomain. Reject lookalikes.
         if not (host == apex or host.endswith("." + apex)):
             continue
-        token = None
-        if provider == "greenhouse":
-            m = _GH_BOARD.search(url)
-            token = m.group(1) if m else None
-        elif provider == "lever":
-            m = _LEVER_BOARD.search(url)
-            token = m.group(1) if m else None
-        elif provider == "ashby":
-            m = _ASHBY_BOARD.search(url)
-            token = m.group(1) if m else None
-        return Detection(provider, token, url, "high")
+        token = _token_from_url(provider, url)
+        confidence = "high" if token else "low"
+        return Detection(provider, token, url, confidence)
     return None
 
 
@@ -65,18 +82,29 @@ def detect_from_html(html: str, base_url: str) -> Detection | None:
         (_GH_BOARD, "greenhouse"),
         (_LEVER_BOARD, "lever"),
         (_ASHBY_BOARD, "ashby"),
+        (_WORKABLE_BOARD, "workable"),
+        (_RIPPLING_BOARD, "rippling"),
+        (_GEM_BOARD, "gem"),
     ]
     for pattern, provider in patterns:
         match = pattern.search(html) or pattern.search(base_url)
         if match:
             return Detection(provider, match.group(1), match.group(0), "medium")
-    # iframe / script hints
-    if "greenhouse.io" in html:
-        return Detection("greenhouse", None, base_url, "low")
-    if "lever.co" in html:
-        return Detection("lever", None, base_url, "low")
-    if "ashbyhq.com" in html:
-        return Detection("ashby", None, base_url, "low")
+    feed = discover_feed_url(html, base_url)
+    if feed:
+        return Detection("rss", feed, feed, "medium")
+    # iframe / script hints (host only — low confidence, never auto-enable)
+    hints = (
+        ("greenhouse.io", "greenhouse"),
+        ("lever.co", "lever"),
+        ("ashbyhq.com", "ashby"),
+        ("workable.com", "workable"),
+        ("rippling.com", "rippling"),
+        ("jobs.gem.com", "gem"),
+    )
+    for needle, provider in hints:
+        if needle in html:
+            return Detection(provider, None, base_url, "low")
     return classify_host(base_url)
 
 

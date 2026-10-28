@@ -141,11 +141,29 @@ sources:
   greenhouse: true
   lever: true
   ashby: true
+  workable: true
+  rss: true
+  rippling: true
+  gem: false
   career_pages: true
   linkedin_search_index: true
   linkedin_alert_import: true
   linkedin_guest: false
   freehire: false
+
+# Company discovery (separate from daily job discover)
+company_discovery:
+  auto_enable_validated: true
+  transient_cooldown_days: 7
+  max_career_pages_per_run: 40
+  max_search_queries: 8
+  providers:
+    builtin_seed: true
+    community: true
+    career_page: true
+    search_index: true
+    alert_import: true
+    serpapi: true
 
 recency_days: 30
 

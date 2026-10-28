@@ -27,10 +27,11 @@ companies:
 
   - name: Shopify
     careers_url: https://www.shopify.com/careers
-    ats: unknown
-    board_token: null
-    enabled: false
-    notes: "Unresolved 2026-10-28: Greenhouse shopify → 404; careers feed.xml exists but no GH/Lever/Ashby adapter board verified"
+    ats: rss
+    board_token: https://www.shopify.com/careers/feed.xml
+    domain: shopify.com
+    enabled: true
+    notes: "RSS feed adapter; feed URL stored as board_token"
 
   - name: Stripe
     careers_url: https://stripe.com/jobs
@@ -74,8 +75,9 @@ companies:
     careers_url: https://apply.workable.com/huggingface/
     ats: workable
     board_token: huggingface
-    enabled: false
-    notes: "Unresolved for fetch: Workable widget API OK (huggingface) but no jobseek Workable adapter yet"
+    domain: huggingface.co
+    enabled: true
+    notes: "Workable widget API account=huggingface"
 
   - name: GitLab
     careers_url: https://about.gitlab.com/jobs
@@ -100,15 +102,17 @@ companies:
     careers_url: https://www.rippling.com/careers/open-roles
     ats: rippling
     board_token: rippling
-    enabled: false
-    notes: "Unresolved for fetch: ats.rippling.com/api/v2/board/rippling/jobs → HTTP 200; no Rippling adapter yet"
+    domain: rippling.com
+    enabled: true
+    notes: "Validated: ats.rippling.com/api/v2/board/rippling/jobs → HTTP 200 + jobs list"
 
   - name: Retool
     careers_url: https://retool.com/careers
     ats: gem
     board_token: retool
+    domain: retool.com
     enabled: false
-    notes: "Unresolved 2026-10-28: Greenhouse/Ashby/Lever 404; careers appear on jobs.gem.com/retool (no public Gem adapter)"
+    notes: "jobs.gem.com/retool returns HTTP 200 but no extractable public job links (unsupported markup); adapter present, left disabled"
 
   - name: Airtable
     careers_url: https://airtable.com/careers

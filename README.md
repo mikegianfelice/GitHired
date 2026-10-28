@@ -1,5 +1,3 @@
-![GitHired — automated job discovery for engineers on your machine.](assets/readme/hero.svg)
-
 ![CI](https://github.com/mikegianfelice/GitHired/actions/workflows/ci.yml/badge.svg)   ![MIT license](https://img.shields.io/badge/license-MIT-2A9D8F?style=flat)
 
 **GitHired** — automated job discovery and ranking for software, AI, data,  
@@ -8,8 +6,6 @@ forward-deployed, and cloud engineers targeting the **Canada developer market**.
 **[Who this is for](#who-this-is-for)**     **[What it does](#what-it-does)**     **[Quick start](#quick-start)**     **[Canada defaults](#canada-market-defaults)**     **[Setup guide](SETUP.md)**     **[Discovery docs](docs/discovery.md)**
 
 ---
-
-
 
 ## Who this is for
 
@@ -28,29 +24,23 @@ If you are tired of re-running the same LinkedIn and careers-page searches every
 
 ---
 
-
-
 ## What it does
 
-
-| Layer                        | Purpose                                                                                                                                          |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `githired` **CLI** (`jobseek` alias) | Headless discovery from Greenhouse / Lever / Ashby, LinkedIn free/SerpAPI/alerts, Canada hard filters, deterministic ranking (+ optional LLM), digests |
+| Layer | Purpose |
+| ----- | ------- |
+| `githired` **CLI** (`jobseek` alias) | Self-expanding company registry, public ATS adapters, LinkedIn free/SerpAPI/alerts, Canada hard filters, deterministic ranking (+ optional LLM), digests |
 | **Cursor / agent workflows** | Profile setup, fit evaluation, tailored CV + cover letter (`/apply`), interview prep, outcome tracking |
-| **Company registry** | ATS boards in [`config/companies.yaml`](config/companies.yaml), validated into SQLite |
+| **Company registry** | Builtin YAML + community registry + SQLite discoveries + local overrides ([`docs/discovery.md`](docs/discovery.md)) |
 
-
-**Core promise:** stop manually refreshing LinkedIn and career pages. Run discovery once a day, get the top Canada-relevant engineering roles scored against *your* profile — **no API key required** for discovery and Stage-1 ranking.
+**Core promise:** install without hand-maintaining a company list. Discover and validate public employer boards, fetch Canada-relevant engineering roles, and score them against *your* profile — **no API key required** for discovery and Stage-1 ranking.
 
 Application materials are never auto-submitted. `githired prepare` briefs you; `/apply` drafts only after you confirm.
 
 ---
 
-
-
 ## Canada market defaults
 
-GitHired ships configured for **Canada-remote and Canada-eligible** engineering hiring — not the European demo portals from the upstream template.
+GitHired ships configured for **Canada-remote and Canada-eligible** engineering hiring.
 
 - **Three-state eligibility** ([`jobseek/filters/hard.py`](jobseek/filters/hard.py)): **ELIGIBLE** (explicit Canada / genuine worldwide), **UNCERTAIN** (ambiguous remote — visible with a ranking penalty), **INELIGIBLE** (US-only / foreign on-site — hard fail)  
 - Eligibility is never invented from a company’s global brand alone; posting evidence is preserved  
@@ -58,31 +48,24 @@ GitHired ships configured for **Canada-remote and Canada-eligible** engineering 
 - **Seniority:** mid / senior / staff / principal / lead by default; internships, co-ops, new-grad, and junior excluded (enable in setup if needed). Titles without seniority keywords are allowed as unknown  
 - Location modes: remote Canada, province remote, hybrid, on-site cities  
 - Salary floors (configurable): CAD / USD in `config/search.yaml`  
-- Company boards in [`config/companies.yaml`](config/companies.yaml) are validated where possible; unresolved ATS (e.g. Workable / Rippling / Gem) stay inactive until an adapter exists  
-- Danish job-board CLIs remain installed but **disabled** by default for Canada ATS discovery
+- Company boards expand via `githired companies discover` — Day-1 install works without editing a company list  
+- Adapters: Greenhouse, Lever, Ashby, Workable, RSS/XML (e.g. Shopify feed), Rippling; Gem adapter present but disabled until markup is extractable  
+- Portal CLIs ship country-agnostic only (`linkedin-search`, `freehire-search`); add local boards with `/add-portal`
 
 ---
 
-
-
 ## Quick start
-
-
 
 ### Prerequisites
 
-
-|                            |                                                                                                |
-| -------------------------- | ---------------------------------------------------------------------------------------------- |
+| | |
+| --- | --- |
 | **Python 3.10+** | Required for `githired` |
 | **Cursor** *(recommended)* | Agent workflows via thin skills in `.cursor/` |
 | **LLM API key** *(optional)* | Only for Stage-2 `--llm` ranking |
 | **SerpAPI** *(optional)* | Paid LinkedIn index; free search + alert import work without it |
 | **Bun** *(optional)* | Only if you use portal CLIs under `.agents/skills/` |
 | **LaTeX** *(optional)* | Only if you use `/apply` CV/cover letter compile |
-
-
-
 
 ### 1. Clone
 
@@ -108,19 +91,19 @@ Edit as needed:
 
 - [`config/profile.yaml`](config/profile.yaml) — skills and authorization  
 - [`config/search.yaml`](config/search.yaml) — tracks, location modes, salary, sources  
-- [`config/companies.yaml`](config/companies.yaml) — ATS board tokens
-
-
+- [`config/companies.yaml`](config/companies.yaml) — builtin ATS boards (optional; discovery expands this)  
+- [`config/companies.local.yaml.example`](config/companies.local.yaml.example) — copy to `companies.local.yaml` for personal enable/exclude overrides
 
 ### 3. Discover, rank, shortlist
 
 ```bash
+githired companies discover   # expand/validate company boards (optional but recommended once)
 githired discover
 githired rank --limit 25
 githired jobs --min-score 60
 githired digest
 
-# Full daily loop (cron-friendly)
+# Full daily loop (cron-friendly); add --companies to expand boards first
 githired run-daily
 ```
 
@@ -144,74 +127,68 @@ Then confirm drafting when the agent asks.
 
 ---
 
-
-
 ## Commands at a glance
 
-
-
 ### `githired` (headless; `jobseek` alias)
-
 
 | Command | What it does |
 | ------- | ------------ |
 | `setup` | Interactive/non-interactive config + legacy migrate |
 | `doctor` / `sources` | Environment and company/source health |
-| `discover` | ATS boards + LinkedIn (free/SerpAPI/alerts); SQLite upsert |
+| `companies discover` | Discover and validate public ATS boards into SQLite |
+| `companies validate` / `list` / `stats` | Re-check boards; inspect registry |
+| `companies export` / `import` | Community registry YAML (no personal data) |
+| `discover` | Fetch jobs from enabled boards + LinkedIn (free/SerpAPI/alerts) |
 | `rank` | Deterministic Stage-1 scores; `--llm` for optional Stage-2 |
 | `jobs` | Deduplicated shortlist from SQLite |
 | `digest` / `email-digest` | Top-N shortlist; optional email |
-| `run-daily` | discover → rank → digest → email |
+| `run-daily` | discover → rank → digest → email (`--companies` optional) |
 | `prepare` | Briefing only; no auto-draft/submit |
 | `migrate` / `import-seen` / `import-alerts` | Legacy + LinkedIn alert import |
 | `sync-application` | Record an application into SQLite |
 
-
-
-
 ### Agent workflows (Cursor / Claude)
 
+| Command | What it does |
+| ------- | ------------ |
+| `/setup` | Build profile from documents, CV, or interview |
+| `/scrape` | Portal CLI search (legacy / interactive) |
+| `/rank` | Agent triage of scraped jobs |
+| `/apply` | Fit eval + tailored CV/cover letter (asks before drafting) |
+| `/interview` | Stage-specific prep + mock interview |
+| `/outcome` | Track results and archive materials |
 
-| Command      | What it does                                               |
-| ------------ | ---------------------------------------------------------- |
-| `/setup`     | Build profile from documents, CV, or interview             |
-| `/scrape`    | Portal CLI search (legacy / interactive)                   |
-| `/rank`      | Agent triage of scraped jobs                               |
-| `/apply`     | Fit eval + tailored CV/cover letter (asks before drafting) |
-| `/interview` | Stage-specific prep + mock interview                       |
-| `/outcome`   | Track results and archive materials                        |
-
-
-Full agent command list and LaTeX details live in [SETUP.md](SETUP.md) and `[.claude/commands/](.claude/commands/)`.
+Full agent command list and LaTeX details live in [SETUP.md](SETUP.md) and [`.claude/commands/`](.claude/commands/).
 
 ---
-
-
 
 ## LinkedIn and career boards
 
 **Scheduled discovery prefers:**
 
-1. Public **Greenhouse / Lever / Ashby** APIs via the company registry (SQLite-validated)
+1. Public ATS APIs via the company registry (Greenhouse, Lever, Ashby, Workable, RSS/XML, Rippling) — expanded with `githired companies discover`
 2. LinkedIn via **free search-index** (best-effort), optional **SerpAPI** (`SERPAPI_KEY`), and/or **saved-alert imports** (`githired import-alerts`)
 
 Missing SerpAPI is a warning, not a discover failure. LinkedIn guest scraping (`.agents/skills/linkedin-search`) is **off** for scheduled runs (`sources.linkedin_guest: false`) because automated access conflicts with LinkedIn’s Terms of Service.
 
+Community board contributions: [`registry/community/`](registry/community/). Personal enable/exclude overlays: `config/companies.local.yaml` (gitignored).
+
 ---
-
-
 
 ## File structure (high level)
 
 ```
 GitHired/
 ├── jobseek/                 # Discovery, filters, ranking, digest CLI (githired)
+│   ├── adapters/            # Greenhouse, Lever, Ashby, Workable, RSS, Rippling, …
+│   └── companies/           # Registry merge, validation, discovery providers
 ├── config/                  # companies.yaml, search.yaml, profile.yaml
+├── registry/community/      # PR-based public company registry
 ├── data/jobseek.db          # Local SQLite (gitignored; created on first run)
 ├── docs/discovery.md        # Architecture + Canada eligibility notes
 ├── .cursor/                 # Cursor rules + thin skills → githired
 ├── .claude/                 # Canonical agent workflows (apply, setup, …)
-├── .agents/skills/          # Optional portal CLIs (legacy / interactive)
+├── .agents/skills/          # Optional portal CLIs (linkedin-search, freehire-search)
 ├── cv/ · cover_letters/     # LaTeX templates for /apply
 ├── tools/                   # Legacy agent helpers (rank_state, scrape_state, …)
 └── SETUP.md
@@ -219,15 +196,11 @@ GitHired/
 
 ---
 
-
-
 ## Security
 
-Job postings are **untrusted input**. Agent workflows strip hidden text and refuse to follow instructions embedded in ads ([SECURITY.md](SECURITY.md)). Keep `.env` and personal trackers out of git (already gitignored).
+Job postings are **untrusted input**. Agent workflows strip hidden text and refuse to follow instructions embedded in ads ([SECURITY.md](SECURITY.md)). Keep `.env` and personal trackers out of git (already gitignored). Automatic company discovery never uploads profiles, application history, or API keys.
 
 ---
-
-
 
 ## About the maintainer
 
@@ -238,8 +211,6 @@ Technical Consultant (data systems, automation, AI-assisted workflows) · builds
 - GitHub: [github.com/mikegianfelice](https://github.com/mikegianfelice)
 
 ---
-
-
 
 ## License
 
