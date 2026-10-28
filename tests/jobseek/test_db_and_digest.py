@@ -17,6 +17,7 @@ SEARCH = {
     "target_titles": ["AI Engineer", "Senior AI Engineer"],
     "title_aliases": [],
     "location": {
+        "modes": ["remote_canada"],
         "preferred": ["Canada remote"],
         "reject_us_only_remote": True,
         "unknown_location_policy": "flag",

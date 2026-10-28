@@ -1,0 +1,131 @@
+# Configurable company registry for ATS board discovery.
+# ats: greenhouse | lever | ashby | workday | unknown
+# board_token / site_slug: provider-specific public board identifier
+
+companies:
+  - name: Anthropic
+    careers_url: https://www.anthropic.com/careers
+    ats: ashby
+    board_token: anthropic
+    enabled: true
+    notes: Check Canada remote eligibility per posting
+
+  - name: OpenAI
+    careers_url: https://openai.com/careers
+    ats: ashby
+    board_token: openai
+    enabled: true
+    notes: Many roles US-centric; filter for Canada evidence
+
+  - name: Cohere
+    careers_url: https://cohere.com/careers
+    ats: ashby
+    board_token: cohere
+    enabled: true
+    notes: Canadian AI company
+
+  - name: Shopify
+    careers_url: https://www.shopify.com/careers
+    ats: greenhouse
+    board_token: shopify
+    enabled: true
+    notes: Canada HQ; remote-friendly
+
+  - name: Stripe
+    careers_url: https://stripe.com/jobs
+    ats: greenhouse
+    board_token: stripe
+    enabled: true
+    notes: Remote roles; verify Canada eligibility
+
+  - name: Datadog
+    careers_url: https://careers.datadoghq.com
+    ats: greenhouse
+    board_token: datadog
+    enabled: true
+
+  - name: Cloudflare
+    careers_url: https://www.cloudflare.com/careers
+    ats: greenhouse
+    board_token: cloudflare
+    enabled: true
+
+  - name: Notion
+    careers_url: https://www.notion.so/careers
+    ats: ashby
+    board_token: notion
+    enabled: true
+
+  - name: Ramp
+    careers_url: https://ramp.com/careers
+    ats: ashby
+    board_token: ramp
+    enabled: true
+
+  - name: Scale AI
+    careers_url: https://scale.com/careers
+    ats: ashby
+    board_token: scaleai
+    enabled: true
+
+  - name: Hugging Face
+    careers_url: https://huggingface.co/jobs
+    ats: greenhouse
+    board_token: huggingface
+    enabled: true
+
+  - name: GitLab
+    careers_url: https://about.gitlab.com/jobs
+    ats: greenhouse
+    board_token: gitlab
+    enabled: true
+    notes: Remote-first; verify Canada
+
+  - name: Elastic
+    careers_url: https://www.elastic.co/careers
+    ats: greenhouse
+    board_token: elastic
+    enabled: true
+
+  - name: MongoDB
+    careers_url: https://www.mongodb.com/careers
+    ats: greenhouse
+    board_token: mongodb
+    enabled: true
+
+  - name: Rippling
+    careers_url: https://www.rippling.com/careers
+    ats: ashby
+    board_token: rippling
+    enabled: true
+
+  - name: Retool
+    careers_url: https://retool.com/careers
+    ats: greenhouse
+    board_token: retool
+    enabled: true
+
+  - name: Airtable
+    careers_url: https://airtable.com/careers
+    ats: greenhouse
+    board_token: airtable
+    enabled: true
+
+  - name: Figma
+    careers_url: https://www.figma.com/careers
+    ats: greenhouse
+    board_token: figma
+    enabled: true
+
+  - name: Vercel
+    careers_url: https://vercel.com/careers
+    ats: ashby
+    board_token: vercel
+    enabled: true
+
+  - name: Adept
+    careers_url: https://www.adept.ai/careers
+    ats: ashby
+    board_token: adept
+    enabled: false
+    notes: Example disabled entry

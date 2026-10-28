@@ -47,9 +47,12 @@ def render_digest_markdown(digest: dict[str, Any]) -> str:
             gaps_l = json.loads(gaps) if isinstance(gaps, str) else gaps or []
         except json.JSONDecodeError:
             gaps_l = []
+        kind = job.get("score_kind") or "deterministic"
+        model = job.get("model") or kind
         lines.append(
             f"## {idx}. {job.get('title')} @ {job.get('company')} — {job.get('overall')}/100"
         )
+        lines.append(f"- Score: {kind} ({model})")
         lines.append(f"- Location: {job.get('location_raw') or 'n/a'}")
         lines.append(f"- URL: {job.get('url')}")
         if strengths_l:
@@ -59,6 +62,6 @@ def render_digest_markdown(digest: dict[str, Any]) -> str:
         lines.append("")
     lines.append(
         "_Resume generation and application submission require explicit approval "
-        "(`jobseek prepare <id>` then `/apply`)._"
+        "(`githired prepare <id>` then `/apply`)._"
     )
     return "\n".join(lines)

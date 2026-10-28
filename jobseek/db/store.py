@@ -1,4 +1,4 @@
-"""SQLite persistence for discovery, scores, applications, and runs."""
+"""SQLite persistence for discovery, scores, applications, companies, and runs."""
 
 from __future__ import annotations
 
@@ -31,7 +31,19 @@ class Database:
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA foreign_keys = ON")
         self._conn.executescript(SCHEMA_SQL)
+        self._migrate()
         self._conn.commit()
+
+    def _migrate(self) -> None:
+        cols = {
+            row["name"]
+            for row in self._conn.execute("PRAGMA table_info(job_scores)").fetchall()
+        }
+        if "score_kind" not in cols:
+            self._conn.execute(
+                "ALTER TABLE job_scores ADD COLUMN score_kind TEXT NOT NULL DEFAULT 'deterministic'"
+            )
+        # Ensure companies table exists (covered by SCHEMA_SQL IF NOT EXISTS)
 
     def close(self) -> None:
         self._conn.close()
@@ -109,7 +121,9 @@ class Database:
             ats_job_id=job.ats_job_id,
         )
         now = seen_at or _utcnow()
-        desc_hash = _hash_text(job.description)
+        # Ensure description is never NULL so ranking can pick the job up
+        description = job.description if job.description not in (None, "") else job.title
+        desc_hash = _hash_text(description)
         existing_id = self.find_existing_job_id(identity)
         with self.transaction():
             if existing_id is None:
@@ -132,7 +146,7 @@ class Database:
                         job.location_raw,
                         identity.url,
                         job.apply_url,
-                        job.description,
+                        description,
                         desc_hash,
                         job.salary_raw,
                         job.salary_min,
@@ -171,8 +185,8 @@ class Database:
                     now,
                     job.location_raw,
                     job.apply_url,
-                    job.description,
-                    desc_hash if job.description else None,
+                    description,
+                    desc_hash,
                     job.salary_raw,
                     job.salary_min,
                     job.salary_max,
@@ -193,11 +207,7 @@ class Database:
         companies: set[str] | None = None,
         now: str | None = None,
     ) -> int:
-        """Mark jobs not seen in this run as removed. Returns count updated.
-
-        Only considers rows for `companies` when provided, so a failed board
-        fetch cannot retire another company's listings.
-        """
+        """Mark jobs not seen in this run as removed. Returns count updated."""
         stamp = now or _utcnow()
         if not seen_ids:
             return 0
@@ -224,7 +234,48 @@ class Database:
         row = self._conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
         return dict(row) if row else None
 
-    def jobs_needing_score(self, *, limit: int = 50, re_rank: bool = False) -> list[dict[str, Any]]:
+    def list_jobs(
+        self,
+        *,
+        min_score: float | None = None,
+        status: str | None = None,
+        limit: int = 50,
+        score_kind: str = "deterministic",
+    ) -> list[dict[str, Any]]:
+        params: list[Any] = []
+        clauses = ["j.removed_at IS NULL"]
+        if status:
+            clauses.append("j.status = ?")
+            params.append(status)
+        join = ""
+        select_score = "NULL AS overall, NULL AS score_kind, NULL AS model"
+        if min_score is not None or score_kind:
+            join = """
+                LEFT JOIN job_scores s
+                  ON s.job_id = j.id
+                 AND s.description_hash = j.description_hash
+                 AND s.score_kind = ?
+            """
+            params.insert(0, score_kind)
+            select_score = "s.overall AS overall, s.score_kind AS score_kind, s.model AS model"
+            if min_score is not None:
+                clauses.append("s.overall >= ?")
+                params.append(min_score)
+        params.append(limit)
+        sql = f"""
+            SELECT j.*, {select_score}
+            FROM jobs j
+            {join}
+            WHERE {' AND '.join(clauses)}
+            ORDER BY COALESCE(overall, 0) DESC, j.last_seen DESC
+            LIMIT ?
+        """
+        rows = self._conn.execute(sql, params).fetchall()
+        return [dict(r) for r in rows]
+
+    def jobs_needing_score(
+        self, *, limit: int = 50, re_rank: bool = False, score_kind: str = "deterministic"
+    ) -> list[dict[str, Any]]:
         if re_rank:
             sql = """
                 SELECT j.* FROM jobs j
@@ -237,7 +288,9 @@ class Database:
             sql = """
                 SELECT j.* FROM jobs j
                 LEFT JOIN job_scores s
-                  ON s.job_id = j.id AND s.description_hash = j.description_hash
+                  ON s.job_id = j.id
+                 AND s.description_hash = j.description_hash
+                 AND s.score_kind = ?
                 WHERE j.removed_at IS NULL
                   AND j.status != 'removed'
                   AND j.description IS NOT NULL
@@ -245,7 +298,7 @@ class Database:
                 ORDER BY j.first_seen DESC
                 LIMIT ?
             """
-            rows = self._conn.execute(sql, (limit,)).fetchall()
+            rows = self._conn.execute(sql, (score_kind, limit)).fetchall()
         return [dict(r) for r in rows]
 
     def save_score(
@@ -262,47 +315,68 @@ class Database:
         evidence: list[str],
         model: str,
         description_hash: str,
+        score_kind: str = "deterministic",
     ) -> None:
         with self.transaction():
-            self._conn.execute(
+            # Prefer upsert by (job_id, description_hash, score_kind); fall back
+            # for older DBs that only unique on (job_id, description_hash).
+            existing = self._conn.execute(
                 """
-                INSERT INTO job_scores (
-                    job_id, overall, scores_json, hard_filter_json, strengths_json,
-                    gaps_json, salary_alignment, rejection_reasons_json, evidence_json,
-                    model, description_hash, scored_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(job_id, description_hash) DO UPDATE SET
-                    overall = excluded.overall,
-                    scores_json = excluded.scores_json,
-                    hard_filter_json = excluded.hard_filter_json,
-                    strengths_json = excluded.strengths_json,
-                    gaps_json = excluded.gaps_json,
-                    salary_alignment = excluded.salary_alignment,
-                    rejection_reasons_json = excluded.rejection_reasons_json,
-                    evidence_json = excluded.evidence_json,
-                    model = excluded.model,
-                    scored_at = excluded.scored_at
+                SELECT id FROM job_scores
+                WHERE job_id = ? AND description_hash = ? AND score_kind = ?
                 """,
-                (
-                    job_id,
-                    overall,
-                    json.dumps(scores),
-                    json.dumps(hard_filter) if hard_filter else None,
-                    json.dumps(strengths),
-                    json.dumps(gaps),
-                    salary_alignment,
-                    json.dumps(rejection_reasons),
-                    json.dumps(evidence),
-                    model,
-                    description_hash,
-                    _utcnow(),
-                ),
+                (job_id, description_hash, score_kind),
+            ).fetchone()
+            payload = (
+                job_id,
+                overall,
+                json.dumps(scores),
+                json.dumps(hard_filter) if hard_filter else None,
+                json.dumps(strengths),
+                json.dumps(gaps),
+                salary_alignment,
+                json.dumps(rejection_reasons),
+                json.dumps(evidence),
+                model,
+                score_kind,
+                description_hash,
+                _utcnow(),
             )
-            self._conn.execute(
-                "UPDATE jobs SET status = ? WHERE id = ?",
-                ("ranked" if overall >= 0 else "scored", job_id),
-            )
-            # status always ranked after a score attempt
+            if existing:
+                self._conn.execute(
+                    """
+                    UPDATE job_scores SET
+                        overall = ?, scores_json = ?, hard_filter_json = ?,
+                        strengths_json = ?, gaps_json = ?, salary_alignment = ?,
+                        rejection_reasons_json = ?, evidence_json = ?, model = ?,
+                        scored_at = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        overall,
+                        json.dumps(scores),
+                        json.dumps(hard_filter) if hard_filter else None,
+                        json.dumps(strengths),
+                        json.dumps(gaps),
+                        salary_alignment,
+                        json.dumps(rejection_reasons),
+                        json.dumps(evidence),
+                        model,
+                        _utcnow(),
+                        int(existing["id"]),
+                    ),
+                )
+            else:
+                self._conn.execute(
+                    """
+                    INSERT INTO job_scores (
+                        job_id, overall, scores_json, hard_filter_json, strengths_json,
+                        gaps_json, salary_alignment, rejection_reasons_json, evidence_json,
+                        model, score_kind, description_hash, scored_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    payload,
+                )
             self._conn.execute(
                 "UPDATE jobs SET status = 'ranked' WHERE id = ?", (job_id,)
             )
@@ -421,20 +495,31 @@ class Database:
             )
 
     def top_new_scored(
-        self, *, limit: int = 10, min_score: float = 60.0, since: str | None = None
+        self,
+        *,
+        limit: int = 10,
+        min_score: float = 60.0,
+        since: str | None = None,
+        score_kind: str = "deterministic",
     ) -> list[dict[str, Any]]:
-        params: list[Any] = [min_score]
+        # Over-fetch so filtering tracked applications can still fill top_n
+        fetch_limit = max(limit * 5, 50)
+        params: list[Any] = [score_kind, min_score]
         since_clause = ""
         if since:
             since_clause = "AND j.first_seen >= ?"
             params.append(since)
-        params.append(limit)
+        params.append(fetch_limit)
         rows = self._conn.execute(
             f"""
             SELECT j.*, s.overall, s.strengths_json, s.gaps_json, s.hard_filter_json,
-                   s.salary_alignment, s.rejection_reasons_json, s.evidence_json, s.scored_at
+                   s.salary_alignment, s.rejection_reasons_json, s.evidence_json,
+                   s.scored_at, s.score_kind, s.model
             FROM jobs j
-            JOIN job_scores s ON s.job_id = j.id AND s.description_hash = j.description_hash
+            JOIN job_scores s
+              ON s.job_id = j.id
+             AND s.description_hash = j.description_hash
+             AND s.score_kind = ?
             WHERE j.removed_at IS NULL
               AND j.status = 'ranked'
               AND s.overall >= ?
@@ -471,6 +556,138 @@ class Database:
         ).fetchone()
         return row["created_at"] if row else None
 
+    # --- Company registry -------------------------------------------------
+
+    def upsert_company(
+        self,
+        *,
+        name: str,
+        careers_url: str | None = None,
+        ats: str | None = None,
+        board_token: str | None = None,
+        validation_status: str = "unvalidated",
+        last_success_at: str | None = None,
+        last_error: str | None = None,
+        industry: str | None = None,
+        enabled: bool = True,
+        notes: str | None = None,
+        source: str = "yaml",
+    ) -> int:
+        name_norm = normalize_text(name)
+        with self.transaction():
+            existing = self._conn.execute(
+                "SELECT id FROM companies WHERE name_norm = ?", (name_norm,)
+            ).fetchone()
+            if existing:
+                self._conn.execute(
+                    """
+                    UPDATE companies SET
+                        careers_url = COALESCE(?, careers_url),
+                        ats = COALESCE(?, ats),
+                        board_token = COALESCE(?, board_token),
+                        validation_status = ?,
+                        last_success_at = COALESCE(?, last_success_at),
+                        last_error = ?,
+                        industry = COALESCE(?, industry),
+                        enabled = ?,
+                        notes = COALESCE(?, notes),
+                        source = COALESCE(?, source)
+                    WHERE id = ?
+                    """,
+                    (
+                        careers_url,
+                        ats,
+                        board_token,
+                        validation_status,
+                        last_success_at,
+                        last_error,
+                        industry,
+                        1 if enabled else 0,
+                        notes,
+                        source,
+                        int(existing["id"]),
+                    ),
+                )
+                return int(existing["id"])
+            cur = self._conn.execute(
+                """
+                INSERT INTO companies (
+                    name, name_norm, careers_url, ats, board_token, validation_status,
+                    last_success_at, last_error, industry, enabled, notes, source
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    name,
+                    name_norm,
+                    careers_url,
+                    ats,
+                    board_token,
+                    validation_status,
+                    last_success_at,
+                    last_error,
+                    industry,
+                    1 if enabled else 0,
+                    notes,
+                    source,
+                ),
+            )
+            return int(cur.lastrowid)
+
+    def seed_companies_from_yaml(self, companies: list[dict[str, Any]]) -> int:
+        count = 0
+        for company in companies:
+            name = company.get("name")
+            if not name:
+                continue
+            name_norm = normalize_text(str(name))
+            existing = self._conn.execute(
+                "SELECT validation_status FROM companies WHERE name_norm = ?",
+                (name_norm,),
+            ).fetchone()
+            # Preserve prior validation from successful discovers
+            status = "unvalidated"
+            if existing and existing["validation_status"] in ("ok", "invalid"):
+                status = str(existing["validation_status"])
+            self.upsert_company(
+                name=str(name),
+                careers_url=company.get("careers_url"),
+                ats=(company.get("ats") or "unknown"),
+                board_token=company.get("board_token") or company.get("site_slug"),
+                validation_status=status,
+                industry=company.get("industry"),
+                enabled=bool(company.get("enabled", True)),
+                notes=company.get("notes"),
+                source="yaml",
+            )
+            count += 1
+        return count
+
+    def mark_company_fetch(
+        self,
+        name: str,
+        *,
+        ok: bool,
+        ats: str | None = None,
+        board_token: str | None = None,
+        error: str | None = None,
+    ) -> None:
+        status = "ok" if ok else "invalid"
+        self.upsert_company(
+            name=name,
+            ats=ats,
+            board_token=board_token,
+            validation_status=status,
+            last_success_at=_utcnow() if ok else None,
+            last_error=None if ok else (error or "fetch failed"),
+            source="discover",
+        )
+
+    def list_companies(self) -> list[dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT * FROM companies ORDER BY name COLLATE NOCASE"
+        ).fetchall()
+        return [dict(r) for r in rows]
+
     def import_seen_jobs_json(self, path: Path) -> int:
         if not path.is_file():
             return 0
@@ -487,6 +704,7 @@ class Database:
             url = entry.get("url") or ""
             if not company or not title or not url:
                 continue
+            description = entry.get("description") or title
             job = RawJob(
                 company=company,
                 title=title,
@@ -494,8 +712,43 @@ class Database:
                 source=f"import:{entry.get('portal') or entry.get('source') or 'seen_jobs'}",
                 location_raw=entry.get("location"),
                 posted_date=entry.get("posted_date"),
-                description=entry.get("description"),
+                description=description,
             )
-            self.upsert_job(job, seen_at=entry.get("first_seen") or _utcnow())
+            job_id, _ = self.upsert_job(job, seen_at=entry.get("first_seen") or _utcnow())
+            # Carry over prior rank fields when present
+            rank_score = entry.get("rank_score")
+            if rank_score is not None:
+                try:
+                    overall = float(rank_score)
+                except (TypeError, ValueError):
+                    overall = None
+                if overall is not None:
+                    gaps = entry.get("gaps") or []
+                    if isinstance(gaps, str):
+                        gaps = [gaps]
+                    self.save_score(
+                        job_id,
+                        overall=overall,
+                        scores={"imported": overall},
+                        hard_filter={
+                            "verdict": entry.get("location_verdict") or "FLAG",
+                            "reasons": ["imported from seen_jobs.json"],
+                        },
+                        strengths=[],
+                        gaps=list(gaps)[:10],
+                        salary_alignment="",
+                        rejection_reasons=[],
+                        evidence=[],
+                        model="imported",
+                        description_hash=_hash_text(description),
+                        score_kind="deterministic",
+                    )
+                    status = entry.get("status")
+                    if status:
+                        with self.transaction():
+                            self._conn.execute(
+                                "UPDATE jobs SET status = ? WHERE id = ?",
+                                (str(status), job_id),
+                            )
             count += 1
         return count

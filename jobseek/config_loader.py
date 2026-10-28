@@ -9,7 +9,7 @@ from typing import Any
 
 import yaml
 
-from jobseek.paths import config_dir, db_path
+from jobseek.paths import db_path, resolve_config_file
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -22,15 +22,15 @@ def _load_yaml(path: Path) -> dict[str, Any]:
 
 
 def load_search(path: Path | None = None) -> dict[str, Any]:
-    return _load_yaml(path or config_dir() / "search.yaml")
+    return _load_yaml(path or resolve_config_file("search.yaml"))
 
 
 def load_profile(path: Path | None = None) -> dict[str, Any]:
-    return _load_yaml(path or config_dir() / "profile.yaml")
+    return _load_yaml(path or resolve_config_file("profile.yaml"))
 
 
 def load_companies(path: Path | None = None) -> list[dict[str, Any]]:
-    data = _load_yaml(path or config_dir() / "companies.yaml")
+    data = _load_yaml(path or resolve_config_file("companies.yaml"))
     companies = data.get("companies", [])
     if not isinstance(companies, list):
         raise ValueError("companies.yaml: companies must be a list")
@@ -58,9 +58,11 @@ class Settings:
     resend_from: str = ""
     resend_to: str = ""
     log_level: str = "INFO"
+    rank_llm: bool = False
 
     @classmethod
     def from_env(cls) -> "Settings":
+        rank_llm_env = os.environ.get("GITHIRED_RANK_LLM", os.environ.get("JOBSEEK_RANK_LLM", "")).strip().lower()
         return cls(
             db_path=db_path(),
             llm_provider=os.environ.get("LLM_PROVIDER", "anthropic").strip().lower(),
@@ -81,21 +83,29 @@ class Settings:
             resend_api_key=os.environ.get("RESEND_API_KEY", "").strip(),
             resend_from=os.environ.get("RESEND_FROM", "").strip(),
             resend_to=os.environ.get("RESEND_TO", "").strip(),
-            log_level=os.environ.get("JOBSEEK_LOG_LEVEL", "INFO").strip().upper(),
+            log_level=os.environ.get("JOBSEEK_LOG_LEVEL", os.environ.get("GITHIRED_LOG_LEVEL", "INFO")).strip().upper(),
+            rank_llm=rank_llm_env in ("1", "true", "yes"),
         )
 
 
 def load_dotenv(path: Path | None = None) -> None:
     """Minimal .env loader (no dependency). Does not override existing env."""
-    env_path = path or (Path(__file__).resolve().parent.parent / ".env")
-    if not env_path.is_file():
-        return
-    for line in env_path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
+    candidates = []
+    if path is not None:
+        candidates.append(path)
+    else:
+        candidates.append(Path.cwd() / ".env")
+        candidates.append(Path(__file__).resolve().parent.parent / ".env")
+    for env_path in candidates:
+        if not env_path.is_file():
             continue
-        key, _, value = line.partition("=")
-        key = key.strip()
-        value = value.strip().strip("'").strip('"')
-        if key and key not in os.environ:
-            os.environ[key] = value
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip().strip("'").strip('"')
+            if key and key not in os.environ:
+                os.environ[key] = value
+        return

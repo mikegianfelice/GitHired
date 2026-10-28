@@ -1,0 +1,152 @@
+# Job discovery search configuration (Canada-remote engineering)
+
+# Select one or more engineering tracks (preferred over raw title lists).
+tracks:
+  - software_engineering
+  - ai_engineering
+  - ml_engineering
+  - data_engineering
+  - platform_engineering
+  - cloud_engineering
+  - devops_sre
+  - forward_deployed
+
+# Title phrases / aliases per track. Users select tracks; overrides are advanced.
+track_aliases:
+  software_engineering:
+    - Software Engineer
+    - Software Developer
+    - Full Stack Engineer
+    - Backend Engineer
+    - Frontend Engineer
+    - Full-Stack Engineer
+  ai_engineering:
+    - AI Engineer
+    - Applied AI Engineer
+    - Generative AI Engineer
+    - LLM Engineer
+    - AI Solutions Architect
+    - Solutions Architect AI
+    - AI Platform Engineer
+  ml_engineering:
+    - Machine Learning Engineer
+    - ML Engineer
+    - MLOps Engineer
+    - Deep Learning Engineer
+  data_engineering:
+    - Data Engineer
+    - Senior Data Engineer
+    - Staff Data Engineer
+    - Analytics Engineer
+  platform_engineering:
+    - Platform Engineer
+    - Infrastructure Engineer
+    - Developer Experience Engineer
+    - DevEx Engineer
+  cloud_engineering:
+    - Cloud Engineer
+    - Cloud Architect
+    - AWS Engineer
+    - Azure Engineer
+    - GCP Engineer
+  devops_sre:
+    - DevOps Engineer
+    - Site Reliability Engineer
+    - SRE
+    - Reliability Engineer
+  forward_deployed:
+    - Forward Deployed Engineer
+    - Forward Deployed Software Engineer
+    - Deployment Engineer
+    - Solutions Engineer Technical
+
+# Preferred seniority bands (empty = any). Used for scoring, not hard-reject by default.
+seniority:
+  - mid
+  - senior
+  - staff
+  - principal
+
+# Advanced: extra title phrases beyond track aliases
+custom_title_overrides: []
+
+# Legacy flat lists (still honored if tracks empty / for backward compatibility)
+target_titles: []
+title_aliases: []
+
+location:
+  # Accepted work modes for the candidate
+  modes:
+    - remote_canada
+    - remote_province
+    - hybrid
+    - onsite
+  provinces:
+    - Ontario
+    - Quebec
+    - British Columbia
+    - Alberta
+    - Manitoba
+    - Saskatchewan
+    - Nova Scotia
+    - New Brunswick
+    - Newfoundland
+    - Prince Edward Island
+    - Yukon
+    - Northwest Territories
+    - Nunavut
+    - ON
+    - QC
+    - BC
+    - AB
+  cities:
+    - Toronto
+    - Vancouver
+    - Montreal
+    - Ottawa
+    - Calgary
+    - Edmonton
+    - Waterloo
+    - Kitchener
+    - Mississauga
+    - Halifax
+  preferred:
+    - Canada remote
+    - Remote Canada
+    - Remote - Canada
+    - Canada (Remote)
+    - Anywhere in Canada
+  allow_us_employer_remote_with_canada_evidence: true
+  reject_us_only_remote: true
+  # When location is silent / ambiguous: flag (hold), reject, or pass
+  unknown_location_policy: flag  # flag | reject | pass
+
+salary:
+  reject_missing: false
+  floors:
+    CAD: 120000
+    USD: 90000
+
+sources:
+  greenhouse: true
+  lever: true
+  ashby: true
+  career_pages: true
+  linkedin_search_index: true
+  linkedin_alert_import: true
+  linkedin_guest: false
+  freehire: false
+
+recency_days: 30
+
+linkedin_search_queries:
+  - 'site:linkedin.com/jobs "AI Engineer" (Canada OR "Remote Canada" OR "remote in Canada")'
+  - 'site:linkedin.com/jobs "Applied AI" (Canada OR Remote) (Canada OR Canadian)'
+  - 'site:linkedin.com/jobs "Forward Deployed Engineer" (Canada OR Remote)'
+  - 'site:linkedin.com/jobs "Data Engineer" Senior OR Staff (Canada OR "Remote Canada")'
+  - 'site:linkedin.com/jobs "Software Engineer" (Canada OR "Remote Canada")'
+  - 'site:linkedin.com/jobs "Platform Engineer" OR SRE OR DevOps (Canada OR "Remote Canada")'
+
+digest:
+  top_n: 10
+  min_score: 60

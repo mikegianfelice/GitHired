@@ -1,5 +1,9 @@
 # /rank - Triage Scraped Jobs into a Ranked Shortlist
 
+**Canada ATS path (preferred):** for Greenhouse/Lever/Ashby discovery already in SQLite, run `githired rank` (deterministic) or `githired rank --llm`, then `githired jobs`. Do not use `tools/rank_state.py` for that inventory.
+
+**Legacy portal path (below):** continues to use `job_scraper/seen_jobs.json` + `tools/rank_state.py` for Danish/portal CLI scrapes until that stack is retired. Keep both paths; do not delete the tools.
+
 You are batch-scoring the jobs that `/scrape` has collected, so the user can decide where to spend `/apply` effort. `/scrape` finds and dedupes postings; `/apply` evaluates one at a time in depth. `/rank` is the bridge: it scores every new posting against the fit framework and returns a ranked shortlist.
 
 `/rank` produces **triage scores**, not final evaluations. It scores from the posting text and the candidate profile only - no company research, no reviewer agent. `/apply`'s Step 1 evaluation (which adds company research) remains authoritative and always re-runs when the user applies.

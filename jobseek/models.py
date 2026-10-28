@@ -53,8 +53,8 @@ class ScoreResult:
     rejection_reasons: list[str]
     evidence: list[str]
     model: str
+    score_kind: str = "deterministic"  # deterministic | llm | hard_filter
     hard_filter: HardFilterResult | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        data = asdict(self)
-        return data
+        return asdict(self)

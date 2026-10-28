@@ -2,16 +2,14 @@
 name: prepare
 description: >-
   Briefing for a scored job before applying. Never auto-drafts or submits.
-  Triggers on: prepare application, jobseek prepare, apply briefing.
+  Triggers on: prepare application, jobseek prepare, githired prepare, apply briefing.
 ---
 
-# Prepare (approval gate)
+# Prepare (briefing only)
 
 ```bash
-python -m jobseek.cli.main prepare <job_id>
+githired prepare <job_id>
 ```
 
-This prints company, title, URL, and next steps only.
-
-To draft a CV/cover letter, Read `.claude/commands/apply.md` and run `/apply <url>` —
-**ask the user before drafting**. Never submit applications automatically.
+Prints company, title, URL, and next steps. Does **not** draft a CV/cover letter or submit.
+For drafting, ask the user to confirm, then follow `.claude/commands/apply.md`.

@@ -12,6 +12,18 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(python t
 
 ---
 
+## Canada ATS discovery (preferred)
+
+For Canada-remote engineering roles from public Greenhouse / Lever / Ashby boards, prefer the SQLite-backed CLI (do not write `seen_jobs.json`):
+
+```bash
+githired discover
+githired rank
+githired jobs
+```
+
+Use the portal CLI workflow below for Danish boards and other `.agents/skills/` portals. `tools/scrape_state.py` remains for that legacy path only.
+
 ## How It Works
 
 This skill searches job portals using the **installed portal-search CLIs** in

@@ -18,6 +18,7 @@ SEARCH = {
     ],
     "title_aliases": ["Machine Learning Engineer"],
     "location": {
+        "modes": ["remote_canada", "remote_province", "hybrid", "onsite"],
         "preferred": ["Canada remote", "Remote Canada"],
         "allow_us_employer_remote_with_canada_evidence": True,
         "reject_us_only_remote": True,
@@ -102,6 +103,24 @@ class HardFilterTests(unittest.TestCase):
         result = apply_hard_filters(job, SEARCH)
         self.assertEqual(result.location_verdict, "FAIL")
         self.assertFalse(any("invent" in r.lower() for r in result.reasons))
+
+    def test_toronto_hybrid_pass(self):
+        cfg = {
+            **SEARCH,
+            "location": {
+                **SEARCH["location"],
+                "modes": ["hybrid", "onsite"],
+                "cities": ["Toronto", "Vancouver"],
+                "provinces": ["Ontario"],
+            },
+        }
+        job = {
+            "title": "Senior AI Engineer",
+            "location_raw": "Hybrid - Toronto, ON",
+            "description": "Hybrid role based in Toronto.",
+        }
+        result = apply_hard_filters(job, cfg)
+        self.assertEqual(result.location_verdict, "PASS")
 
 
 if __name__ == "__main__":

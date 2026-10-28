@@ -3,16 +3,10 @@
 from __future__ import annotations
 
 import re
-import sys
 from dataclasses import dataclass
-from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-# Reuse upstream job_key without packaging tools/
-_TOOLS = Path(__file__).resolve().parent.parent / "tools"
-if str(_TOOLS) not in sys.path:
-    sys.path.insert(0, str(_TOOLS))
-from job_key import make_key  # noqa: E402
+from jobseek.util.job_key import make_key
 
 _TRACKING_PARAMS = {
     "utm_source",

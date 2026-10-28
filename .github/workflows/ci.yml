@@ -81,7 +81,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Excel integration test dependency
         run: python -m pip install openpyxl==3.1.5
-      - name: Install jobseek package (discovery/ranking CLI)
+      - name: Install githired package (discovery/ranking CLI)
         run: python -m pip install -e .
       - run: python -m unittest discover -s tests -t . -v
 
@@ -102,7 +102,7 @@ jobs:
           python-version: "3.14"
       - name: Install Excel integration test dependency
         run: python -m pip install openpyxl==3.1.5
-      - name: Install jobseek package (discovery/ranking CLI)
+      - name: Install githired package (discovery/ranking CLI)
         run: python -m pip install -e .
       - name: Run the suite under Git Bash
         shell: bash

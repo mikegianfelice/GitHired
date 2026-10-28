@@ -1,23 +1,18 @@
-"""LLM-backed structured job scoring with hard filters first."""
+"""Two-stage job scoring: deterministic (no API) then optional LLM."""
 
 from __future__ import annotations
 
 import json
 import os
 import re
-import sys
-from pathlib import Path
+from datetime import datetime, timezone
 from typing import Any, Callable
 
 from jobseek.config_loader import Settings
 from jobseek.filters.hard import apply_hard_filters
+from jobseek.filters.tracks import detect_seniority, match_track
 from jobseek.models import HardFilterResult, ScoreResult
-
-# Reuse upstream weights
-_TOOLS = Path(__file__).resolve().parent.parent.parent / "tools"
-if str(_TOOLS) not in sys.path:
-    sys.path.insert(0, str(_TOOLS))
-from rank_state import WEIGHTS  # noqa: E402
+from jobseek.rank.weights import WEIGHTS
 
 _JSON_BLOCK = re.compile(r"\{[\s\S]*\}")
 
@@ -95,34 +90,162 @@ def _weighted_overall(scores: dict[str, float]) -> float:
     return round(total)
 
 
-def _heuristic_score(job: dict[str, Any], hard: HardFilterResult) -> ScoreResult:
-    """Offline fallback when no LLM key is configured (tests / dry runs)."""
-    base = 55.0
-    if hard.verdict == "PASS":
-        base = 70.0
-    elif hard.verdict == "FAIL":
-        base = 25.0
-    desc = (job.get("description") or "").casefold()
-    bumps = 0
-    for token in ("python", "llm", "machine learning", "data engineer", "pytorch", "rag"):
-        if token in desc:
-            bumps += 3
-    overall = max(0, min(100, base + bumps))
-    scores = {
-        "technical": overall,
-        "experience": max(0, overall - 5),
-        "behavioral": 60.0,
-        "career": overall,
+def _skill_tokens(profile: dict[str, Any]) -> list[str]:
+    skills = profile.get("skills") or {}
+    tokens: list[str] = []
+    for key in ("primary", "secondary", "domain"):
+        val = skills.get(key) or []
+        if isinstance(val, str):
+            tokens.append(val)
+        elif isinstance(val, list):
+            tokens.extend(str(x) for x in val)
+    exp = profile.get("experience") or {}
+    for key in ("strong_domains", "adjacent_domains"):
+        val = exp.get(key) or []
+        if isinstance(val, list):
+            tokens.extend(str(x) for x in val)
+    return [t.strip() for t in tokens if t and str(t).strip()]
+
+
+def _freshness_score(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[float, str]:
+    recency_days = int(search_cfg.get("recency_days") or 30)
+    stamp = job.get("posted_date") or job.get("first_seen") or job.get("last_seen")
+    if not stamp:
+        return 50.0, "no verifiable posting date"
+    try:
+        raw = str(stamp).replace("Z", "+00:00")
+        if "T" not in raw and len(raw) == 10:
+            dt = datetime.fromisoformat(raw).replace(tzinfo=timezone.utc)
+        else:
+            dt = datetime.fromisoformat(raw)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+        age = (datetime.now(timezone.utc) - dt).days
+    except ValueError:
+        return 50.0, "unparseable posting date"
+    if age <= 7:
+        return 100.0, f"posted/seen {age}d ago"
+    if age <= recency_days:
+        return 75.0, f"posted/seen {age}d ago (within {recency_days}d)"
+    if age <= recency_days * 2:
+        return 45.0, f"posted/seen {age}d ago (stale)"
+    return 20.0, f"posted/seen {age}d ago (very stale)"
+
+
+def score_deterministic(
+    job: dict[str, Any],
+    *,
+    search_cfg: dict[str, Any],
+    profile: dict[str, Any],
+    hard: HardFilterResult | None = None,
+) -> ScoreResult:
+    """Transparent Stage-1 score. Never labeled as AI-generated."""
+    hard = hard or apply_hard_filters(job, search_cfg)
+    if hard.verdict == "FAIL":
+        return ScoreResult(
+            overall=0,
+            scores={
+                "canada_eligibility": 0,
+                "track_match": 0,
+                "seniority": 0,
+                "skills": 0,
+                "location": 0,
+                "salary": 0,
+                "freshness": 0,
+            },
+            strengths=[],
+            gaps=hard.reasons,
+            salary_alignment="n/a",
+            rejection_reasons=hard.reasons,
+            evidence=hard.evidence,
+            model="deterministic",
+            score_kind="deterministic",
+            hard_filter=hard,
+        )
+
+    track = match_track(job.get("title") or "", search_cfg)
+    canada = {"PASS": 100.0, "FLAG": 55.0, "FAIL": 0.0}.get(hard.location_verdict, 40.0)
+    track_score = 95.0 if track.matched else 20.0
+    seniority = detect_seniority(job.get("title") or "")
+    preferred = [str(s).casefold() for s in (search_cfg.get("seniority") or [])]
+    if not preferred:
+        seniority_score = 80.0
+        sen_note = "no seniority preference configured"
+    elif seniority and seniority.casefold() in preferred:
+        seniority_score = 95.0
+        sen_note = f"seniority {seniority} preferred"
+    elif seniority is None:
+        seniority_score = 70.0
+        sen_note = "seniority not stated in title"
+    else:
+        seniority_score = 45.0
+        sen_note = f"seniority {seniority} outside preferred {preferred}"
+
+    desc = f"{job.get('title') or ''}\n{job.get('description') or ''}".casefold()
+    tokens = _skill_tokens(profile)
+    hits = [t for t in tokens if t.casefold() in desc]
+    if not tokens:
+        skills_score = 60.0
+        skills_note = "no profile skills configured — neutral skills score"
+    else:
+        ratio = len(hits) / max(len(tokens), 1)
+        skills_score = round(min(100.0, 35.0 + ratio * 65.0), 1)
+        skills_note = f"matched {len(hits)}/{len(tokens)} profile skill tokens"
+
+    location_score = canada
+    sal_map = {"PASS": 90.0, "FLAG": 60.0, "FAIL": 15.0}
+    salary_score = sal_map.get(hard.salary_verdict, 60.0)
+    freshness, fresh_note = _freshness_score(job, search_cfg)
+
+    components = {
+        "canada_eligibility": canada,
+        "track_match": track_score,
+        "seniority": seniority_score,
+        "skills": skills_score,
+        "location": location_score,
+        "salary": salary_score,
+        "freshness": freshness,
     }
+    # Transparent weights for deterministic overall
+    weights = {
+        "canada_eligibility": 0.22,
+        "track_match": 0.20,
+        "seniority": 0.10,
+        "skills": 0.20,
+        "location": 0.08,
+        "salary": 0.10,
+        "freshness": 0.10,
+    }
+    overall = round(sum(components[k] * weights[k] for k in weights))
+    if hard.verdict == "FLAG":
+        overall = min(overall, 72)
+
+    strengths = []
+    if track.matched and track.matched_alias:
+        strengths.append(f"Track match: {track.matched_alias}")
+    if hard.location_verdict == "PASS" and hard.evidence:
+        strengths.append(f"Canada eligibility evidence: {hard.evidence[0]}")
+    if hits:
+        strengths.append(f"Skill overlap: {', '.join(hits[:5])}")
+
+    gaps = list(hard.reasons[:3])
+    if not track.seniority_ok:
+        gaps.append(sen_note)
+
     return ScoreResult(
-        overall=_weighted_overall(scores),
-        scores=scores,
-        strengths=["Heuristic score — configure ANTHROPIC_API_KEY or OPENAI_API_KEY for LLM scoring"],
-        gaps=hard.reasons[:3],
-        salary_alignment="unknown without LLM",
-        rejection_reasons=hard.reasons if hard.verdict == "FAIL" else [],
-        evidence=hard.evidence,
-        model="heuristic",
+        overall=float(overall),
+        scores=components,
+        strengths=strengths[:5],
+        gaps=gaps[:5],
+        salary_alignment="; ".join(
+            r for r in hard.reasons if "salary" in r.casefold()
+        )
+        or hard.salary_verdict,
+        rejection_reasons=[],
+        evidence=list(hard.evidence)[:8]
+        + [skills_note, sen_note, fresh_note],
+        model="deterministic",
+        score_kind="deterministic",
         hard_filter=hard,
     )
 
@@ -131,7 +254,7 @@ def _call_anthropic(prompt: str, settings: Settings) -> tuple[dict[str, Any], st
     try:
         import anthropic
     except ImportError as exc:
-        raise RuntimeError("anthropic package not installed; pip install 'jobseek[llm-anthropic]'") from exc
+        raise RuntimeError("anthropic package not installed; pip install 'githired[llm-anthropic]'") from exc
     client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
     msg = client.messages.create(
         model=settings.anthropic_model,
@@ -146,7 +269,7 @@ def _call_openai(prompt: str, settings: Settings) -> tuple[dict[str, Any], str]:
     try:
         from openai import OpenAI
     except ImportError as exc:
-        raise RuntimeError("openai package not installed; pip install 'jobseek[llm-openai]'") from exc
+        raise RuntimeError("openai package not installed; pip install 'githired[llm-openai]'") from exc
     kwargs: dict[str, Any] = {"api_key": settings.openai_api_key}
     if settings.openai_base_url:
         kwargs["base_url"] = settings.openai_base_url
@@ -161,48 +284,29 @@ def _call_openai(prompt: str, settings: Settings) -> tuple[dict[str, Any], str]:
     return _parse_llm_json(text), settings.openai_model
 
 
-def score_job(
+def score_llm(
     job: dict[str, Any],
     *,
     search_cfg: dict[str, Any],
     profile: dict[str, Any],
-    settings: Settings | None = None,
+    settings: Settings,
+    hard: HardFilterResult | None = None,
     llm_caller: Callable[[str], tuple[dict[str, Any], str]] | None = None,
-    skip_fail: bool = True,
 ) -> ScoreResult:
-    settings = settings or Settings.from_env()
-    hard = apply_hard_filters(job, search_cfg)
-
-    if hard.verdict == "FAIL" and skip_fail:
-        return ScoreResult(
-            overall=0,
-            scores={"technical": 0, "experience": 0, "behavioral": 0, "career": 0},
-            strengths=[],
-            gaps=hard.reasons,
-            salary_alignment="n/a",
-            rejection_reasons=hard.reasons,
-            evidence=hard.evidence,
-            model="hard_filter",
-            hard_filter=hard,
-        )
-
+    hard = hard or apply_hard_filters(job, search_cfg)
     if llm_caller is not None:
         data, model = llm_caller(_build_prompt(job, profile, hard))
     else:
         provider = settings.llm_provider
         use_anthropic = provider == "anthropic" and settings.anthropic_api_key
         use_openai = provider in ("openai", "openai_compatible") and settings.openai_api_key
-        # Prefer configured provider; fall back across keys
         if not use_anthropic and not use_openai:
             if settings.anthropic_api_key:
                 use_anthropic = True
             elif settings.openai_api_key:
                 use_openai = True
             else:
-                # Allow explicit heuristic mode for CI
-                if os.environ.get("JOBSEEK_ALLOW_HEURISTIC", "1") == "1":
-                    return _heuristic_score(job, hard)
-                raise RuntimeError("No LLM API key configured")
+                raise RuntimeError("No LLM API key configured for stage-2 scoring")
         prompt = _build_prompt(job, profile, hard)
         if use_anthropic:
             data, model = _call_anthropic(prompt, settings)
@@ -230,5 +334,56 @@ def score_job(
         rejection_reasons=list(data.get("rejection_reasons") or []),
         evidence=list(data.get("evidence") or [])[:8],
         model=model,
+        score_kind="llm",
         hard_filter=hard,
     )
+
+
+def score_job(
+    job: dict[str, Any],
+    *,
+    search_cfg: dict[str, Any],
+    profile: dict[str, Any],
+    settings: Settings | None = None,
+    llm_caller: Callable[[str], tuple[dict[str, Any], str]] | None = None,
+    skip_fail: bool = True,
+    use_llm: bool | None = None,
+) -> ScoreResult:
+    """Score a job. Default is deterministic Stage 1; LLM only when requested."""
+    settings = settings or Settings.from_env()
+    hard = apply_hard_filters(job, search_cfg)
+
+    if hard.verdict == "FAIL" and skip_fail:
+        return ScoreResult(
+            overall=0,
+            scores={"technical": 0, "experience": 0, "behavioral": 0, "career": 0},
+            strengths=[],
+            gaps=hard.reasons,
+            salary_alignment="n/a",
+            rejection_reasons=hard.reasons,
+            evidence=hard.evidence,
+            model="hard_filter",
+            score_kind="hard_filter",
+            hard_filter=hard,
+        )
+
+    want_llm = use_llm if use_llm is not None else bool(settings.rank_llm)
+    if want_llm or llm_caller is not None:
+        try:
+            return score_llm(
+                job,
+                search_cfg=search_cfg,
+                profile=profile,
+                settings=settings,
+                hard=hard,
+                llm_caller=llm_caller,
+            )
+        except RuntimeError:
+            if os.environ.get("JOBSEEK_ALLOW_HEURISTIC", "1") == "1" and llm_caller is None:
+                # Fall back to deterministic rather than inventing AI scores
+                return score_deterministic(
+                    job, search_cfg=search_cfg, profile=profile, hard=hard
+                )
+            raise
+
+    return score_deterministic(job, search_cfg=search_cfg, profile=profile, hard=hard)

@@ -1,4 +1,4 @@
-"""jobseek CLI: discover, rank, digest, email-digest, run-daily, prepare, import-*.
+"""githired / jobseek CLI.
 
 Resume drafting and application submission stay behind explicit user approval.
 `prepare` only prints a briefing; it never drafts or submits.
@@ -8,22 +8,40 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from jobseek.adapters.linkedin_compliant import import_alert_file
-from jobseek.config_loader import Settings, load_dotenv, load_profile, load_search
+from jobseek.config_loader import Settings, load_dotenv, load_profile, load_search, load_companies
 from jobseek.db.store import Database
 from jobseek.digest.build import build_digest, render_digest_markdown
 from jobseek.discover import run_discover
 from jobseek.email.send import send_digest_email
+from jobseek.filters.tracks import DEFAULT_TRACK_ALIASES
 from jobseek.logging_util import setup_logging
-from jobseek.paths import seen_jobs_path, tracker_path
+from jobseek.paths import ROOT, config_dir, db_path, packaged_defaults_dir, seen_jobs_path, tracker_path
 from jobseek.rank.scorer import score_job
+
+
+def _prog_name() -> str:
+    base = Path(sys.argv[0]).name if sys.argv else "githired"
+    if "jobseek" in base:
+        return "jobseek"
+    return "githired"
 
 
 def _db(settings: Settings) -> Database:
     return Database(settings.db_path)
+
+
+def _print_json(data: object) -> None:
+    print(json.dumps(data, indent=2, ensure_ascii=False, default=str))
+
+
+def _err(msg: str) -> None:
+    print(msg, file=sys.stderr)
 
 
 def cmd_discover(args: argparse.Namespace) -> int:
@@ -32,11 +50,14 @@ def cmd_discover(args: argparse.Namespace) -> int:
     setup_logging(settings.log_level)
     db = _db(settings)
     try:
-        if args.import_tracker:
+        if args.import_tracker or True:
+            # Always refresh applications from tracker when present
             n = db.import_tracker_csv(tracker_path())
-            print(json.dumps({"imported_tracker_rows": n}))
+            if args.import_tracker:
+                print(json.dumps({"imported_tracker_rows": n}))
         summary = run_discover(db, settings=settings, detect_unknown=not args.no_detect)
-        print(json.dumps(summary, indent=2, ensure_ascii=False))
+        _print_json(summary)
+        # LinkedIn warnings alone must not fail the run
         return 0 if not summary.get("errors") else 1
     finally:
         db.close()
@@ -49,15 +70,25 @@ def cmd_rank(args: argparse.Namespace) -> int:
     db = _db(settings)
     search = load_search()
     profile = load_profile()
+    use_llm = bool(args.llm) or settings.rank_llm
+    score_kind = "llm" if use_llm else "deterministic"
     try:
         db.import_tracker_csv(tracker_path())
-        jobs = db.jobs_needing_score(limit=args.limit, re_rank=args.re_rank)
+        jobs = db.jobs_needing_score(
+            limit=args.limit, re_rank=args.re_rank, score_kind=score_kind
+        )
         results = []
         for job in jobs:
             if db.should_skip_recommendation(job["company"], job["title"]):
                 results.append({"id": job["id"], "skipped": "tracked_application"})
                 continue
-            scored = score_job(job, search_cfg=search, profile=profile, settings=settings)
+            scored = score_job(
+                job,
+                search_cfg=search,
+                profile=profile,
+                settings=settings,
+                use_llm=use_llm,
+            )
             db.save_score(
                 job["id"],
                 overall=scored.overall,
@@ -70,6 +101,7 @@ def cmd_rank(args: argparse.Namespace) -> int:
                 evidence=scored.evidence,
                 model=scored.model,
                 description_hash=job.get("description_hash") or "",
+                score_kind=scored.score_kind,
             )
             results.append(
                 {
@@ -77,11 +109,12 @@ def cmd_rank(args: argparse.Namespace) -> int:
                     "company": job["company"],
                     "title": job["title"],
                     "overall": scored.overall,
+                    "score_kind": scored.score_kind,
                     "verdict": scored.hard_filter.verdict if scored.hard_filter else None,
                     "model": scored.model,
                 }
             )
-        print(json.dumps({"scored": len(results), "results": results}, indent=2, ensure_ascii=False))
+        _print_json({"scored": len(results), "score_kind": score_kind, "results": results})
         return 0
     finally:
         db.close()
@@ -95,7 +128,7 @@ def cmd_digest(args: argparse.Namespace) -> int:
         digest = build_digest(db, since=args.since)
         text = render_digest_markdown(digest)
         if args.json:
-            print(json.dumps(digest, indent=2, ensure_ascii=False, default=str))
+            _print_json(digest)
         else:
             print(text)
         if args.save:
@@ -116,7 +149,7 @@ def cmd_email_digest(args: argparse.Namespace) -> int:
         result = send_digest_email(text, settings=settings)
         ids = [int(j["id"]) for j in digest.get("jobs") or []]
         db.save_digest(ids, emailed=True)
-        print(json.dumps({"digest_count": digest["count"], "email": result}, indent=2))
+        _print_json({"digest_count": digest["count"], "email": result})
         return 0
     finally:
         db.close()
@@ -128,20 +161,21 @@ def cmd_run_daily(args: argparse.Namespace) -> int:
     setup_logging(settings.log_level)
     db = _db(settings)
     report: dict = {}
+    use_llm = bool(getattr(args, "llm", False)) or settings.rank_llm
     try:
         db.import_tracker_csv(tracker_path())
         report["discover"] = run_discover(db, settings=settings)
-        # Rank
-        ns = argparse.Namespace(limit=args.limit, re_rank=False)
-        # inline rank
         search = load_search()
         profile = load_profile()
-        jobs = db.jobs_needing_score(limit=args.limit, re_rank=False)
+        score_kind = "llm" if use_llm else "deterministic"
+        jobs = db.jobs_needing_score(limit=args.limit, re_rank=False, score_kind=score_kind)
         ranked = 0
         for job in jobs:
             if db.should_skip_recommendation(job["company"], job["title"]):
                 continue
-            scored = score_job(job, search_cfg=search, profile=profile, settings=settings)
+            scored = score_job(
+                job, search_cfg=search, profile=profile, settings=settings, use_llm=use_llm
+            )
             db.save_score(
                 job["id"],
                 overall=scored.overall,
@@ -154,9 +188,11 @@ def cmd_run_daily(args: argparse.Namespace) -> int:
                 evidence=scored.evidence,
                 model=scored.model,
                 description_hash=job.get("description_hash") or "",
+                score_kind=scored.score_kind,
             )
             ranked += 1
         report["ranked"] = ranked
+        report["score_kind"] = score_kind
         digest = build_digest(db)
         report["digest_count"] = digest["count"]
         text = render_digest_markdown(digest)
@@ -167,11 +203,10 @@ def cmd_run_daily(args: argparse.Namespace) -> int:
                 emailed = True
             except Exception as exc:  # noqa: BLE001
                 report["email_error"] = str(exc)
-                # Failure alert path: try to email the error if possible
                 try:
                     send_digest_email(
-                        f"jobseek run-daily failure alert:\n{exc}\n\nReport:\n{json.dumps(report, default=str)}",
-                        subject="jobseek failure alert",
+                        f"{_prog_name()} run-daily failure alert:\n{exc}\n\nReport:\n{json.dumps(report, default=str)}",
+                        subject=f"{_prog_name()} failure alert",
                         settings=settings,
                     )
                 except Exception:
@@ -180,23 +215,22 @@ def cmd_run_daily(args: argparse.Namespace) -> int:
         db.save_digest(ids, emailed=emailed)
         if not args.quiet:
             print(text)
-        print(json.dumps(report, indent=2, ensure_ascii=False, default=str))
+        _print_json(report)
         return 0 if not report.get("discover", {}).get("errors") else 1
     finally:
         db.close()
 
 
 def cmd_prepare(args: argparse.Namespace) -> int:
-    """Print briefing only. Never drafts resume/cover letter or submits."""
     load_dotenv()
     settings = Settings.from_env()
     db = _db(settings)
     try:
         job = db.get_job(args.job_id)
         if not job:
-            print(f"job {args.job_id} not found", file=sys.stderr)
+            _err(f"job {args.job_id} not found")
             return 1
-        print(f"# Prepare (approval required before /apply)\n")
+        print("# Prepare (approval required before /apply)\n")
         print(f"- Company: {job['company']}")
         print(f"- Title: {job['title']}")
         print(f"- URL: {job['url']}")
@@ -204,7 +238,7 @@ def cmd_prepare(args: argparse.Namespace) -> int:
         print(f"- Source: {job.get('source')}")
         print()
         print("Next steps (manual approval):")
-        print(f"  1. Review the posting at the URL above")
+        print("  1. Review the posting at the URL above")
         print(f"  2. In Cursor/Claude run: /apply {job['url']}")
         print("  3. Confirm drafting when asked; submit the application yourself")
         if args.approve:
@@ -232,11 +266,14 @@ def cmd_import_alerts(args: argparse.Namespace) -> int:
                 new += 1
             else:
                 updated += 1
-        print(
-            json.dumps(
-                {"path": str(path), "parsed": len(result.jobs), "new": new, "updated": updated, "errors": result.errors},
-                indent=2,
-            )
+        _print_json(
+            {
+                "path": str(path),
+                "parsed": len(result.jobs),
+                "new": new,
+                "updated": updated,
+                "errors": result.errors,
+            }
         )
         return 0 if not result.errors else 1
     finally:
@@ -250,31 +287,388 @@ def cmd_import_seen(args: argparse.Namespace) -> int:
     try:
         path = Path(args.path) if args.path else seen_jobs_path()
         n = db.import_seen_jobs_json(path)
-        print(json.dumps({"imported": n, "path": str(path)}))
+        _print_json({"imported": n, "path": str(path)})
         return 0
     finally:
         db.close()
 
 
-def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="jobseek", description="Canada-remote job discovery & ranking")
+def cmd_migrate(args: argparse.Namespace) -> int:
+    """Import legacy seen_jobs.json + tracker CSV into SQLite."""
+    load_dotenv()
+    settings = Settings.from_env()
+    db = _db(settings)
+    try:
+        seen = Path(args.seen) if args.seen else seen_jobs_path()
+        tracker = Path(args.tracker) if args.tracker else tracker_path()
+        n_seen = db.import_seen_jobs_json(seen)
+        n_tracker = db.import_tracker_csv(tracker)
+        n_companies = db.seed_companies_from_yaml(load_companies())
+        _print_json(
+            {
+                "imported_seen_jobs": n_seen,
+                "imported_tracker_rows": n_tracker,
+                "seeded_companies": n_companies,
+                "db": str(settings.db_path),
+            }
+        )
+        return 0
+    finally:
+        db.close()
+
+
+def cmd_sync_application(args: argparse.Namespace) -> int:
+    load_dotenv()
+    settings = Settings.from_env()
+    db = _db(settings)
+    try:
+        db.sync_application(args.company, args.role, args.status, args.notes or "")
+        # Optionally append to tracker CSV for legacy agent compatibility
+        if args.write_tracker:
+            path = tracker_path()
+            header = "date,company,role,status,cv_file,cover_letter_file,source,notes\n"
+            if not path.is_file():
+                path.write_text(header, encoding="utf-8")
+            from datetime import date
+
+            notes = (args.notes or "").replace(",", " ").replace("\n", " ")
+            with path.open("a", encoding="utf-8") as fh:
+                fh.write(
+                    f"{date.today().isoformat()},{args.company},{args.role},{args.status},,,,cli,{notes}\n"
+                )
+        _print_json(
+            {"company": args.company, "role": args.role, "status": args.status, "ok": True}
+        )
+        return 0
+    finally:
+        db.close()
+
+
+def cmd_jobs(args: argparse.Namespace) -> int:
+    load_dotenv()
+    settings = Settings.from_env()
+    db = _db(settings)
+    try:
+        rows = db.list_jobs(
+            min_score=args.min_score,
+            status=args.status,
+            limit=args.limit,
+            score_kind=args.score_kind,
+        )
+        if args.json:
+            _print_json({"count": len(rows), "jobs": rows})
+            return 0
+        if not rows:
+            print("No jobs matched.")
+            return 0
+        for row in rows:
+            score = row.get("overall")
+            score_s = f"{score:.0f}" if score is not None else "-"
+            print(
+                f"[{row['id']}] {score_s:>3}  {row['company']} — {row['title']}\n"
+                f"       {row.get('location_raw') or '?'} | {row.get('url')}"
+            )
+        return 0
+    finally:
+        db.close()
+
+
+def cmd_sources(args: argparse.Namespace) -> int:
+    load_dotenv()
+    settings = Settings.from_env()
+    search = load_search()
+    sources = search.get("sources") or {}
+    db = _db(settings)
+    try:
+        companies = db.list_companies()
+        if not companies:
+            db.seed_companies_from_yaml(load_companies())
+            companies = db.list_companies()
+        payload = {
+            "sources_config": sources,
+            "serpapi_configured": bool(settings.serpapi_key),
+            "linkedin_mode": "serpapi" if settings.serpapi_key else "free_or_alerts",
+            "companies": [
+                {
+                    "name": c["name"],
+                    "ats": c.get("ats"),
+                    "board_token": c.get("board_token"),
+                    "validation_status": c.get("validation_status"),
+                    "last_success_at": c.get("last_success_at"),
+                    "enabled": bool(c.get("enabled")),
+                    "last_error": c.get("last_error"),
+                }
+                for c in companies
+            ],
+        }
+        if args.json:
+            _print_json(payload)
+            return 0
+        print("Discovery sources")
+        for k, v in sources.items():
+            print(f"  {k}: {'on' if v else 'off'}")
+        print(f"  serpapi: {'configured' if settings.serpapi_key else 'not set (free/alerts)'}")
+        print(f"\nCompanies ({len(companies)})")
+        for c in companies:
+            flag = "✓" if c.get("validation_status") == "ok" else c.get("validation_status")
+            en = "on" if c.get("enabled") else "off"
+            print(
+                f"  [{en}] {c['name']}: {c.get('ats')}/{c.get('board_token')} "
+                f"status={flag} last_ok={c.get('last_success_at') or '-'}"
+            )
+        return 0
+    finally:
+        db.close()
+
+
+def cmd_doctor(args: argparse.Namespace) -> int:
+    load_dotenv()
+    settings = Settings.from_env()
+    issues: list[str] = []
+    info: dict[str, Any] = {
+        "python": sys.version.split()[0],
+        "prog": _prog_name(),
+        "cwd": str(Path.cwd()),
+        "repo_root": str(ROOT),
+        "config_dir": str(config_dir()),
+        "packaged_defaults": str(packaged_defaults_dir()),
+        "db_path": str(settings.db_path),
+        "db_exists": settings.db_path.is_file(),
+        "tracker_exists": tracker_path().is_file(),
+        "seen_jobs_exists": seen_jobs_path().is_file(),
+        "keys": {
+            "ANTHROPIC_API_KEY": bool(settings.anthropic_api_key),
+            "OPENAI_API_KEY": bool(settings.openai_api_key),
+            "SERPAPI_KEY": bool(settings.serpapi_key),
+        },
+        "llm_required_for_rank": False,
+    }
+    try:
+        search = load_search()
+        info["tracks"] = search.get("tracks")
+        info["sources"] = search.get("sources")
+    except FileNotFoundError as exc:
+        issues.append(str(exc))
+    try:
+        load_companies()
+    except FileNotFoundError as exc:
+        issues.append(str(exc))
+    if sys.version_info < (3, 10):
+        issues.append(f"Python >=3.10 required (found {sys.version.split()[0]})")
+    db = _db(settings)
+    try:
+        companies = db.list_companies()
+        info["companies_in_db"] = len(companies)
+        info["jobs_in_db"] = db._conn.execute(
+            "SELECT COUNT(*) AS n FROM jobs WHERE removed_at IS NULL"
+        ).fetchone()["n"]
+    finally:
+        db.close()
+    info["issues"] = issues
+    info["ok"] = len(issues) == 0
+    if args.json:
+        _print_json(info)
+    else:
+        print(f"{_prog_name()} doctor")
+        print(f"  Python: {info['python']}")
+        print(f"  Config: {info['config_dir']}")
+        print(f"  DB: {info['db_path']} ({'exists' if info['db_exists'] else 'missing — will create on first run'})")
+        print(f"  Tracks: {', '.join(info.get('tracks') or []) or '(defaults)'}")
+        print("  API keys present (values hidden):")
+        for k, v in info["keys"].items():
+            print(f"    {k}: {'yes' if v else 'no'}")
+        print(f"  Rank LLM required: no (deterministic by default)")
+        if issues:
+            print("  Issues:")
+            for issue in issues:
+                print(f"    - {issue}")
+        else:
+            print("  Status: OK")
+    return 1 if issues else 0
+
+
+def cmd_setup(args: argparse.Namespace) -> int:
+    """Interactive initial configuration for Canadian engineering search."""
+    load_dotenv()
+    cfg_target = Path(args.config_dir) if args.config_dir else (Path.cwd() / "config")
+    cfg_target.mkdir(parents=True, exist_ok=True)
+
+    defaults = packaged_defaults_dir()
+    for name in ("search.yaml", "companies.yaml", "profile.yaml"):
+        dest = cfg_target / name
+        if dest.exists() and not args.force:
+            continue
+        src = None
+        if defaults is not None and (defaults / name).is_file():
+            src = defaults / name
+        elif (ROOT / "config" / name).is_file():
+            src = ROOT / "config" / name
+        if src is not None:
+            dest.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+
+    tracks = list(DEFAULT_TRACK_ALIASES.keys())
+    selected: list[str] = []
+    chosen_modes: list[str] = ["remote_canada"]
+    if args.non_interactive:
+        selected = list(args.tracks) if args.tracks else [
+            "software_engineering",
+            "ai_engineering",
+            "data_engineering",
+            "forward_deployed",
+        ]
+        chosen_modes = list(args.modes) if args.modes else ["remote_canada"]
+    else:
+        print("GitHired setup — Canadian engineering job discovery\n")
+        print("Select engineering tracks (comma-separated numbers, Enter for defaults):")
+        for i, t in enumerate(tracks, 1):
+            print(f"  {i}. {t}")
+        raw = input("> ").strip()
+        if not raw:
+            selected = [
+                "software_engineering",
+                "ai_engineering",
+                "data_engineering",
+                "forward_deployed",
+            ]
+        else:
+            for part in raw.split(","):
+                part = part.strip()
+                if part.isdigit() and 1 <= int(part) <= len(tracks):
+                    selected.append(tracks[int(part) - 1])
+            if not selected:
+                selected = tracks[:]
+
+        print("\nLocation modes (comma-separated, Enter for remote_canada):")
+        modes = ["remote_canada", "remote_province", "hybrid", "onsite"]
+        for i, m in enumerate(modes, 1):
+            print(f"  {i}. {m}")
+        raw_m = input("> ").strip()
+        if raw_m:
+            chosen_modes = []
+            for part in raw_m.split(","):
+                part = part.strip()
+                if part.isdigit() and 1 <= int(part) <= len(modes):
+                    chosen_modes.append(modes[int(part) - 1])
+            if not chosen_modes:
+                chosen_modes = ["remote_canada"]
+
+    # Patch search.yaml tracks/modes
+    import yaml
+
+    search_path = cfg_target / "search.yaml"
+    data = yaml.safe_load(search_path.read_text(encoding="utf-8")) or {}
+    data["tracks"] = selected
+    loc = data.get("location") or {}
+    loc["modes"] = chosen_modes
+    data["location"] = loc
+    search_path.write_text(
+        yaml.safe_dump(data, sort_keys=False, allow_unicode=True),
+        encoding="utf-8",
+    )
+
+    env_path = Path.cwd() / ".env"
+    if not env_path.exists():
+        example = ROOT / ".env.example"
+        if example.is_file():
+            env_path.write_text(example.read_text(encoding="utf-8"), encoding="utf-8")
+        else:
+            env_path.write_text(
+                "# Optional — discovery and deterministic ranking work without keys\n"
+                "# ANTHROPIC_API_KEY=\n"
+                "# OPENAI_API_KEY=\n"
+                "# SERPAPI_KEY=\n"
+                "# GITHIRED_RANK_LLM=0\n",
+                encoding="utf-8",
+            )
+
+    os.environ.setdefault("JOBSEEK_CONFIG_DIR", str(cfg_target.resolve()))
+    settings = Settings.from_env()
+    # Prefer local data dir
+    if not os.environ.get("JOBSEEK_DB_PATH"):
+        local_db = Path.cwd() / "data" / "jobseek.db"
+        local_db.parent.mkdir(parents=True, exist_ok=True)
+        settings.db_path = local_db
+
+    db = Database(settings.db_path)
+    try:
+        n_companies = db.seed_companies_from_yaml(load_companies())
+        n_seen = db.import_seen_jobs_json(seen_jobs_path())
+        n_tracker = db.import_tracker_csv(tracker_path())
+    finally:
+        db.close()
+
+    result = {
+        "config_dir": str(cfg_target.resolve()),
+        "tracks": selected,
+        "location_modes": chosen_modes,
+        "db": str(settings.db_path),
+        "seeded_companies": n_companies,
+        "imported_seen_jobs": n_seen,
+        "imported_tracker_rows": n_tracker,
+        "env": str(env_path),
+        "next": [
+            f"{_prog_name()} discover",
+            f"{_prog_name()} rank",
+            f"{_prog_name()} jobs",
+            f"{_prog_name()} doctor",
+        ],
+    }
+    _print_json(result)
+    return 0
+
+
+def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
+    prog = prog or _prog_name()
+    p = argparse.ArgumentParser(
+        prog=prog,
+        description="Canada-remote engineering job discovery & ranking (local-first)",
+    )
     sub = p.add_subparsers(dest="command", required=True)
+
+    s = sub.add_parser("setup", help="Interactive initial configuration")
+    s.add_argument("--config-dir", default=None)
+    s.add_argument("--force", action="store_true", help="Overwrite existing config files")
+    s.add_argument("--non-interactive", action="store_true")
+    s.add_argument("--tracks", nargs="*", default=None)
+    s.add_argument("--modes", nargs="*", default=None)
+    s.set_defaults(func=cmd_setup)
 
     d = sub.add_parser("discover", help="Run ATS + compliant LinkedIn discovery")
     d.add_argument("--no-detect", action="store_true", help="Skip ATS auto-detect")
-    d.add_argument("--import-tracker", action="store_true", help="Import job_search_tracker.csv first")
+    d.add_argument("--import-tracker", action="store_true", help="Print tracker import count")
     d.set_defaults(func=cmd_discover)
 
-    r = sub.add_parser("rank", help="Hard-filter then LLM-score unscored jobs")
+    r = sub.add_parser("rank", help="Deterministic score (optional --llm)")
     r.add_argument("--limit", type=int, default=25)
     r.add_argument("--re-rank", action="store_true")
+    r.add_argument(
+        "--llm",
+        action="store_true",
+        help="Enable optional LLM stage-2 scoring (requires API key)",
+    )
     r.set_defaults(func=cmd_rank)
+
+    j = sub.add_parser("jobs", help="List scored shortlist from SQLite")
+    j.add_argument("--min-score", type=float, default=None)
+    j.add_argument("--status", default=None)
+    j.add_argument("--limit", type=int, default=25)
+    j.add_argument("--score-kind", default="deterministic", choices=["deterministic", "llm", "hard_filter"])
+    j.add_argument("--json", action="store_true")
+    j.set_defaults(func=cmd_jobs)
 
     g = sub.add_parser("digest", help="Print top-N digest")
     g.add_argument("--since", default=None)
     g.add_argument("--json", action="store_true")
     g.add_argument("--save", action="store_true")
     g.set_defaults(func=cmd_digest)
+
+    src = sub.add_parser("sources", help="Company registry + source enablement")
+    src.add_argument("--json", action="store_true")
+    src.set_defaults(func=cmd_sources)
+
+    doc = sub.add_parser("doctor", help="Environment and source-health diagnostics")
+    doc.add_argument("--json", action="store_true")
+    doc.set_defaults(func=cmd_doctor)
 
     e = sub.add_parser("email-digest", help="Email the digest via SMTP or Resend")
     e.add_argument("--since", default=None)
@@ -284,6 +678,7 @@ def build_parser() -> argparse.ArgumentParser:
     daily.add_argument("--limit", type=int, default=40)
     daily.add_argument("--email", action="store_true")
     daily.add_argument("--quiet", action="store_true")
+    daily.add_argument("--llm", action="store_true")
     daily.set_defaults(func=cmd_run_daily)
 
     prep = sub.add_parser("prepare", help="Briefing only; no auto draft/submit")
@@ -303,13 +698,37 @@ def build_parser() -> argparse.ArgumentParser:
     isp.add_argument("--path", default=None)
     isp.set_defaults(func=cmd_import_seen)
 
+    mig = sub.add_parser("migrate", help="Import legacy seen_jobs + tracker into SQLite")
+    mig.add_argument("--seen", default=None)
+    mig.add_argument("--tracker", default=None)
+    mig.set_defaults(func=cmd_migrate)
+
+    sa = sub.add_parser("sync-application", help="Record an application into SQLite")
+    sa.add_argument("--company", required=True)
+    sa.add_argument("--role", required=True)
+    sa.add_argument("--status", default="applied")
+    sa.add_argument("--notes", default="")
+    sa.add_argument("--write-tracker", action="store_true")
+    sa.set_defaults(func=cmd_sync_application)
+
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
     parser = build_parser()
-    args = parser.parse_args(argv)
-    return int(args.func(args))
+    try:
+        args = parser.parse_args(argv)
+    except SystemExit as exc:
+        return int(exc.code or 0)
+    try:
+        return int(args.func(args))
+    except FileNotFoundError as exc:
+        _err(f"error: {exc}")
+        return 1
+    except Exception as exc:  # noqa: BLE001
+        _err(f"error: {exc}")
+        return 1
 
 
 if __name__ == "__main__":

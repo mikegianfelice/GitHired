@@ -17,7 +17,7 @@ To prevent duplication and configuration drift across different AI agent framewo
    - Do not duplicate these rules or specifications. Treat `.claude/` files as the single source of truth.
 3. **Portal Search Skills:**
    - Job-portal search CLIs live under [.agents/skills/](.agents/skills/) in the portable Agent Skills format (with a `SKILL.md` per portal). Codex and Antigravity discover these automatically; the `/scrape` workflow in [.claude/skills/job-scraper/](.claude/skills/job-scraper/) orchestrates them.
-4. **Headless discovery (`jobseek`):**
-   - Canada-remote ATS discovery, hard filters, LLM ranking, and digests live in the [`jobseek/`](jobseek/) package (`jobseek discover|rank|digest|run-daily|prepare`). Config under [`config/`](config/). Docs: [`docs/discovery.md`](docs/discovery.md).
+4. **Headless discovery (`githired` / `jobseek`):**
+   - Canada-remote ATS discovery, hard filters, deterministic (+ optional LLM) ranking, and digests live in the [`jobseek/`](jobseek/) package (`githired setup|discover|rank|jobs|digest|sources|doctor`). Config under [`config/`](config/). Docs: [`docs/discovery.md`](docs/discovery.md). SQLite is the authoritative store.
 5. **Cursor:**
-   - Thin pointers only in [`.cursor/rules/`](.cursor/rules/) and [`.cursor/skills/`](.cursor/skills/) — they Read `.claude/` specs and invoke `jobseek`; do not duplicate command bodies.
+   - Thin pointers only in [`.cursor/rules/`](.cursor/rules/) and [`.cursor/skills/`](.cursor/skills/) — they Read `.claude/` specs and invoke `githired`; do not duplicate command bodies.

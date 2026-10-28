@@ -1,0 +1,36 @@
+# Structured candidate profile for hard filters + LLM ranking rubric.
+# Fill in with your details. Keep CLAUDE.md / 01-candidate-profile.md as the
+# narrative source of truth for /apply drafting; this file drives jobseek CLI.
+
+identity:
+  name: "[YOUR_NAME]"
+  location: "Canada"
+  work_authorization: Canada  # Canada | other
+  languages:
+    - name: English
+      level: native  # or CEFR / LinkedIn-style level
+
+skills:
+  primary: []
+  secondary: []
+  domain: []
+
+experience:
+  summary: ""
+  strong_domains: []
+  adjacent_domains: []
+
+behavioral:
+  thrives_in: []
+  drains: []
+  strengths: []
+
+career_goals: []
+
+deal_breakers:
+  - US-only remote without Canadian eligibility evidence
+  - Roles requiring relocation outside Canada without remote option
+
+salary_expectations:
+  currency: CAD
+  minimum: 120000
