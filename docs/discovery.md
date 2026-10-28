@@ -51,7 +51,19 @@ Missing SerpAPI is a **warning**, not a discover failure. `githired sources` sho
 
 ## Canada eligibility
 
-Hard filters never invent Canadian hiring eligibility. Supported modes: `remote_canada`, `remote_province`, `hybrid`, `onsite`. Ambiguous geography is `unknown` / FLAG. US-only remote is rejected when configured.
+Three-state classification (never invent eligibility from employer brand alone):
+
+| State | Meaning | Effect |
+|-------|---------|--------|
+| **ELIGIBLE** | Explicit Canada / province / city, or genuine worldwide remote | Priority in ranking |
+| **UNCERTAIN** | Ambiguous remote / US-primary without Canada evidence | Visible; ranking penalty + warning |
+| **INELIGIBLE** | US-only, foreign work-auth, or on-site outside Canada | Hard-filter FAIL |
+
+Supported modes: `remote_canada`, `remote_province`, `hybrid`, `onsite`.
+
+## Seniority
+
+Default config includes mid+ (`mid`, `senior`, `staff`, `principal`, `lead`) and excludes intern / co-op / student / new-grad / junior. Titles with no seniority keywords are **unknown** and are not rejected solely for that.
 
 ## Scoring honesty
 

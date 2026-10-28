@@ -37,6 +37,7 @@ class HardFilterResult:
     title_match: bool = False
     location_verdict: str = "FLAG"
     salary_verdict: str = "PASS"
+    eligibility: str = "UNCERTAIN"  # ELIGIBLE | UNCERTAIN | INELIGIBLE
     evidence: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:

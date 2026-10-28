@@ -1,14 +1,15 @@
 # Configurable company registry for ATS board discovery.
-# ats: greenhouse | lever | ashby | workday | unknown
+# ats: greenhouse | lever | ashby | workable | rippling | gem | unknown
 # board_token / site_slug: provider-specific public board identifier
+# validation_note: set after live HTTP validation (do not invent tokens)
 
 companies:
   - name: Anthropic
     careers_url: https://www.anthropic.com/careers
-    ats: ashby
+    ats: greenhouse
     board_token: anthropic
     enabled: true
-    notes: Check Canada remote eligibility per posting
+    notes: "Validated 2026-10-28: boards-api.greenhouse.io/v1/boards/anthropic → HTTP 200"
 
   - name: OpenAI
     careers_url: https://openai.com/careers
@@ -26,10 +27,10 @@ companies:
 
   - name: Shopify
     careers_url: https://www.shopify.com/careers
-    ats: greenhouse
-    board_token: shopify
-    enabled: true
-    notes: Canada HQ; remote-friendly
+    ats: unknown
+    board_token: null
+    enabled: false
+    notes: "Unresolved 2026-10-28: Greenhouse shopify → 404; careers feed.xml exists but no GH/Lever/Ashby adapter board verified"
 
   - name: Stripe
     careers_url: https://stripe.com/jobs
@@ -64,15 +65,17 @@ companies:
 
   - name: Scale AI
     careers_url: https://scale.com/careers
-    ats: ashby
+    ats: greenhouse
     board_token: scaleai
     enabled: true
+    notes: "Validated 2026-10-28: boards-api.greenhouse.io/v1/boards/scaleai → HTTP 200"
 
   - name: Hugging Face
-    careers_url: https://huggingface.co/jobs
-    ats: greenhouse
+    careers_url: https://apply.workable.com/huggingface/
+    ats: workable
     board_token: huggingface
-    enabled: true
+    enabled: false
+    notes: "Unresolved for fetch: Workable widget API OK (huggingface) but no jobseek Workable adapter yet"
 
   - name: GitLab
     careers_url: https://about.gitlab.com/jobs
@@ -94,16 +97,18 @@ companies:
     enabled: true
 
   - name: Rippling
-    careers_url: https://www.rippling.com/careers
-    ats: ashby
+    careers_url: https://www.rippling.com/careers/open-roles
+    ats: rippling
     board_token: rippling
-    enabled: true
+    enabled: false
+    notes: "Unresolved for fetch: ats.rippling.com/api/v2/board/rippling/jobs → HTTP 200; no Rippling adapter yet"
 
   - name: Retool
     careers_url: https://retool.com/careers
-    ats: greenhouse
+    ats: gem
     board_token: retool
-    enabled: true
+    enabled: false
+    notes: "Unresolved 2026-10-28: Greenhouse/Ashby/Lever 404; careers appear on jobs.gem.com/retool (no public Gem adapter)"
 
   - name: Airtable
     careers_url: https://airtable.com/careers

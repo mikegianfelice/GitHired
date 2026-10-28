@@ -10,8 +10,9 @@ from typing import Any, Callable
 
 from jobseek.config_loader import Settings
 from jobseek.filters.hard import apply_hard_filters
-from jobseek.filters.tracks import detect_seniority, match_track
+from jobseek.filters.tracks import DEFAULT_SENIORITY_INCLUDE, detect_seniority, match_track
 from jobseek.models import HardFilterResult, ScoreResult
+from jobseek.profile_util import is_profile_complete_for_skills, profile_warnings
 from jobseek.rank.weights import WEIGHTS
 
 _JSON_BLOCK = re.compile(r"\{[\s\S]*\}")
@@ -154,39 +155,44 @@ def score_deterministic(
                 "freshness": 0,
             },
             strengths=[],
-            gaps=hard.reasons,
+            # Hard-filter reasons are rejections — never candidate skill gaps
+            gaps=[],
             salary_alignment="n/a",
             rejection_reasons=hard.reasons,
             evidence=hard.evidence,
             model="deterministic",
-            score_kind="deterministic",
+            score_kind="hard_filter" if hard.verdict == "FAIL" else "deterministic",
             hard_filter=hard,
         )
 
     track = match_track(job.get("title") or "", search_cfg)
-    canada = {"PASS": 100.0, "FLAG": 55.0, "FAIL": 0.0}.get(hard.location_verdict, 40.0)
+    elig = hard.eligibility or "UNCERTAIN"
+    canada = {"ELIGIBLE": 100.0, "UNCERTAIN": 45.0, "INELIGIBLE": 0.0}.get(elig, 45.0)
     track_score = 95.0 if track.matched else 20.0
     seniority = detect_seniority(job.get("title") or "")
-    preferred = [str(s).casefold() for s in (search_cfg.get("seniority") or [])]
-    if not preferred:
-        seniority_score = 80.0
-        sen_note = "no seniority preference configured"
-    elif seniority and seniority.casefold() in preferred:
+    sen_cfg = search_cfg.get("seniority")
+    if isinstance(sen_cfg, dict):
+        preferred = [str(s).casefold() for s in (sen_cfg.get("include") or DEFAULT_SENIORITY_INCLUDE)]
+    elif isinstance(sen_cfg, list):
+        preferred = [str(s).casefold() for s in sen_cfg] or list(DEFAULT_SENIORITY_INCLUDE)
+    else:
+        preferred = list(DEFAULT_SENIORITY_INCLUDE)
+    if seniority and seniority.casefold() in preferred:
         seniority_score = 95.0
         sen_note = f"seniority {seniority} preferred"
     elif seniority is None:
-        seniority_score = 70.0
-        sen_note = "seniority not stated in title"
+        seniority_score = 75.0
+        sen_note = "seniority unknown — not penalized harshly"
     else:
-        seniority_score = 45.0
+        seniority_score = 50.0
         sen_note = f"seniority {seniority} outside preferred {preferred}"
 
     desc = f"{job.get('title') or ''}\n{job.get('description') or ''}".casefold()
     tokens = _skill_tokens(profile)
     hits = [t for t in tokens if t.casefold() in desc]
-    if not tokens:
+    if not is_profile_complete_for_skills(profile):
         skills_score = 60.0
-        skills_note = "no profile skills configured — neutral skills score"
+        skills_note = "incomplete profile — skill score neutral (title/location still ranked)"
     else:
         ratio = len(hits) / max(len(tokens), 1)
         skills_score = round(min(100.0, 35.0 + ratio * 65.0), 1)
@@ -206,31 +212,43 @@ def score_deterministic(
         "salary": salary_score,
         "freshness": freshness,
     }
-    # Transparent weights for deterministic overall
     weights = {
-        "canada_eligibility": 0.22,
+        "canada_eligibility": 0.25,
         "track_match": 0.20,
         "seniority": 0.10,
-        "skills": 0.20,
-        "location": 0.08,
+        "skills": 0.18,
+        "location": 0.07,
         "salary": 0.10,
         "freshness": 0.10,
     }
     overall = round(sum(components[k] * weights[k] for k in weights))
-    if hard.verdict == "FLAG":
-        overall = min(overall, 72)
+    # UNCERTAIN eligibility: explicit ranking penalty + warning (still visible)
+    if elig == "UNCERTAIN":
+        overall = min(overall, 68)
+        overall = max(0, overall - 12)
 
     strengths = []
     if track.matched and track.matched_alias:
         strengths.append(f"Track match: {track.matched_alias}")
-    if hard.location_verdict == "PASS" and hard.evidence:
+    if elig == "ELIGIBLE" and hard.evidence:
         strengths.append(f"Canada eligibility evidence: {hard.evidence[0]}")
     if hits:
         strengths.append(f"Skill overlap: {', '.join(hits[:5])}")
 
-    gaps = list(hard.reasons[:3])
-    if not track.seniority_ok:
-        gaps.append(sen_note)
+    # Candidate skill gaps only — never hard-filter / eligibility prose
+    gaps: list[str] = []
+    if tokens and not hits:
+        gaps.append("no overlap with configured profile skills in posting text")
+    elif tokens and len(hits) < max(1, len(tokens) // 3):
+        gaps.append(f"limited skill overlap ({len(hits)}/{len(tokens)} tokens)")
+    for w in profile_warnings(profile):
+        if "placeholder" in w or "empty" in w:
+            gaps.append("profile incomplete for skill matching")
+            break
+
+    evidence = list(hard.evidence)[:8] + [skills_note, sen_note, fresh_note]
+    if elig == "UNCERTAIN":
+        evidence.append("eligibility=UNCERTAIN — ranking penalty applied; not auto-rejected")
 
     return ScoreResult(
         overall=float(overall),
@@ -242,8 +260,7 @@ def score_deterministic(
         )
         or hard.salary_verdict,
         rejection_reasons=[],
-        evidence=list(hard.evidence)[:8]
-        + [skills_note, sen_note, fresh_note],
+        evidence=evidence,
         model="deterministic",
         score_kind="deterministic",
         hard_filter=hard,

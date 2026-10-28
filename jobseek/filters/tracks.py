@@ -64,14 +64,70 @@ DEFAULT_TRACK_ALIASES: dict[str, list[str]] = {
 }
 
 SENIORITY_PATTERNS: dict[str, re.Pattern[str]] = {
-    "intern": re.compile(r"\b(?:intern|internship|co-?op)\b", re.I),
-    "junior": re.compile(r"\b(?:junior|jr\.?|entry[\s-]?level|new\s+grad)\b", re.I),
+    # Order matters: more specific student/intern patterns first
+    "intern": re.compile(r"\b(?:intern(?:ship)?s?)\b", re.I),
+    "coop": re.compile(r"\bco-?op\b", re.I),
+    "student": re.compile(r"\b(?:student|university\s+hire)\b", re.I),
+    "new_grad": re.compile(r"\b(?:new\s+grad(?:uate)?|graduate\s+program)\b", re.I),
+    "junior": re.compile(r"\b(?:junior|jr\.?|entry[\s-]?level)\b", re.I),
     "mid": re.compile(r"\b(?:mid[\s-]?level|intermediate)\b", re.I),
     "senior": re.compile(r"\b(?:senior|sr\.?)\b", re.I),
     "staff": re.compile(r"\bstaff\b", re.I),
     "principal": re.compile(r"\b(?:principal|distinguished|fellow)\b", re.I),
     "lead": re.compile(r"\b(?:lead|manager|director|head\s+of)\b", re.I),
 }
+
+DEFAULT_SENIORITY_INCLUDE = ["mid", "senior", "staff", "principal", "lead"]
+DEFAULT_SENIORITY_EXCLUDE = ["intern", "coop", "student", "new_grad", "junior"]
+
+
+@dataclass
+class SeniorityGate:
+    allowed: bool
+    seniority: str | None = None
+    reasons: list[str] = field(default_factory=list)
+
+
+def seniority_gate(title: str, search_cfg: dict[str, Any]) -> SeniorityGate:
+    """Hard-exclude student/intern tracks by default; unknown seniority passes."""
+    seniority = detect_seniority(title)
+    raw = search_cfg.get("seniority")
+    # Backward compatible: list → include list
+    if isinstance(raw, list):
+        include = [str(s).casefold() for s in raw] or list(DEFAULT_SENIORITY_INCLUDE)
+        exclude = list(DEFAULT_SENIORITY_EXCLUDE)
+    elif isinstance(raw, dict):
+        include = [str(s).casefold() for s in (raw.get("include") or DEFAULT_SENIORITY_INCLUDE)]
+        exclude = [str(s).casefold() for s in (raw.get("exclude") or DEFAULT_SENIORITY_EXCLUDE)]
+    else:
+        include = list(DEFAULT_SENIORITY_INCLUDE)
+        exclude = list(DEFAULT_SENIORITY_EXCLUDE)
+
+    if seniority is None:
+        return SeniorityGate(
+            allowed=True,
+            seniority=None,
+            reasons=["seniority unknown — not rejected solely for missing keywords"],
+        )
+    if seniority.casefold() in exclude:
+        return SeniorityGate(
+            allowed=False,
+            seniority=seniority,
+            reasons=[f"seniority {seniority} excluded by config (student/entry tracks off by default)"],
+        )
+    if include and seniority.casefold() not in include:
+        # Known seniority outside include (e.g. junior when include is mid+) already handled via exclude
+        # If somehow not in exclude nor include, soft-allow with note
+        return SeniorityGate(
+            allowed=True,
+            seniority=seniority,
+            reasons=[f"seniority {seniority} outside preferred include {include} — allowed as unknown-adjacent"],
+        )
+    return SeniorityGate(
+        allowed=True,
+        seniority=seniority,
+        reasons=[f"seniority {seniority} within configured bands"],
+    )
 
 
 @dataclass

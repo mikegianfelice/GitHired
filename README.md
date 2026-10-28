@@ -52,15 +52,14 @@ Application materials are never auto-submitted. `githired prepare` briefs you; `
 
 GitHired ships configured for **Canada-remote and Canada-eligible** engineering hiring — not the European demo portals from the upstream template.
 
-- Preferred locations: Canada remote / Remote Canada / hybrid Canada  
-- US employers: allowed **only** when the posting explicitly evidences Canada, Canadian applicants, worldwide, or equivalent  
-- US-only remote: rejected by deterministic filters (`[jobseek/filters/hard.py](jobseek/filters/hard.py)`)  
+- **Three-state eligibility** ([`jobseek/filters/hard.py`](jobseek/filters/hard.py)): **ELIGIBLE** (explicit Canada / genuine worldwide), **UNCERTAIN** (ambiguous remote — visible with a ranking penalty), **INELIGIBLE** (US-only / foreign on-site — hard fail)  
+- Eligibility is never invented from a company’s global brand alone; posting evidence is preserved  
 - Engineering **tracks** (software, AI, ML, data, platform, cloud, DevOps/SRE, FDE) in [`config/search.yaml`](config/search.yaml)  
+- **Seniority:** mid / senior / staff / principal / lead by default; internships, co-ops, new-grad, and junior excluded (enable in setup if needed). Titles without seniority keywords are allowed as unknown  
 - Location modes: remote Canada, province remote, hybrid, on-site cities  
 - Salary floors (configurable): CAD / USD in `config/search.yaml`  
+- Company boards in [`config/companies.yaml`](config/companies.yaml) are validated where possible; unresolved ATS (e.g. Workable / Rippling / Gem) stay inactive until an adapter exists  
 - Danish job-board CLIs remain installed but **disabled** by default for Canada ATS discovery
-
-Eligibility is never invented: if Canada is not evidenced in the posting, the role is flagged as unknown or rejected per your config.
 
 ---
 
@@ -97,12 +96,13 @@ Keep personal data in a **private** clone if you write profile details into trac
 ### 2. Install and configure
 
 ```bash
+# Python 3.10+ required (3.11+ recommended)
 python3 -m pip install -e ".[dev]"
 githired setup --non-interactive   # or: githired setup
 githired doctor
 ```
 
-Optional: copy `.env.example` → `.env` for LLM / SerpAPI / email. None are required for discover + deterministic rank.
+Optional: copy `.env.example` → `.env` for LLM / SerpAPI / email. None are required for discover + deterministic rank. Fill [`config/profile.yaml`](config/profile.yaml) with real skills — placeholders weaken skill scoring (the CLI warns).
 
 Edit as needed:
 

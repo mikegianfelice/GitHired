@@ -94,9 +94,13 @@ def run_discover(
         "updated": 0,
         "errors": [],
         "warnings": [],
+        "board_failures": [],
+        "boards_ok": [],
         "detections": [],
         **source_info,
     }
+    boards_attempted = 0
+    boards_ok = 0
     seen_by_source: dict[str, set[int]] = {
         "greenhouse": set(),
         "lever": set(),
@@ -181,7 +185,13 @@ def run_discover(
             ats = (company.get("ats") or "").lower()
             adapter = adapter_instances.get(ats)
             if not adapter:
+                # Unsupported ATS (workable, rippling, gem, …) — registry note only
+                summary["warnings"].append(
+                    f"{company.get('name')}: ats={ats} has no fetch adapter "
+                    "(registry entry retained; enable when adapter exists)"
+                )
                 continue
+            boards_attempted += 1
             result = adapter.fetch_company(company)
             company_name = company.get("name") or ""
             if result.raw_status is not None:
@@ -191,11 +201,9 @@ def run_discover(
                     status_code=result.raw_status,
                     body=json.dumps([j.to_dict() for j in result.jobs], ensure_ascii=False)[:500000],
                 )
-            for err in result.errors:
-                summary["errors"].append(err)
-                db.add_run_event(run_id, "error", err, {"company": company_name})
-                log_extra(logger, 40, err, company=company_name, ats=ats)
             if result.raw_status == 200:
+                boards_ok += 1
+                summary["boards_ok"].append(company_name)
                 if ats in fetched_companies and company_name:
                     fetched_companies[ats].add(company_name)
                 db.mark_company_fetch(
@@ -204,14 +212,31 @@ def run_discover(
                     ats=ats,
                     board_token=company.get("board_token") or company.get("site_slug"),
                 )
+                # Empty successful board is not a failure
+                if not result.jobs:
+                    summary["warnings"].append(
+                        f"{company_name}: board OK but returned 0 jobs (empty board)"
+                    )
             else:
+                detail = "; ".join(result.errors) or f"HTTP {result.raw_status}"
+                failure = {
+                    "company": company_name,
+                    "ats": ats,
+                    "board_token": company.get("board_token") or company.get("site_slug"),
+                    "status_code": result.raw_status,
+                    "detail": detail,
+                }
+                summary["board_failures"].append(failure)
+                summary["warnings"].append(f"{ats} {company_name}: {detail}")
+                db.add_run_event(run_id, "warning", detail, failure)
+                log_extra(logger, 30, detail, company=company_name, ats=ats)
                 if company_name:
                     db.mark_company_fetch(
                         company_name,
                         ok=False,
                         ats=ats,
                         board_token=company.get("board_token") or company.get("site_slug"),
-                        error="; ".join(result.errors) or f"HTTP {result.raw_status}",
+                        error=detail,
                     )
             for job in result.jobs:
                 summary["fetched"] += 1
@@ -257,10 +282,24 @@ def run_discover(
                 )
         summary["removed_marked"] = removed
 
-        # Hard errors = ATS fetch errors only; LinkedIn warnings do not fail the run
+        summary["boards_attempted"] = boards_attempted
+        summary["boards_succeeded"] = boards_ok
+        # Partial board failures are warnings. Fatal only when every attempted
+        # board failed AND nothing was fetched (empty successful search is OK).
+        all_boards_failed = boards_attempted > 0 and boards_ok == 0
+        if all_boards_failed and summary["fetched"] == 0:
+            summary["errors"].append(
+                "all enabled ATS boards failed and no jobs were fetched"
+            )
         ok = len(summary["errors"]) == 0
+        summary["ok"] = ok
         db.finish_run(run_id, ok=ok, summary=summary)
-        log_extra(logger, 20, "discover_complete", **{k: v for k, v in summary.items() if k not in ("errors", "warnings")})
+        log_extra(
+            logger,
+            20,
+            "discover_complete",
+            **{k: v for k, v in summary.items() if k not in ("errors", "warnings", "board_failures")},
+        )
         return summary
     except Exception as exc:  # noqa: BLE001
         db.add_run_event(run_id, "error", str(exc), {})

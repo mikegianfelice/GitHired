@@ -53,14 +53,13 @@ class RemovalSafetyTests(unittest.TestCase):
                 errors=["greenhouse shopify: HTTP 500"],
             )
 
+            inst = MagicMock()
+            inst.fetch_company.return_value = failed
             with (
                 patch("jobseek.discover.load_companies", return_value=companies),
                 patch("jobseek.discover.load_search", return_value=search),
-                patch("jobseek.discover.GreenhouseAdapter") as GH,
+                patch.dict("jobseek.discover.ADAPTERS", {"greenhouse": lambda client=None: inst}),
             ):
-                inst = MagicMock()
-                inst.fetch_company.return_value = failed
-                GH.return_value = inst
                 summary = run_discover(db, detect_unknown=False)
 
             self.assertTrue(summary["errors"])

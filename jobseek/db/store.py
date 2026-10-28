@@ -274,8 +274,16 @@ class Database:
         return [dict(r) for r in rows]
 
     def jobs_needing_score(
-        self, *, limit: int = 50, re_rank: bool = False, score_kind: str = "deterministic"
+        self,
+        *,
+        limit: int = 50,
+        re_rank: bool = False,
+        score_kind: str = "deterministic",
+        pool_size: int | None = None,
     ) -> list[dict[str, Any]]:
+        from jobseek.rank.selection import select_jobs_fairly
+
+        pool = pool_size or max(limit * 25, 200)
         if re_rank:
             sql = """
                 SELECT j.* FROM jobs j
@@ -283,7 +291,7 @@ class Database:
                 ORDER BY j.last_seen DESC
                 LIMIT ?
             """
-            rows = self._conn.execute(sql, (limit,)).fetchall()
+            rows = self._conn.execute(sql, (pool,)).fetchall()
         else:
             sql = """
                 SELECT j.* FROM jobs j
@@ -298,8 +306,9 @@ class Database:
                 ORDER BY j.first_seen DESC
                 LIMIT ?
             """
-            rows = self._conn.execute(sql, (score_kind, limit)).fetchall()
-        return [dict(r) for r in rows]
+            rows = self._conn.execute(sql, (score_kind, pool)).fetchall()
+        candidates = [dict(r) for r in rows]
+        return select_jobs_fairly(candidates, limit=limit)
 
     def save_score(
         self,

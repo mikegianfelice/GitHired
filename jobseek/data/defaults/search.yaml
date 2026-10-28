@@ -60,12 +60,22 @@ track_aliases:
     - Deployment Engineer
     - Solutions Engineer Technical
 
-# Preferred seniority bands (empty = any). Used for scoring, not hard-reject by default.
+# Seniority policy: mid+ by default; student/intern/new-grad excluded.
+# Unknown seniority (no keywords in title) is allowed.
 seniority:
-  - mid
-  - senior
-  - staff
-  - principal
+  include:
+    - mid
+    - senior
+    - staff
+    - principal
+    - lead
+  exclude:
+    - intern
+    - coop
+    - student
+    - new_grad
+    - junior
+
 
 # Advanced: extra title phrases beyond track aliases
 custom_title_overrides: []

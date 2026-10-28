@@ -101,8 +101,30 @@ class HardFilterTests(unittest.TestCase):
             "description": "Remote within the United States. Offices in NYC.",
         }
         result = apply_hard_filters(job, SEARCH)
-        self.assertEqual(result.location_verdict, "FAIL")
+        # US-primary without explicit Canada → UNCERTAIN (not invented ELIGIBLE)
+        self.assertEqual(result.eligibility, "UNCERTAIN")
+        self.assertEqual(result.location_verdict, "FLAG")
         self.assertFalse(any("invent" in r.lower() for r in result.reasons))
+
+    def test_us_only_ineligible(self):
+        job = {
+            "title": "AI Engineer",
+            "location_raw": "Remote",
+            "description": "Must be located in the United States only.",
+        }
+        result = apply_hard_filters(job, SEARCH)
+        self.assertEqual(result.eligibility, "INELIGIBLE")
+        self.assertEqual(result.verdict, "FAIL")
+
+    def test_intern_excluded_by_default(self):
+        job = {
+            "title": "Data Engineer Intern",
+            "location_raw": "Remote - Canada",
+            "description": "Remote in Canada.",
+        }
+        result = apply_hard_filters(job, SEARCH)
+        self.assertEqual(result.verdict, "FAIL")
+        self.assertTrue(any("intern" in r.casefold() for r in result.reasons))
 
     def test_toronto_hybrid_pass(self):
         cfg = {

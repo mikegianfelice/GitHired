@@ -57,8 +57,9 @@ def cmd_discover(args: argparse.Namespace) -> int:
                 print(json.dumps({"imported_tracker_rows": n}))
         summary = run_discover(db, settings=settings, detect_unknown=not args.no_detect)
         _print_json(summary)
-        # LinkedIn warnings alone must not fail the run
-        return 0 if not summary.get("errors") else 1
+        # Board failures are warnings; nonzero only when summary.errors is set
+        # (e.g. all boards failed and nothing fetched).
+        return 0 if summary.get("ok", not summary.get("errors")) else 1
     finally:
         db.close()
 
@@ -70,10 +71,15 @@ def cmd_rank(args: argparse.Namespace) -> int:
     db = _db(settings)
     search = load_search()
     profile = load_profile()
+    from jobseek.profile_util import profile_warnings
+
     use_llm = bool(args.llm) or settings.rank_llm
     score_kind = "llm" if use_llm else "deterministic"
     try:
         db.import_tracker_csv(tracker_path())
+        warn = profile_warnings(profile)
+        for w in warn:
+            _err(f"warning: {w}")
         jobs = db.jobs_needing_score(
             limit=args.limit, re_rank=args.re_rank, score_kind=score_kind
         )
@@ -114,7 +120,16 @@ def cmd_rank(args: argparse.Namespace) -> int:
                     "model": scored.model,
                 }
             )
-        _print_json({"scored": len(results), "score_kind": score_kind, "results": results})
+        companies = sorted({r.get("company") for r in results if r.get("company")})
+        _print_json(
+            {
+                "scored": len(results),
+                "score_kind": score_kind,
+                "profile_warnings": warn,
+                "companies_in_batch": companies,
+                "results": results,
+            }
+        )
         return 0
     finally:
         db.close()
@@ -404,10 +419,22 @@ def cmd_sources(args: argparse.Namespace) -> int:
         if args.json:
             _print_json(payload)
             return 0
+        validated = [c for c in companies if c.get("validation_status") == "ok" and c.get("enabled")]
+        invalid = [c for c in companies if c.get("validation_status") == "invalid"]
+        inactive = [c for c in companies if not c.get("enabled")]
+        unresolved = [
+            c
+            for c in companies
+            if c.get("enabled")
+            and c.get("validation_status") not in ("ok", "invalid")
+            and (c.get("ats") or "") not in ("greenhouse", "lever", "ashby")
+        ]
         print("Discovery sources")
         for k, v in sources.items():
             print(f"  {k}: {'on' if v else 'off'}")
         print(f"  serpapi: {'configured' if settings.serpapi_key else 'not set (free/alerts)'}")
+        print(f"\nValidated ({len(validated)}) | Invalid ({len(invalid)}) | "
+              f"Unresolved/no-adapter ({len(unresolved)}) | Inactive ({len(inactive)})")
         print(f"\nCompanies ({len(companies)})")
         for c in companies:
             flag = "✓" if c.get("validation_status") == "ok" else c.get("validation_status")

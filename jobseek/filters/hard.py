@@ -1,11 +1,11 @@
-"""Deterministic hard filters: tracks, Canada location modes, salary floors."""
+"""Deterministic hard filters: tracks, three-state Canada eligibility, seniority, salary."""
 
 from __future__ import annotations
 
 import re
 from typing import Any
 
-from jobseek.filters.tracks import match_track
+from jobseek.filters.tracks import detect_seniority, match_track, seniority_gate
 from jobseek.models import HardFilterResult
 
 _CANADA_OK = re.compile(
@@ -17,11 +17,19 @@ _CANADA_OK = re.compile(
     remote\s*[-–—]\s*canada |
     work\s+from\s+canada |
     locations?\s+include[sd]?\s+canada |
+    anywhere\s+in\s+canada
+    """,
+    re.I | re.X,
+)
+
+_WORLDWIDE = re.compile(
+    r"""
     worldwide |
     work\s+from\s+anywhere |
     remote\s*\(anywhere\) |
     anywhere\s+in\s+the\s+world |
-    north\s+america
+    globally\s+remote |
+    remote[\s-]?first\b.*\banywhere\b
     """,
     re.I | re.X,
 )
@@ -44,6 +52,8 @@ _US_GEO = re.compile(
     r"\b(?:united\s+states|u\.?s\.?a?\.?|usa)\b",
     re.I,
 )
+
+_NORTH_AMERICA = re.compile(r"\bnorth\s+america\b", re.I)
 
 _REMOTE = re.compile(r"\bremote\b|\bwfh\b|work\s+from\s+home", re.I)
 _HYBRID = re.compile(r"\bhybrid\b", re.I)
@@ -69,23 +79,14 @@ _PROVINCE_ALIASES = {
     "alberta": "Alberta",
     "ab": "Alberta",
     "manitoba": "Manitoba",
-    "mb": "Manitoba",
     "saskatchewan": "Saskatchewan",
-    "sk": "Saskatchewan",
     "nova scotia": "Nova Scotia",
-    "ns": "Nova Scotia",
     "new brunswick": "New Brunswick",
-    "nb": "New Brunswick",
     "newfoundland": "Newfoundland",
-    "nl": "Newfoundland",
     "prince edward island": "Prince Edward Island",
-    "pei": "Prince Edward Island",
     "yukon": "Yukon",
-    "yt": "Yukon",
     "northwest territories": "Northwest Territories",
-    "nt": "Northwest Territories",
     "nunavut": "Nunavut",
-    "nu": "Nunavut",
 }
 
 
@@ -129,27 +130,20 @@ def _salary_verdict(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[st
     return "PASS", [f"salary {value} {currency} meets floor {floor}"]
 
 
-def _configured_provinces(loc_cfg: dict[str, Any]) -> list[str]:
-    return [str(p) for p in (loc_cfg.get("provinces") or [])]
-
-
-def _configured_cities(loc_cfg: dict[str, Any]) -> list[str]:
-    return [str(c) for c in (loc_cfg.get("cities") or [])]
-
-
 def _province_hit(text: str, provinces: list[str]) -> str | None:
     blob = text.casefold()
     for prov in provinces:
         key = prov.casefold().strip()
         if len(key) <= 2:
-            # Short codes need word boundaries
             if re.search(rf"\b{re.escape(key)}\b", blob):
                 return prov
         elif key in blob:
             return prov
     for alias, canonical in _PROVINCE_ALIASES.items():
         if re.search(rf"\b{re.escape(alias)}\b", blob):
-            if not provinces or any(canonical.casefold() == p.casefold() or alias == p.casefold() for p in provinces):
+            if not provinces or any(
+                canonical.casefold() == p.casefold() or alias == p.casefold() for p in provinces
+            ):
                 return canonical
     return None
 
@@ -162,15 +156,19 @@ def _city_hit(text: str, cities: list[str]) -> str | None:
     return None
 
 
-def evaluate_location(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[str, list[str], list[str]]:
-    """Return (verdict, reasons, evidence quotes). Never invent Canada eligibility."""
+def classify_canada_eligibility(
+    job: dict[str, Any], search_cfg: dict[str, Any]
+) -> tuple[str, str, list[str], list[str]]:
+    """Return (eligibility, location_verdict, reasons, evidence).
+
+    eligibility: ELIGIBLE | UNCERTAIN | INELIGIBLE
+    location_verdict: PASS | FLAG | FAIL (compat mapping)
+    """
     loc_cfg = search_cfg.get("location") or {}
-    unknown_policy = (loc_cfg.get("unknown_location_policy") or "flag").lower()
-    allow_us = bool(loc_cfg.get("allow_us_employer_remote_with_canada_evidence", True))
     reject_us_only = bool(loc_cfg.get("reject_us_only_remote", True))
     modes = {str(m).casefold() for m in (loc_cfg.get("modes") or ["remote_canada"])}
-    provinces = _configured_provinces(loc_cfg)
-    cities = _configured_cities(loc_cfg)
+    provinces = [str(p) for p in (loc_cfg.get("provinces") or [])]
+    cities = [str(c) for c in (loc_cfg.get("cities") or [])]
 
     text = _blob(job)
     location = job.get("location_raw") or ""
@@ -180,90 +178,125 @@ def evaluate_location(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[
     if _EXCLUDE_CANADA.search(text):
         m = _EXCLUDE_CANADA.search(text)
         evidence.append(m.group(0) if m else "excluding canada")
-        return "FAIL", ["posting excludes Canada"], evidence
+        return "INELIGIBLE", "FAIL", ["posting excludes Canada"], evidence
 
     canada_hit = _CANADA_OK.search(text) or _CANADA_OK.search(location)
+    worldwide_hit = _WORLDWIDE.search(text) or _WORLDWIDE.search(location)
     us_only_hit = _US_ONLY.search(text)
     remote_hit = _REMOTE.search(text) or _REMOTE.search(location)
     hybrid_hit = _HYBRID.search(text) or _HYBRID.search(location)
     onsite_hit = _ONSITE.search(text) or _ONSITE.search(location)
-    us_geo = _US_GEO.search(location) or _US_GEO.search(text[:500])
-    prov_hit = _province_hit(f"{location}\n{text[:2000]}", provinces) if provinces else _province_hit(
-        f"{location}\n{text[:2000]}", list(_PROVINCE_ALIASES.values())
-    )
+    us_geo = _US_GEO.search(location) or _US_GEO.search(text[:800])
+    na_hit = _NORTH_AMERICA.search(text) or _NORTH_AMERICA.search(location)
+    prov_hit = _province_hit(f"{location}\n{text[:2000]}", provinces or list(_PROVINCE_ALIASES.values()))
     city_hit = _city_hit(f"{location}\n{text[:2000]}", cities) if cities else None
 
     if us_only_hit and reject_us_only:
         evidence.append(us_only_hit.group(0))
-        return "FAIL", ["US-only remote / US work-authorization requirement"], evidence
+        return (
+            "INELIGIBLE",
+            "FAIL",
+            ["US-only remote / US work-authorization requirement"],
+            evidence,
+        )
 
-    # Preferred Canada remote phrases
+    # Preferred Canada phrases
     for phrase in loc_cfg.get("preferred") or []:
         if phrase.casefold() in (location or "").casefold() or phrase.casefold() in text.casefold():
             evidence.append(phrase)
-            return "PASS", [f"matched preferred location phrase: {phrase}"], evidence
+            return "ELIGIBLE", "PASS", [f"matched preferred location phrase: {phrase}"], evidence
 
     if canada_hit:
         evidence.append(canada_hit.group(0))
-        if remote_hit and "remote_canada" in modes:
-            reasons.append("Canada / worldwide eligibility evidence found (remote)")
-            return "PASS", reasons, evidence
-        if prov_hit and "remote_province" in modes:
-            evidence.append(prov_hit)
-            reasons.append(f"Canada evidence with province match: {prov_hit}")
-            return "PASS", reasons, evidence
-        if hybrid_hit and "hybrid" in modes and (city_hit or prov_hit or True):
-            reasons.append("Canada evidence with hybrid role")
-            if city_hit:
-                evidence.append(city_hit)
-            return "PASS", reasons, evidence
-        if onsite_hit and "onsite" in modes and (city_hit or prov_hit):
-            reasons.append("Canada on-site / in-office with local match")
-            if city_hit:
-                evidence.append(city_hit)
-            elif prov_hit:
-                evidence.append(prov_hit)
-            return "PASS", reasons, evidence
-        # Broad Canada evidence without conflicting US-only
-        reasons.append("Canada / worldwide eligibility evidence found")
-        return "PASS", reasons, evidence
+        reasons.append("explicit Canada / Canadian eligibility evidence")
+        return "ELIGIBLE", "PASS", reasons, evidence
 
-    # Province / city without explicit Canada word (Canadian cities)
+    if worldwide_hit and not us_only_hit:
+        evidence.append(worldwide_hit.group(0))
+        reasons.append("genuine worldwide / work-from-anywhere remote")
+        return "ELIGIBLE", "PASS", reasons, evidence
+
     if city_hit and ("hybrid" in modes or "onsite" in modes or "remote_province" in modes):
         evidence.append(city_hit)
         if us_geo and not canada_hit:
-            return "FLAG", ["Canadian city mentioned alongside US geo — ambiguous"], evidence
-        return "PASS", [f"matched Canadian city: {city_hit}"], evidence
+            return (
+                "UNCERTAIN",
+                "FLAG",
+                ["Canadian city mentioned alongside US geo — ambiguous"],
+                evidence,
+            )
+        return "ELIGIBLE", "PASS", [f"matched Canadian city: {city_hit}"], evidence
 
     if prov_hit and ("remote_province" in modes or "hybrid" in modes or "onsite" in modes):
         evidence.append(prov_hit)
         if us_geo and not canada_hit:
-            return "FLAG", ["Canadian province mentioned alongside US geo — ambiguous"], evidence
-        return "PASS", [f"matched Canadian province: {prov_hit}"], evidence
+            return (
+                "UNCERTAIN",
+                "FLAG",
+                ["Canadian province mentioned alongside US geo — ambiguous"],
+                evidence,
+            )
+        return "ELIGIBLE", "PASS", [f"matched Canadian province: {prov_hit}"], evidence
 
-    if remote_hit and us_geo and not canada_hit:
-        if allow_us and not reject_us_only:
-            return "FLAG", ["US remote without explicit Canada evidence"], evidence
-        evidence.append(remote_hit.group(0))
+    # On-site outside Canada without Canada evidence
+    if onsite_hit and us_geo and not canada_hit and not city_hit and not prov_hit:
+        evidence.append(onsite_hit.group(0))
         if us_geo:
             evidence.append(us_geo.group(0))
-        return "FAIL", ["US remote without explicit Canada eligibility evidence"], evidence
+        return (
+            "INELIGIBLE",
+            "FAIL",
+            ["on-site / in-office outside Canada"],
+            evidence,
+        )
 
-    if remote_hit and not canada_hit and not us_geo:
-        if unknown_policy == "reject":
-            return "FAIL", ["remote role with no Canada eligibility evidence"], evidence
-        if unknown_policy == "pass":
-            return "PASS", ["remote; unknown geography allowed by config"], evidence
-        return "FLAG", ["remote role; Canada eligibility not evidenced (unknown)"], evidence
+    if remote_hit and us_geo and not canada_hit and not worldwide_hit:
+        evidence.append(remote_hit.group(0))
+        evidence.append(us_geo.group(0))
+        return (
+            "UNCERTAIN",
+            "FLAG",
+            ["US-primary remote without explicit Canadian eligibility"],
+            evidence,
+        )
 
-    if not remote_hit and not canada_hit:
-        if unknown_policy == "reject":
-            return "FAIL", ["location/Canada eligibility not evidenced"], []
-        if unknown_policy == "pass":
-            return "PASS", ["unknown location allowed by config"], []
-        return "FLAG", ["location/Canada eligibility not evidenced (unknown)"], []
+    if na_hit and not canada_hit and not worldwide_hit:
+        evidence.append(na_hit.group(0))
+        return (
+            "UNCERTAIN",
+            "FLAG",
+            ["North America remote with unclear country restrictions"],
+            evidence,
+        )
 
-    return "FLAG", ["could not classify location deterministically (unknown)"], evidence
+    if remote_hit and not canada_hit and not us_geo and not worldwide_hit:
+        return (
+            "UNCERTAIN",
+            "FLAG",
+            ["remote role; Canada eligibility not evidenced (unknown)"],
+            evidence,
+        )
+
+    if not remote_hit and not canada_hit and not worldwide_hit:
+        return (
+            "UNCERTAIN",
+            "FLAG",
+            ["location/Canada eligibility not evidenced (unknown)"],
+            [],
+        )
+
+    return (
+        "UNCERTAIN",
+        "FLAG",
+        ["could not classify location deterministically (unknown)"],
+        evidence,
+    )
+
+
+def evaluate_location(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[str, list[str], list[str]]:
+    """Compat wrapper: (location_verdict, reasons, evidence)."""
+    _elig, verdict, reasons, evidence = classify_canada_eligibility(job, search_cfg)
+    return verdict, reasons, evidence
 
 
 def apply_hard_filters(job: dict[str, Any], search_cfg: dict[str, Any]) -> HardFilterResult:
@@ -278,21 +311,37 @@ def apply_hard_filters(job: dict[str, Any], search_cfg: dict[str, Any]) -> HardF
             title_match=False,
             location_verdict="FLAG",
             salary_verdict="PASS",
+            eligibility="UNCERTAIN",
         )
 
     reasons.extend(track.reasons)
 
-    loc_verdict, loc_reasons, loc_evidence = evaluate_location(job, search_cfg)
+    sen = seniority_gate(job.get("title") or "", search_cfg)
+    if not sen.allowed:
+        return HardFilterResult(
+            verdict="FAIL",
+            reasons=reasons + sen.reasons,
+            title_match=True,
+            location_verdict="FLAG",
+            salary_verdict="PASS",
+            eligibility="UNCERTAIN",
+            evidence=evidence,
+        )
+    reasons.extend(sen.reasons)
+
+    eligibility, loc_verdict, loc_reasons, loc_evidence = classify_canada_eligibility(
+        job, search_cfg
+    )
     reasons.extend(loc_reasons)
     evidence.extend(loc_evidence)
 
     sal_verdict, sal_reasons = _salary_verdict(job, search_cfg)
     reasons.extend(sal_reasons)
 
-    verdicts = {loc_verdict, sal_verdict}
-    if "FAIL" in verdicts:
+    # Overall: INELIGIBLE or salary FAIL → FAIL; UNCERTAIN/FLAG → FLAG; else PASS
+    if eligibility == "INELIGIBLE" or sal_verdict == "FAIL":
         overall = "FAIL"
-    elif "FLAG" in verdicts:
+    elif eligibility == "UNCERTAIN" or sal_verdict == "FLAG" or loc_verdict == "FLAG":
         overall = "FLAG"
     else:
         overall = "PASS"
@@ -303,5 +352,6 @@ def apply_hard_filters(job: dict[str, Any], search_cfg: dict[str, Any]) -> HardF
         title_match=True,
         location_verdict=loc_verdict,
         salary_verdict=sal_verdict,
+        eligibility=eligibility,
         evidence=evidence,
     )
