@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="GitHired — Find Your Next Opportunity" width="800" />
+</p>
+
 <h1 align="center">GitHired</h1>
 
 <p align="center">

@@ -54,6 +54,8 @@ config/companies.local.yaml
 *.jpeg
 *.png
 !cover_letters/OpenFonts/fonts/**
+!assets/banner.png
+!assets/showcase/**
 
 # OS files
 .DS_Store
