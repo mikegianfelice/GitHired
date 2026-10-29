@@ -10,12 +10,21 @@ from typing import Any, Callable
 
 from jobseek.config_loader import Settings
 from jobseek.filters.hard import apply_hard_filters
-from jobseek.filters.tracks import DEFAULT_SENIORITY_INCLUDE, detect_seniority, match_track
+from jobseek.filters.tracks import (
+    DEFAULT_SENIORITY_INCLUDE,
+    detect_seniority,
+    match_track,
+    title_matches_selected_tracks,
+)
 from jobseek.models import HardFilterResult, ScoreResult
 from jobseek.profile_util import is_profile_complete_for_skills, profile_warnings
 from jobseek.rank.weights import WEIGHTS
 
 _JSON_BLOCK = re.compile(r"\{[\s\S]*\}")
+
+# Bump when deterministic scoring / eligibility logic changes so stale rows re-rank.
+SCORER_VERSION = "v2"
+DETERMINISTIC_MODEL = f"deterministic/{SCORER_VERSION}"
 
 
 def _rubric_from_profile(profile: dict[str, Any]) -> str:
@@ -167,8 +176,19 @@ def score_deterministic(
 
     track = match_track(job.get("title") or "", search_cfg)
     elig = hard.eligibility or "UNCERTAIN"
-    canada = {"ELIGIBLE": 100.0, "UNCERTAIN": 45.0, "INELIGIBLE": 0.0}.get(elig, 45.0)
-    track_score = 95.0 if track.matched else 20.0
+    canada = {"ELIGIBLE": 100.0, "UNCERTAIN": 40.0, "INELIGIBLE": 0.0}.get(elig, 40.0)
+
+    # Exact selected-track titles outrank adjacent / weak keyword noise.
+    if track.matched and track.match_strength == "exact":
+        track_score = 98.0
+        track_note = f"exact track title: {track.matched_alias}"
+    elif track.match_strength == "adjacent":
+        track_score = 55.0
+        track_note = f"adjacent family only: {track.primary_family}"
+    else:
+        track_score = 15.0
+        track_note = "title outside selected tracks"
+
     seniority = detect_seniority(job.get("title") or "")
     sen_cfg = search_cfg.get("seniority")
     if isinstance(sen_cfg, dict):
@@ -190,17 +210,31 @@ def score_deterministic(
     desc = f"{job.get('title') or ''}\n{job.get('description') or ''}".casefold()
     tokens = _skill_tokens(profile)
     hits = [t for t in tokens if t.casefold() in desc]
+    title_on_track = title_matches_selected_tracks(job.get("title") or "", search_cfg)
     if not is_profile_complete_for_skills(profile):
-        skills_score = 60.0
+        skills_score = 50.0
         skills_note = "incomplete profile — skill score neutral (title/location still ranked)"
+    elif not title_on_track:
+        # Do not let generic keyword overlap rescue off-track roles into the top tier.
+        skills_score = 25.0
+        skills_note = "skills ignored for ranking — title outside selected tracks"
+        hits = []
     else:
         ratio = len(hits) / max(len(tokens), 1)
         skills_score = round(min(100.0, 35.0 + ratio * 65.0), 1)
         skills_note = f"matched {len(hits)}/{len(tokens)} profile skill tokens"
 
     location_score = canada
-    sal_map = {"PASS": 90.0, "FLAG": 60.0, "FAIL": 15.0}
-    salary_score = sal_map.get(hard.salary_verdict, 60.0)
+    # Missing salary must not look like a strong positive signal.
+    if hard.salary_verdict == "PASS" and any(
+        "salary missing" in r.casefold() for r in hard.reasons
+    ):
+        salary_score = 50.0
+        sal_note = "salary not disclosed — neutral"
+    else:
+        sal_map = {"PASS": 90.0, "FLAG": 55.0, "FAIL": 15.0}
+        salary_score = sal_map.get(hard.salary_verdict, 50.0)
+        sal_note = hard.salary_verdict
     freshness, fresh_note = _freshness_score(job, search_cfg)
 
     components = {
@@ -213,19 +247,21 @@ def score_deterministic(
         "freshness": freshness,
     }
     weights = {
-        "canada_eligibility": 0.25,
-        "track_match": 0.20,
-        "seniority": 0.10,
-        "skills": 0.18,
-        "location": 0.07,
-        "salary": 0.10,
-        "freshness": 0.10,
+        "canada_eligibility": 0.28,
+        "track_match": 0.26,
+        "seniority": 0.08,
+        "skills": 0.16,
+        "location": 0.08,
+        "salary": 0.06,
+        "freshness": 0.08,
     }
     overall = round(sum(components[k] * weights[k] for k in weights))
-    # UNCERTAIN eligibility: explicit ranking penalty + warning (still visible)
-    if elig == "UNCERTAIN":
-        overall = min(overall, 68)
-        overall = max(0, overall - 12)
+    # Confirmed Canada ranks above uncertain when otherwise comparable.
+    if elig == "ELIGIBLE":
+        overall = min(100, overall + 4)
+    elif elig == "UNCERTAIN":
+        overall = min(overall, 62)
+        overall = max(0, overall - 15)
 
     strengths = []
     if track.matched and track.matched_alias:
@@ -235,20 +271,21 @@ def score_deterministic(
     if hits:
         strengths.append(f"Skill overlap: {', '.join(hits[:5])}")
 
-    # Candidate skill gaps only — never hard-filter / eligibility prose
     gaps: list[str] = []
-    if tokens and not hits:
+    if title_on_track and tokens and not hits:
         gaps.append("no overlap with configured profile skills in posting text")
-    elif tokens and len(hits) < max(1, len(tokens) // 3):
+    elif title_on_track and tokens and len(hits) < max(1, len(tokens) // 3):
         gaps.append(f"limited skill overlap ({len(hits)}/{len(tokens)} tokens)")
     for w in profile_warnings(profile):
         if "placeholder" in w or "empty" in w:
             gaps.append("profile incomplete for skill matching")
             break
 
-    evidence = list(hard.evidence)[:8] + [skills_note, sen_note, fresh_note]
+    evidence = list(hard.evidence)[:8] + [track_note, skills_note, sen_note, sal_note, fresh_note]
     if elig == "UNCERTAIN":
         evidence.append("eligibility=UNCERTAIN — ranking penalty applied; not auto-rejected")
+    elif elig == "ELIGIBLE":
+        evidence.append("eligibility=ELIGIBLE — ranking boost applied")
 
     return ScoreResult(
         overall=float(overall),
@@ -258,10 +295,10 @@ def score_deterministic(
         salary_alignment="; ".join(
             r for r in hard.reasons if "salary" in r.casefold()
         )
-        or hard.salary_verdict,
+        or sal_note,
         rejection_reasons=[],
         evidence=evidence,
-        model="deterministic",
+        model=DETERMINISTIC_MODEL,
         score_kind="deterministic",
         hard_filter=hard,
     )

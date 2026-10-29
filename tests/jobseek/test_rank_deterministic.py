@@ -41,7 +41,7 @@ class DeterministicRankTests(unittest.TestCase):
         }
         result = score_deterministic(job, search_cfg=SEARCH, profile=PROFILE)
         self.assertEqual(result.score_kind, "deterministic")
-        self.assertEqual(result.model, "deterministic")
+        self.assertTrue(str(result.model).startswith("deterministic"))
         self.assertGreater(result.overall, 50)
         self.assertTrue(result.hard_filter and result.hard_filter.verdict in ("PASS", "FLAG"))
 

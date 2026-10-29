@@ -79,15 +79,27 @@ Keep personal data in a **private** clone if you write profile details into trac
 ### 2. Install and configure
 
 ```bash
-# Python 3.10+ required (3.11+ recommended)
+# Python 3.10+ required (3.11+ recommended).
+# macOS tip: system `python3` is often 3.9 — use Homebrew instead:
+#   brew install python@3.11
+#   python3.11 -m venv .venv && source .venv/bin/activate
 python3 -m pip install -e ".[dev]"
-githired setup --non-interactive   # or: githired setup
+
+# Interactive setup collects province/city/tracks/salary/skills (no YAML editing required).
+# Non-interactive example for automation:
+githired setup --non-interactive \
+  --tracks data_engineering analytics_engineering \
+  --modes remote_canada hybrid \
+  --province ON --city Toronto \
+  --salary-cad 130000 \
+  --skills Python SQL Databricks Spark Azure Airflow \
+  --years 7 --name "Your Name"
 githired doctor
 ```
 
-Optional: copy `.env.example` → `.env` for LLM / SerpAPI / email. None are required for discover + deterministic rank. Fill [`config/profile.yaml`](config/profile.yaml) with real skills — placeholders weaken skill scoring (the CLI warns).
+Optional: copy `.env.example` → `.env` for LLM / SerpAPI / email. None are required for discover + deterministic rank.
 
-Edit as needed:
+Advanced edits (optional after setup):
 
 - [`config/profile.yaml`](config/profile.yaml) — skills and authorization  
 - [`config/search.yaml`](config/search.yaml) — tracks, location modes, salary, sources  
@@ -99,7 +111,7 @@ Edit as needed:
 ```bash
 githired companies discover   # expand/validate company boards (optional but recommended once)
 githired discover
-githired rank --limit 25
+githired rank                 # scores all unscored / stale-model jobs (batched); optional --limit N
 githired jobs --min-score 60
 githired digest
 

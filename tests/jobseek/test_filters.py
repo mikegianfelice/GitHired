@@ -7,11 +7,13 @@ import unittest
 from jobseek.filters.hard import apply_hard_filters
 
 SEARCH = {
+    "tracks": ["ai_engineering", "data_engineering", "forward_deployed", "ml_engineering"],
     "target_titles": [
         "AI Engineer",
         "Senior AI Engineer",
         "Applied AI Engineer",
         "Forward Deployed Engineer",
+        "Data Engineer",
         "Senior Data Engineer",
         "Staff Data Engineer",
         "AI Solutions Architect",
@@ -23,6 +25,8 @@ SEARCH = {
         "allow_us_employer_remote_with_canada_evidence": True,
         "reject_us_only_remote": True,
         "unknown_location_policy": "flag",
+        "cities": ["Toronto", "Vancouver"],
+        "provinces": ["Ontario", "ON"],
     },
     "salary": {"reject_missing": False, "floors": {"CAD": 120000, "USD": 90000}},
 }

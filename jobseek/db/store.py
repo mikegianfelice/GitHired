@@ -289,10 +289,12 @@ class Database:
         re_rank: bool = False,
         score_kind: str = "deterministic",
         pool_size: int | None = None,
+        current_model: str | None = None,
+        title_priority: Any = None,
     ) -> list[dict[str, Any]]:
         from jobseek.rank.selection import select_jobs_fairly
 
-        pool = pool_size or max(limit * 25, 200)
+        pool = pool_size or max(limit * 40, 500)
         if re_rank:
             sql = """
                 SELECT j.* FROM jobs j
@@ -301,6 +303,22 @@ class Database:
                 LIMIT ?
             """
             rows = self._conn.execute(sql, (pool,)).fetchall()
+        elif current_model:
+            # Missing score OR stale scoring model (logic changed) → needs (re)score.
+            sql = """
+                SELECT j.* FROM jobs j
+                LEFT JOIN job_scores s
+                  ON s.job_id = j.id
+                 AND s.description_hash = j.description_hash
+                 AND s.score_kind = ?
+                WHERE j.removed_at IS NULL
+                  AND j.status != 'removed'
+                  AND j.description IS NOT NULL
+                  AND (s.id IS NULL OR s.model IS NULL OR s.model != ?)
+                ORDER BY j.first_seen DESC
+                LIMIT ?
+            """
+            rows = self._conn.execute(sql, (score_kind, current_model, pool)).fetchall()
         else:
             sql = """
                 SELECT j.* FROM jobs j
@@ -317,7 +335,9 @@ class Database:
             """
             rows = self._conn.execute(sql, (score_kind, pool)).fetchall()
         candidates = [dict(r) for r in rows]
-        return select_jobs_fairly(candidates, limit=limit)
+        return select_jobs_fairly(
+            candidates, limit=limit, title_priority=title_priority
+        )
 
     def save_score(
         self,

@@ -19,7 +19,6 @@ from jobseek.db.store import Database
 from jobseek.digest.build import build_digest, render_digest_markdown
 from jobseek.discover import run_discover
 from jobseek.email.send import send_digest_email
-from jobseek.filters.tracks import DEFAULT_TRACK_ALIASES
 from jobseek.logging_util import setup_logging
 from jobseek.paths import ROOT, config_dir, db_path, packaged_defaults_dir, seen_jobs_path, tracker_path
 from jobseek.rank.scorer import score_job
@@ -71,60 +70,98 @@ def cmd_rank(args: argparse.Namespace) -> int:
     db = _db(settings)
     search = load_search()
     profile = load_profile()
+    from jobseek.filters.tracks import title_matches_selected_tracks
     from jobseek.profile_util import profile_warnings
+    from jobseek.rank.scorer import DETERMINISTIC_MODEL
 
     use_llm = bool(args.llm) or settings.rank_llm
     score_kind = "llm" if use_llm else "deterministic"
+    current_model = None if use_llm else DETERMINISTIC_MODEL
+    # Default: score all unscored / stale track-relevant jobs in bounded batches.
+    # Explicit --limit still caps total persisted scores this run.
+    user_limit = args.limit  # None → unbounded
+    batch_size = 250
     try:
         db.import_tracker_csv(tracker_path())
         warn = profile_warnings(profile)
         for w in warn:
             _err(f"warning: {w}")
-        jobs = db.jobs_needing_score(
-            limit=args.limit, re_rank=args.re_rank, score_kind=score_kind
-        )
-        results = []
-        for job in jobs:
-            if db.should_skip_recommendation(job["company"], job["title"]):
-                results.append({"id": job["id"], "skipped": "tracked_application"})
-                continue
-            scored = score_job(
-                job,
-                search_cfg=search,
-                profile=profile,
-                settings=settings,
-                use_llm=use_llm,
+
+        def _title_priority(job: dict[str, Any]) -> int:
+            return 2 if title_matches_selected_tracks(job.get("title") or "", search) else 0
+
+        results: list[dict[str, Any]] = []
+        persisted = 0
+        while True:
+            remaining = None if user_limit is None else max(0, user_limit - persisted)
+            if remaining == 0:
+                break
+            fetch_n = batch_size if remaining is None else min(batch_size, remaining)
+            jobs = db.jobs_needing_score(
+                limit=fetch_n,
+                re_rank=args.re_rank and persisted == 0,
+                score_kind=score_kind,
+                current_model=current_model,
+                title_priority=_title_priority,
+                pool_size=max(fetch_n * 40, 500),
             )
-            db.save_score(
-                job["id"],
-                overall=scored.overall,
-                scores=scored.scores,
-                hard_filter=scored.hard_filter.to_dict() if scored.hard_filter else None,
-                strengths=scored.strengths,
-                gaps=scored.gaps,
-                salary_alignment=scored.salary_alignment,
-                rejection_reasons=scored.rejection_reasons,
-                evidence=scored.evidence,
-                model=scored.model,
-                description_hash=job.get("description_hash") or "",
-                score_kind=scored.score_kind,
-            )
-            results.append(
-                {
-                    "id": job["id"],
-                    "company": job["company"],
-                    "title": job["title"],
-                    "overall": scored.overall,
-                    "score_kind": scored.score_kind,
-                    "verdict": scored.hard_filter.verdict if scored.hard_filter else None,
-                    "model": scored.model,
-                }
-            )
+            if not jobs:
+                break
+            batch_persisted = 0
+            for job in jobs:
+                if db.should_skip_recommendation(job["company"], job["title"]):
+                    results.append({"id": job["id"], "skipped": "tracked_application"})
+                    continue
+                scored = score_job(
+                    job,
+                    search_cfg=search,
+                    profile=profile,
+                    settings=settings,
+                    use_llm=use_llm,
+                )
+                db.save_score(
+                    job["id"],
+                    overall=scored.overall,
+                    scores=scored.scores,
+                    hard_filter=scored.hard_filter.to_dict() if scored.hard_filter else None,
+                    strengths=scored.strengths,
+                    gaps=scored.gaps,
+                    salary_alignment=scored.salary_alignment,
+                    rejection_reasons=scored.rejection_reasons,
+                    evidence=scored.evidence,
+                    model=scored.model,
+                    description_hash=job.get("description_hash") or "",
+                    score_kind=scored.score_kind,
+                )
+                persisted += 1
+                batch_persisted += 1
+                results.append(
+                    {
+                        "id": job["id"],
+                        "company": job["company"],
+                        "title": job["title"],
+                        "overall": scored.overall,
+                        "score_kind": scored.score_kind,
+                        "verdict": scored.hard_filter.verdict if scored.hard_filter else None,
+                        "eligibility": scored.hard_filter.eligibility if scored.hard_filter else None,
+                        "model": scored.model,
+                    }
+                )
+            # Avoid infinite loop if re_rank keeps returning the same pool
+            if args.re_rank:
+                break
+            if batch_persisted == 0:
+                break
+            if user_limit is not None and persisted >= user_limit:
+                break
+
         companies = sorted({r.get("company") for r in results if r.get("company")})
         _print_json(
             {
-                "scored": len(results),
+                "scored": persisted,
+                "reported": len(results),
                 "score_kind": score_kind,
+                "model": current_model or score_kind,
                 "profile_warnings": warn,
                 "companies_in_batch": companies,
                 "results": results,
@@ -582,6 +619,8 @@ def cmd_sources(args: argparse.Namespace) -> int:
 def cmd_doctor(args: argparse.Namespace) -> int:
     load_dotenv()
     settings = Settings.from_env()
+    from jobseek.setup_wizard import validate_profile_config, validate_search_config
+
     issues: list[str] = []
     info: dict[str, Any] = {
         "python": sys.version.split()[0],
@@ -601,18 +640,30 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         },
         "llm_required_for_rank": False,
     }
+    if sys.version_info < (3, 10):
+        issues.append(
+            f"Python >=3.10 required (found {sys.version.split()[0]}). "
+            "On macOS, system python3 is often 3.9 — install Homebrew python@3.11 "
+            "and recreate the venv: brew install python@3.11 && python3.11 -m venv .venv"
+        )
     try:
         search = load_search()
         info["tracks"] = search.get("tracks")
         info["sources"] = search.get("sources")
+        issues.extend(validate_search_config(search))
+    except FileNotFoundError as exc:
+        issues.append(str(exc))
+    except Exception as exc:  # noqa: BLE001 — doctor must surface config errors
+        issues.append(f"search.yaml error: {exc}")
+    try:
+        profile = load_profile()
+        issues.extend(validate_profile_config(profile))
     except FileNotFoundError as exc:
         issues.append(str(exc))
     try:
         load_companies()
     except FileNotFoundError as exc:
         issues.append(str(exc))
-    if sys.version_info < (3, 10):
-        issues.append(f"Python >=3.10 required (found {sys.version.split()[0]})")
     db = _db(settings)
     try:
         companies = db.list_companies()
@@ -635,11 +686,12 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         print("  API keys present (values hidden):")
         for k, v in info["keys"].items():
             print(f"    {k}: {'yes' if v else 'no'}")
-        print(f"  Rank LLM required: no (deterministic by default)")
+        print("  Rank LLM required: no (deterministic by default)")
         if issues:
             print("  Issues:")
             for issue in issues:
                 print(f"    - {issue}")
+            print("  Status: PROBLEMS FOUND")
         else:
             print("  Status: OK")
     return 1 if issues else 0
@@ -648,6 +700,14 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 def cmd_setup(args: argparse.Namespace) -> int:
     """Interactive initial configuration for Canadian engineering search."""
     load_dotenv()
+    from jobseek.setup_wizard import (
+        apply_answers_to_profile,
+        apply_answers_to_search,
+        collect_setup_answers,
+        dump_profile_yaml,
+        dump_search_yaml,
+    )
+
     cfg_target = Path(args.config_dir) if args.config_dir else (Path.cwd() / "config")
     cfg_target.mkdir(parents=True, exist_ok=True)
 
@@ -664,65 +724,33 @@ def cmd_setup(args: argparse.Namespace) -> int:
         if src is not None:
             dest.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
 
-    tracks = list(DEFAULT_TRACK_ALIASES.keys())
-    selected: list[str] = []
-    chosen_modes: list[str] = ["remote_canada"]
-    if args.non_interactive:
-        selected = list(args.tracks) if args.tracks else [
-            "software_engineering",
-            "ai_engineering",
-            "data_engineering",
-            "forward_deployed",
-        ]
-        chosen_modes = list(args.modes) if args.modes else ["remote_canada"]
-    else:
-        print("GitHired setup — Canadian engineering job discovery\n")
-        print("Select engineering tracks (comma-separated numbers, Enter for defaults):")
-        for i, t in enumerate(tracks, 1):
-            print(f"  {i}. {t}")
-        raw = input("> ").strip()
-        if not raw:
-            selected = [
-                "software_engineering",
-                "ai_engineering",
-                "data_engineering",
-                "forward_deployed",
-            ]
-        else:
-            for part in raw.split(","):
-                part = part.strip()
-                if part.isdigit() and 1 <= int(part) <= len(tracks):
-                    selected.append(tracks[int(part) - 1])
-            if not selected:
-                selected = tracks[:]
+    try:
+        answers = collect_setup_answers(
+            non_interactive=bool(args.non_interactive),
+            tracks=list(args.tracks) if args.tracks else None,
+            modes=list(args.modes) if args.modes else None,
+            province=getattr(args, "province", None),
+            city=getattr(args, "city", None),
+            salary_cad=getattr(args, "salary_cad", None),
+            skills=list(args.skills) if getattr(args, "skills", None) else None,
+            years=getattr(args, "years", None),
+            name=getattr(args, "name", None),
+        )
+    except ValueError as exc:
+        _err(f"setup error: {exc}")
+        return 2
 
-        print("\nLocation modes (comma-separated, Enter for remote_canada):")
-        modes = ["remote_canada", "remote_province", "hybrid", "onsite"]
-        for i, m in enumerate(modes, 1):
-            print(f"  {i}. {m}")
-        raw_m = input("> ").strip()
-        if raw_m:
-            chosen_modes = []
-            for part in raw_m.split(","):
-                part = part.strip()
-                if part.isdigit() and 1 <= int(part) <= len(modes):
-                    chosen_modes.append(modes[int(part) - 1])
-            if not chosen_modes:
-                chosen_modes = ["remote_canada"]
-
-    # Patch search.yaml tracks/modes
     import yaml
 
     search_path = cfg_target / "search.yaml"
-    data = yaml.safe_load(search_path.read_text(encoding="utf-8")) or {}
-    data["tracks"] = selected
-    loc = data.get("location") or {}
-    loc["modes"] = chosen_modes
-    data["location"] = loc
-    search_path.write_text(
-        yaml.safe_dump(data, sort_keys=False, allow_unicode=True),
-        encoding="utf-8",
-    )
+    search_data = yaml.safe_load(search_path.read_text(encoding="utf-8")) or {}
+    search_data = apply_answers_to_search(search_data, answers)
+    search_path.write_text(dump_search_yaml(search_data), encoding="utf-8")
+
+    profile_path = cfg_target / "profile.yaml"
+    profile_data = yaml.safe_load(profile_path.read_text(encoding="utf-8")) or {}
+    profile_data = apply_answers_to_profile(profile_data, answers)
+    profile_path.write_text(dump_profile_yaml(profile_data), encoding="utf-8")
 
     env_path = Path.cwd() / ".env"
     if not env_path.exists():
@@ -741,7 +769,6 @@ def cmd_setup(args: argparse.Namespace) -> int:
 
     os.environ.setdefault("JOBSEEK_CONFIG_DIR", str(cfg_target.resolve()))
     settings = Settings.from_env()
-    # Prefer local data dir
     if not os.environ.get("JOBSEEK_DB_PATH"):
         local_db = Path.cwd() / "data" / "jobseek.db"
         local_db.parent.mkdir(parents=True, exist_ok=True)
@@ -757,8 +784,14 @@ def cmd_setup(args: argparse.Namespace) -> int:
 
     result = {
         "config_dir": str(cfg_target.resolve()),
-        "tracks": selected,
-        "location_modes": chosen_modes,
+        "country": answers["country"],
+        "province": answers["province"],
+        "city": answers["city"],
+        "tracks": answers["tracks"],
+        "location_modes": answers["modes"],
+        "salary_cad": answers["salary_cad"],
+        "skills_count": len(answers.get("skills") or []),
+        "years": answers.get("years"),
         "db": str(settings.db_path),
         "seeded_companies": n_companies,
         "imported_seen_jobs": n_seen,
@@ -789,6 +822,12 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     s.add_argument("--non-interactive", action="store_true")
     s.add_argument("--tracks", nargs="*", default=None)
     s.add_argument("--modes", nargs="*", default=None)
+    s.add_argument("--province", default=None, help="Province code (e.g. ON) or name")
+    s.add_argument("--city", default=None)
+    s.add_argument("--salary-cad", type=int, default=None, dest="salary_cad")
+    s.add_argument("--skills", nargs="*", default=None, help="Primary technical skills")
+    s.add_argument("--years", type=int, default=None, help="Years of experience")
+    s.add_argument("--name", default=None, help="Candidate display name")
     s.set_defaults(func=cmd_setup)
 
     d = sub.add_parser("discover", help="Run ATS + compliant LinkedIn discovery")
@@ -797,7 +836,12 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     d.set_defaults(func=cmd_discover)
 
     r = sub.add_parser("rank", help="Deterministic score (optional --llm)")
-    r.add_argument("--limit", type=int, default=25)
+    r.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Max jobs to score this run (default: all unscored / stale-model jobs, batched)",
+    )
     r.add_argument("--re-rank", action="store_true")
     r.add_argument(
         "--llm",

@@ -22,7 +22,17 @@ def _load_yaml(path: Path) -> dict[str, Any]:
 
 
 def load_search(path: Path | None = None) -> dict[str, Any]:
-    return _load_yaml(path or resolve_config_file("search.yaml"))
+    data = _load_yaml(path or resolve_config_file("search.yaml"))
+    # Recover PyYAML 1.1 footgun: unquoted ON → True in provinces lists.
+    from jobseek.filters.location import normalize_province_list
+
+    loc = data.get("location")
+    if isinstance(loc, dict) and "provinces" in loc:
+        loc = dict(loc)
+        loc["provinces"] = normalize_province_list(loc.get("provinces"))
+        data = dict(data)
+        data["location"] = loc
+    return data
 
 
 def load_profile(path: Path | None = None) -> dict[str, Any]:

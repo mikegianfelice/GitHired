@@ -2,12 +2,8 @@
 
 from __future__ import annotations
 
-import re
 from datetime import datetime, timezone
-from typing import Any
-
-_CANADA = re.compile(r"\bcanada\b|\bcanadian\b|worldwide|work\s+from\s+anywhere", re.I)
-_REMOTE = re.compile(r"\bremote\b", re.I)
+from typing import Any, Callable
 
 
 def _parse_ts(value: str | None) -> float:
@@ -26,12 +22,30 @@ def _parse_ts(value: str | None) -> float:
         return 0.0
 
 
-def _eligibility_hint(job: dict[str, Any]) -> int:
-    """Higher is better for selection priority (not the final hard-filter class)."""
-    blob = f"{job.get('location_raw') or ''}\n{(job.get('description') or '')[:2000]}"
-    if _CANADA.search(blob):
+def _location_priority(job: dict[str, Any]) -> int:
+    """Cheap pre-filter priority from structured location only (not description 'on')."""
+    loc = (job.get("location_raw") or "").casefold()
+    if not loc:
+        return 0
+    if "canada" in loc or "canadian" in loc:
+        return 3
+    for city in (
+        "toronto",
+        "vancouver",
+        "montreal",
+        "ottawa",
+        "calgary",
+        "edmonton",
+        "waterloo",
+        "kitchener",
+        "halifax",
+        "mississauga",
+    ):
+        if city in loc:
+            return 3
+    if "namer" in loc or "north america" in loc:
         return 2
-    if _REMOTE.search(blob):
+    if "remote" in loc:
         return 1
     return 0
 
@@ -41,22 +55,27 @@ def select_jobs_fairly(
     *,
     limit: int,
     max_per_company: int | None = None,
+    title_priority: Callable[[dict[str, Any]], int] | None = None,
 ) -> list[dict[str, Any]]:
-    """Round-robin across companies, preferring Canada-hinted and recent jobs.
+    """Round-robin across companies, preferring track-relevant and Canada-hinted jobs.
 
     Deterministic: same input order → same output. Does not mutate scores.
     """
     if limit <= 0 or not candidates:
         return []
     if max_per_company is None:
-        # Allow at least 1; widen slightly for large limits
         max_per_company = max(1, (limit + 4) // 5)
 
-    # Group by company (stable order of first appearance after priority sort)
+    def _title_pri(job: dict[str, Any]) -> int:
+        if title_priority is None:
+            return 0
+        return int(title_priority(job) or 0)
+
     ranked = sorted(
         candidates,
         key=lambda j: (
-            -_eligibility_hint(j),
+            -_title_pri(j),
+            -_location_priority(j),
             -_parse_ts(j.get("posted_date") or j.get("first_seen") or j.get("last_seen")),
             str(j.get("company") or "").casefold(),
             int(j.get("id") or 0),
@@ -74,7 +93,6 @@ def select_jobs_fairly(
 
     selected: list[dict[str, Any]] = []
     counts = {c: 0 for c in company_order}
-    # Round-robin until limit
     progressed = True
     while len(selected) < limit and progressed:
         progressed = False
@@ -90,7 +108,6 @@ def select_jobs_fairly(
             counts[company] += 1
             progressed = True
 
-    # If still short (few companies), fill from remaining ignoring per-company cap
     if len(selected) < limit:
         selected_ids = {int(j["id"]) for j in selected if j.get("id") is not None}
         for job in ranked:

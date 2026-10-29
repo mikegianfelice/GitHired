@@ -29,7 +29,7 @@ def render_digest_markdown(digest: dict[str, Any]) -> str:
         "# Daily job digest",
         "",
         f"Top {digest.get('count', 0)} opportunities"
-        + (f" since {digest['since']}" if digest.get("since") else " (all unscored windows)"),
+        + (f" since {digest['since']}" if digest.get("since") else " (current scores)"),
         "",
     ]
     if not digest.get("jobs"):
@@ -49,16 +49,34 @@ def render_digest_markdown(digest: dict[str, Any]) -> str:
             gaps_l = []
         kind = job.get("score_kind") or "deterministic"
         model = job.get("model") or kind
+        elig = None
+        hf = job.get("hard_filter_json")
+        if isinstance(hf, str):
+            try:
+                elig = (json.loads(hf) or {}).get("eligibility")
+            except json.JSONDecodeError:
+                elig = None
+        elif isinstance(hf, dict):
+            elig = hf.get("eligibility")
         lines.append(
             f"## {idx}. {job.get('title')} @ {job.get('company')} — {job.get('overall')}/100"
         )
         lines.append(f"- Score: {kind} ({model})")
+        if elig:
+            lines.append(f"- Canada eligibility: {elig}")
         lines.append(f"- Location: {job.get('location_raw') or 'n/a'}")
         lines.append(f"- URL: {job.get('url')}")
         if strengths_l:
             lines.append("- Strengths: " + "; ".join(strengths_l))
         if gaps_l:
             lines.append("- Gaps: " + "; ".join(gaps_l))
+        evidence = job.get("evidence_json")
+        try:
+            evidence_l = json.loads(evidence) if isinstance(evidence, str) else evidence or []
+        except json.JSONDecodeError:
+            evidence_l = []
+        if evidence_l:
+            lines.append("- Evidence: " + "; ".join(str(x) for x in evidence_l[:4]))
         lines.append("")
     lines.append(
         "_Resume generation and application submission require explicit approval "

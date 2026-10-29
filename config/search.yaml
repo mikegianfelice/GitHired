@@ -6,12 +6,14 @@ tracks:
   - ai_engineering
   - ml_engineering
   - data_engineering
+  - analytics_engineering
   - platform_engineering
   - cloud_engineering
   - devops_sre
   - forward_deployed
 
 # Title phrases / aliases per track. Users select tracks; overrides are advanced.
+# Phrases match as contiguous role titles (not loose token bags).
 track_aliases:
   software_engineering:
     - Software Engineer
@@ -37,9 +39,19 @@ track_aliases:
     - Data Engineer
     - Senior Data Engineer
     - Staff Data Engineer
+    - Lead Data Engineer
+    - Principal Data Engineer
+    - Cloud Data Engineer
+    - Data Platform Engineer
+    - ETL Engineer
+  analytics_engineering:
     - Analytics Engineer
+    - Senior Analytics Engineer
+    - Staff Analytics Engineer
   platform_engineering:
     - Platform Engineer
+    - Software Platform Engineer
+    - Developer Platform Engineer
     - Infrastructure Engineer
     - Developer Experience Engineer
     - DevEx Engineer
@@ -58,7 +70,6 @@ track_aliases:
     - Forward Deployed Engineer
     - Forward Deployed Software Engineer
     - Deployment Engineer
-    - Solutions Engineer Technical
 
 # Seniority policy: mid+ by default; student/intern/new-grad excluded.
 # Unknown seniority (no keywords in title) is allowed.
@@ -105,10 +116,11 @@ location:
     - Yukon
     - Northwest Territories
     - Nunavut
-    - ON
-    - QC
-    - BC
-    - AB
+    # Quote 2-letter codes — unquoted ON is a YAML boolean
+    - 'ON'
+    - 'QC'
+    - 'BC'
+    - 'AB'
   cities:
     - Toronto
     - Vancouver
