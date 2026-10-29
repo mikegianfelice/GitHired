@@ -1,0 +1,138 @@
+# Daily refresh of the README "Top 5 High-Paying Jobs" section.
+#
+# Safety:
+# - Updates only the <!-- TOP-PAYING-JOBS --> delimited block (+ snapshot JSON).
+# - On discover/selection failure, preserves the last valid snapshot and does
+#   not rewrite freshness claims.
+# - Commits only when the section or snapshot actually changed.
+# - Uses a curated Greenhouse/Lever/Ashby board subset (rate-limit friendly);
+#   never LinkedIn guest scraping. Freehire stays off.
+
+name: Showcase top-paying jobs
+
+on:
+  schedule:
+    # 14:00 UTC — mid-morning Eastern
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: showcase-top-paying
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Discover subset → refresh README
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          # Need write token for bot commit; default GITHUB_TOKEN is fine with contents: write
+          persist-credentials: true
+          fetch-depth: 1
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install GitHired
+        run: python -m pip install -e .
+
+      - name: Non-interactive setup (showcase profile)
+        run: |
+          githired setup --non-interactive \
+            --tracks software_engineering ai_engineering ml_engineering \
+              data_engineering platform_engineering cloud_engineering devops_sre \
+            --modes remote_canada hybrid onsite remote_province \
+            --province ON --city Toronto \
+            --salary-cad 100000 \
+            --skills Python TypeScript Go \
+            --years 8 --name "GitHired Showcase" \
+            --seniority-include mid senior staff principal lead
+
+      - name: Prefer low-rate ATS boards for CI discover
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import yaml
+          p = Path("config/search.yaml")
+          data = yaml.safe_load(p.read_text()) or {}
+          sources = dict(data.get("sources") or {})
+          # Keep public ATS; disable slow/optional sources in Actions
+          sources["workday"] = False
+          sources["freehire"] = False
+          sources["linkedin_free"] = False
+          sources["linkedin_serpapi"] = False
+          sources["linkedin_guest"] = False
+          sources["linkedin_alert_import"] = False
+          data["sources"] = sources
+          p.write_text(yaml.dump(data, sort_keys=False), encoding="utf-8")
+          print("sources:", sources)
+          PY
+
+      - name: Discover (best-effort)
+        id: discover
+        continue-on-error: true
+        run: |
+          set +e
+          githired discover
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Refresh README section from DB
+        id: refresh
+        continue-on-error: true
+        run: |
+          set +e
+          githired showcase-readme \
+            --readme README.md \
+            --snapshot docs/showcase/top_paying_snapshot.json \
+            --limit 5 \
+            --max-age-days 14
+          code=$?
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Fallback — re-apply last valid snapshot if refresh failed
+        if: steps.refresh.outcome == 'failure' || steps.discover.outcome == 'failure'
+        run: |
+          # Preserves prior timestamp inside the snapshot; never invents "today"
+          githired showcase-readme --from-snapshot \
+            --readme README.md \
+            --snapshot docs/showcase/top_paying_snapshot.json || true
+
+      - name: Validate README markers
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          text = Path("README.md").read_text(encoding="utf-8")
+          start = "<!-- TOP-PAYING-JOBS:START -->"
+          end = "<!-- TOP-PAYING-JOBS:END -->"
+          assert start in text and end in text, "missing markers"
+          assert text.index(start) < text.index(end)
+          section = text[text.index(start): text.index(end)]
+          assert "discovered today" not in section.casefold()
+          assert "Top" in section and "Paying" in section
+          print("README section OK; length", len(section))
+          PY
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/showcase/top_paying_snapshot.json
+          if git diff --staged --quiet; then
+            echo "No showcase changes to commit."
+            exit 0
+          fi
+          git commit -m "$(cat <<'EOF'
+          chore(showcase): refresh top-paying jobs in README
+
+          Automated daily update of the delimited Top Paying Jobs section from
+          discovered listings with employer-advertised salaries.
+          EOF
+          )"
+          git push

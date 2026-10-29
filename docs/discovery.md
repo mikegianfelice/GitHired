@@ -12,6 +12,7 @@ Production-oriented discovery and ranking for engineering roles that accept cand
 6. **Stage-1 rank** — transparent deterministic scores (default; no API key)
 7. **Stage-2 rank** — optional LLM evidence scores (`--llm` or `GITHIRED_RANK_LLM=1`)
 8. **Digest** — top 10 high-score jobs; SMTP or Resend email
+9. **README showcase** — optional public Top Paying Jobs block refreshed from SQLite salaries only ([`docs/showcase/ARCHITECTURE.md`](showcase/ARCHITECTURE.md); `githired showcase-readme`)
 
 Resume drafting and application submission stay behind explicit approval (`githired prepare` → `/apply`).
 
@@ -38,6 +39,8 @@ githired sources
 githired email-digest
 githired run-daily                 # jobs only
 githired run-daily --companies     # company discover then jobs
+githired showcase-readme           # refresh README Top Paying section from DB
+githired showcase-readme --from-snapshot
 githired prepare 42
 githired import-alerts path/to/alert.html
 githired migrate                   # seen_jobs.json + tracker.csv → SQLite

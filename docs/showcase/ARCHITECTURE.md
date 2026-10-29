@@ -1,0 +1,73 @@
+# Showcase: Top Paying Jobs in README
+
+GitHired’s public README includes a **Top 5 High-Paying Jobs** block fed only by
+listings the discovery pipeline has already stored with **employer-advertised**
+annual salaries. Nothing is estimated or invented for undisclosed pay.
+
+## Goals
+
+- Conversion-focused social proof on the landing README
+- Deterministic, auditable ranking
+- Safe automation that never mislabels freshness
+
+## Components
+
+| Piece | Role |
+| ----- | ---- |
+| [`jobseek/showcase/top_paying.py`](../../jobseek/showcase/top_paying.py) | Filter + rank candidates; salary CAD-comparable sort; eligibility / URL / track gates |
+| [`jobseek/showcase/readme.py`](../../jobseek/showcase/readme.py) | Render Markdown; surgically replace `<!-- TOP-PAYING-JOBS:* -->` markers |
+| [`jobseek/showcase/refresh.py`](../../jobseek/showcase/refresh.py) | Orchestrate DB → snapshot → README; preserve last good data on failure/empty |
+| [`docs/showcase/top_paying_snapshot.json`](top_paying_snapshot.json) | Last successful selection (committed; source of truth for fallback) |
+| [`githired showcase-readme`](../../jobseek/cli/main.py) | CLI entrypoint |
+| [`.github/workflows/showcase-top-paying.yml`](../../.github/workflows/showcase-top-paying.yml) | Daily Actions refresh |
+
+## Ranking rule (explicit)
+
+1. Require numeric `salary_min` / `salary_max` already persisted by an adapter.
+2. Reject values below CAD/USD **30,000** (treat as non-annual noise).
+3. Accept only **CAD** and **USD** for ranking. Other currencies are excluded (not converted ad hoc).
+4. Sort by annual **high** end. For comparison only: **USD × 1.35 → CAD**. Display keeps the employer’s currency and range unchanged.
+5. Require Canada geographic **ELIGIBLE** under the showcase location policy (same three-state model as discovery).
+6. Require a non-affiliate `http(s)` apply URL (`jobseek.filters.apply_url`).
+7. Require an engineering track match (showcase aliases include IC + clear eng leadership titles).
+8. Exclude `removed_at` rows and listings whose `last_seen` is older than **14 days**.
+9. Deduplicate by normalized `(company, title)`; keep the higher salary.
+10. Take at most five. If fewer qualify, show fewer — never pad.
+
+## Freshness labeling
+
+- Table column uses **`Verified YYYY-MM-DD`** from discovery `last_seen`.
+- Section blurb uses the snapshot’s **`generated_at`** (UTC).
+- The words **“discovered today”** are never used, even when the verified date is the calendar day of the run.
+
+## Failure handling
+
+| Situation | Behavior |
+| --------- | -------- |
+| Discover fails in Actions | `continue-on-error`; refresh may still run on whatever is in SQLite |
+| Selection throws | Snapshot + README **unchanged**; CLI returns `ok: false`, `preserved_prior: true` |
+| Selection returns empty and a prior non-empty snapshot exists | **Preserve** prior snapshot/README and prior `generated_at` (unless `--allow-empty`) |
+| Section/snapshot unchanged | Workflow does **not** create a commit |
+
+## Rate limits & ToS
+
+The Actions workflow disables Workday, Freehire, and LinkedIn guest/SerpAPI for the
+scheduled job so refreshes stay on public ATS boards (Greenhouse / Lever / Ashby /
+Workable / Rippling / RSS as enabled in builtin config). LinkedIn guest scraping
+remains off globally for scheduled automation.
+
+## Local usage
+
+```bash
+# After a local discover into data/jobseek.db:
+githired showcase-readme
+
+# Re-apply committed snapshot without hitting the DB:
+githired showcase-readme --from-snapshot
+```
+
+## Tests
+
+See [`tests/jobseek/test_showcase.py`](../../tests/jobseek/test_showcase.py) for ranking,
+salary normalization, link validation, date labels, README replacement, empty
+results, and failure preservation.

@@ -573,6 +573,45 @@ def cmd_sync_application(args: argparse.Namespace) -> int:
         db.close()
 
 
+def cmd_showcase_readme(args: argparse.Namespace) -> int:
+    """Refresh the README Top Paying Jobs section from SQLite or a snapshot."""
+    load_dotenv()
+    settings = Settings.from_env()
+    setup_logging(settings.log_level)
+    from jobseek.showcase.refresh import apply_snapshot_to_readme, refresh_readme
+
+    readme = Path(args.readme).expanduser().resolve() if args.readme else ROOT / "README.md"
+    snapshot = (
+        Path(args.snapshot).expanduser().resolve()
+        if args.snapshot
+        else ROOT / "docs" / "showcase" / "top_paying_snapshot.json"
+    )
+
+    if args.from_snapshot:
+        try:
+            changed = apply_snapshot_to_readme(readme, snapshot)
+        except ValueError as exc:
+            _err(f"error: {exc}")
+            return 1
+        _print_json({"ok": True, "wrote_readme": changed, "source": "snapshot", "snapshot": str(snapshot)})
+        return 0
+
+    db = _db(settings)
+    try:
+        result = refresh_readme(
+            readme_path=readme,
+            snapshot_path=snapshot,
+            db=db,
+            limit=int(args.limit),
+            max_age_days=int(args.max_age_days),
+            allow_empty_overwrite=bool(args.allow_empty),
+        )
+    finally:
+        db.close()
+    _print_json(result)
+    return 0 if result.get("ok") else 1
+
+
 def cmd_jobs(args: argparse.Namespace) -> int:
     load_dotenv()
     settings = Settings.from_env()
@@ -1069,6 +1108,32 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     sa.add_argument("--notes", default="")
     sa.add_argument("--write-tracker", action="store_true")
     sa.set_defaults(func=cmd_sync_application)
+
+    sc = sub.add_parser(
+        "showcase-readme",
+        help="Refresh README Top Paying Jobs section from DB (or --from-snapshot)",
+    )
+    sc.add_argument("--readme", default=None, help="Path to README.md (default: repo root)")
+    sc.add_argument(
+        "--snapshot",
+        default=None,
+        help="Path to docs/showcase/top_paying_snapshot.json",
+    )
+    sc.add_argument("--limit", type=int, default=5)
+    sc.add_argument("--max-age-days", type=int, default=14, dest="max_age_days")
+    sc.add_argument(
+        "--from-snapshot",
+        action="store_true",
+        dest="from_snapshot",
+        help="Render README from existing snapshot only (no DB)",
+    )
+    sc.add_argument(
+        "--allow-empty",
+        action="store_true",
+        dest="allow_empty",
+        help="Overwrite snapshot/README even when selection is empty",
+    )
+    sc.set_defaults(func=cmd_showcase_readme)
 
     return p
 
