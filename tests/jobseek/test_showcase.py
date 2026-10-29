@@ -139,9 +139,11 @@ class TestDateLabeling:
             ),
         ]
         md = render_section(jobs, generated_at=NOW, today=NOW)
+        svg = render_dashboard_svg(jobs, today=NOW, generated_at=NOW)
         assert "Top 5 High-Paying Jobs Discovered Today" in md
-        assert "Verified 2026-10-28" in md
-        assert "Discovered Today" in md
+        assert "| # | Role |" not in md
+        assert "Verified 2026-10-28" in svg
+        assert "Discovered Today" in svg
         assert "Get Started with GitHired" in md
         assert "assets/showcase/top-paying-jobs.svg" in md
 
@@ -276,7 +278,8 @@ class TestSvgAndReadme:
         text = readme.read_text(encoding="utf-8")
         assert "Acme" in text and "## Tail" in text
         assert "Apply →" in text
-        assert "`CAD 150,000–180,000`" in text
+        assert "| # | Role |" not in text
+        assert "CAD 150,000–180,000" in svg.read_text(encoding="utf-8")
 
 
 class TestFailureHandling:

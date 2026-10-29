@@ -6,12 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from jobseek.showcase.svg_dashboard import SVG_REL_PATH, write_dashboard_svg
-from jobseek.showcase.top_paying import (
-    COMPARISON_RULE,
-    ShowcaseJob,
-    discovery_date_label,
-    format_salary_range,
-)
+from jobseek.showcase.top_paying import COMPARISON_RULE, ShowcaseJob
 
 START_MARKER = "<!-- TOP-PAYING-JOBS:START -->"
 END_MARKER = "<!-- TOP-PAYING-JOBS:END -->"
@@ -97,33 +92,7 @@ def render_section(
             '<p align="center"><a href="#quick-start"><strong>Get Started with GitHired →</strong></a></p>',
             "",
             "<details>",
-            "<summary>Listings detail & ranking rules</summary>",
-            "",
-            "| # | Role | Company | Annual base | Location | Date | Apply |",
-            "| -: | --- | --- | --- | --- | --- | --- |",
-        ]
-    )
-    for i, job in enumerate(jobs, start=1):
-        salary = format_salary_range(job.salary_min, job.salary_max, job.salary_currency)
-        date_label = discovery_date_label(
-            discovered_today=job.discovered_today,
-            verified_at=job.verified_at,
-            today=today,
-        )
-        verified_mark = " ✓" if job.career_page_verified else ""
-        row = (
-            f"| {i} "
-            f"| **{_escape_md(job.title)}** "
-            f"| {_escape_md(job.company)}{verified_mark} "
-            f"| `{salary}` "
-            f"| {_escape_md(job.location_tag or job.eligibility_label)} · {_escape_md(job.work_mode_tag or '—')} "
-            f"| {date_label} "
-            f"| [Apply →]({job.apply_url}) |"
-        )
-        lines.append(row)
-
-    lines.extend(
-        [
+            "<summary>Ranking & eligibility rules</summary>",
             "",
             comparison_rule,
             "",
