@@ -586,16 +586,55 @@ def refine_candidate_geography(
             evidence.extend(job_cities)
             return "INELIGIBLE", "FAIL", reasons, evidence
 
-    # Nationwide Canada (preferred phrases, Remote Canada, hire-in-Canada, bare Canada).
-    if nationwide and "canada" in nationwide.casefold():
-        if job_provinces and arrangement_remote and not _CANADA_WORD.search(location) and not job_cities:
-            pass  # fall through to province-restricted remote
-        else:
-            reasons.append("candidate-compatible: nationwide Canada eligibility")
+    # Province-restricted hybrid / on-site — "Canada Hybrid (Ontario)" is NOT
+    # nationwide remote Canada. The Canada token names the country; the province
+    # restricts where the hybrid/office arrangement applies.
+    if job_provinces and not job_cities and (loc_hybrid or loc_onsite) and not loc_remote:
+        if _province_matches_candidate(job_provinces, candidate_provinces):
+            reasons.append(
+                f"candidate-compatible: province hybrid/on-site ({job_provinces[0]})"
+            )
             return "ELIGIBLE", "PASS", reasons, evidence
+        reasons.append(
+            f"province-restricted hybrid/on-site ({', '.join(job_provinces)}) "
+            "outside candidate provinces"
+        )
+        evidence.extend(job_provinces)
+        return "INELIGIBLE", "FAIL", reasons, evidence
 
-    # Explicit "Canada" in the structured location (remote or country-level).
-    if _CANADA_WORD.search(location) and (loc_remote or not job_cities):
+    # Province-restricted remote (with or without a Canada country token).
+    # "Remote, Ontario" and "Remote Ontario only" stay INELIGIBLE off-province.
+    # "Remote Canada" with an additional named province that excludes the
+    # candidate is UNCERTAIN (Canada-wide remote vs province-only is ambiguous).
+    if job_provinces and not job_cities and (loc_remote or (desc_remote and not loc_hybrid and not loc_onsite)):
+        if _province_matches_candidate(job_provinces, candidate_provinces):
+            reasons.append(f"candidate-compatible: province remote ({job_provinces[0]})")
+            return "ELIGIBLE", "PASS", reasons, evidence
+        if _CANADA_WORD.search(location) and loc_remote:
+            reasons.append(
+                f"remote Canada listing also names province(s) "
+                f"({', '.join(job_provinces)}) outside candidate provinces — ambiguous"
+            )
+            evidence.extend(job_provinces)
+            return "UNCERTAIN", "FLAG", reasons, evidence
+        reasons.append(
+            f"province-restricted remote ({', '.join(job_provinces)}) "
+            "outside candidate provinces"
+        )
+        evidence.extend(job_provinces)
+        return "INELIGIBLE", "FAIL", reasons, evidence
+
+    # Nationwide Canada (preferred phrases, Remote Canada, hire-in-Canada, bare Canada)
+    # only when no province restriction remains unresolved above.
+    if nationwide and "canada" in nationwide.casefold():
+        reasons.append("candidate-compatible: nationwide Canada eligibility")
+        return "ELIGIBLE", "PASS", reasons, evidence
+
+    # Explicit remote Canada / country-level Canada without province restriction.
+    if _CANADA_WORD.search(location) and loc_remote and not job_provinces:
+        reasons.append("candidate-compatible: Canada location")
+        return "ELIGIBLE", "PASS", reasons, evidence
+    if _CANADA_WORD.search(location) and not job_cities and not job_provinces and not loc_hybrid and not loc_onsite:
         reasons.append("candidate-compatible: Canada location")
         return "ELIGIBLE", "PASS", reasons, evidence
 
@@ -604,29 +643,9 @@ def refine_candidate_geography(
         reasons.append("candidate-compatible: worldwide remote")
         return "ELIGIBLE", "PASS", reasons, evidence
 
-    # Province-specific remote without Canada-wide token.
-    if (
-        (loc_remote or desc_remote)
-        and job_provinces
-        and not _CANADA_WORD.search(location)
-        and not job_cities
-    ):
-        if _province_matches_candidate(job_provinces, candidate_provinces):
-            reasons.append(f"candidate-compatible: province remote ({job_provinces[0]})")
-            return "ELIGIBLE", "PASS", reasons, evidence
-        reasons.append(
-            f"province-restricted remote ({', '.join(job_provinces)}) "
-            "outside candidate provinces"
-        )
-        evidence.extend(job_provinces)
-        return "INELIGIBLE", "FAIL", reasons, evidence
-
     if job_provinces and not job_cities:
         if _province_matches_candidate(job_provinces, candidate_provinces):
             reasons.append(f"candidate-compatible: province match ({job_provinces[0]})")
-            return "ELIGIBLE", "PASS", reasons, evidence
-        if loc_remote and _CANADA_WORD.search(location):
-            reasons.append("candidate-compatible: remote Canada")
             return "ELIGIBLE", "PASS", reasons, evidence
         reasons.append(
             f"job province ({', '.join(job_provinces)}) incompatible with candidate"

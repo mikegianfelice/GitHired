@@ -6,7 +6,7 @@ Production-oriented discovery and ranking for engineering roles that accept cand
 
 1. **Three-layer company registry** — builtin [`config/companies.yaml`](../config/companies.yaml) → community [`registry/community/`](../registry/community/) → SQLite discoveries → user [`config/companies.local.yaml`](../config/companies.local.yaml.example) (overrides win; auto-discovery never writes overrides)
 2. **Company discovery** — `githired companies discover` validates public ATS boards (Greenhouse, Lever, Ashby, Workable, RSS/XML, Rippling, Workday guest CXS; Gem adapter present but opt-in)
-3. **Job discover** — `githired discover` fetches enabled boards + LinkedIn search-index / SerpAPI / alert import
+3. **Job discover** — `githired discover` fetches enabled boards (Workday included when `sources.workday: true`, the default) + LinkedIn search-index / SerpAPI / alert import + optional Freehire (`sources.freehire`, default **off**)
 4. **SQLite** — `data/jobseek.db` stores raw responses, normalized jobs (`first_seen` / `last_seen` / `removed_at`), scores, applications, companies, runs
 5. **Hard filters** — engineering tracks, Canada eligibility modes, salary floors (no LLM)
 6. **Stage-1 rank** — transparent deterministic scores (default; no API key)
@@ -71,6 +71,23 @@ Scheduled discovery **does not** call LinkedIn `jobs-guest` endpoints (ToS risk)
 3. `githired import-alerts` for saved job alert HTML/JSON exports
 
 Missing SerpAPI is a **warning**, not a discover failure. `githired sources` shows which LinkedIn modes are active. Company search-index discovery degrades the same way.
+
+## Workday
+
+Verified Canadian employers with public Workday guest CXS boards are fetched automatically when `sources.workday` is enabled (default). Discovery paginates list endpoints and hydrates job details with bounded concurrency and connection reuse. No paid API is required.
+
+## Optional Freehire aggregator
+
+[`sources.freehire`](../config/search.yaml) defaults to **false**. When enabled:
+
+- Uses the public Freehire JSON API (`FREEHIRE_API_URL` override supported); **no API key** and **no Bun** dependency for `githired discover`
+- Normalizes hits into the same job model and Canada eligibility rules as other sources
+- Deduplicates against existing ATS/Workday URLs where identity matches
+- **Direct employer ATS apply URLs** (Greenhouse, Lever, Ashby, Workday, …) may enter the confirmed shortlist when geography passes
+- **Affiliate-only** links (e.g. WhatJobs) are stored as `freehire_review` and excluded from confirmed (`ELIGIBLE`) recommendations — we do not invent employer URLs or follow untrusted redirect chains
+- Provider failures are warnings; they do not fail the whole discover run
+
+Freehire is best-effort hosted software. Do not advertise it as a reliable primary source unless your own benchmark supports that claim. Core discovery does **not** require Freehire or any paid API.
 
 ## Canada eligibility
 

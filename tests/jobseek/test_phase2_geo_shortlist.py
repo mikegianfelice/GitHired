@@ -122,6 +122,83 @@ class CandidateCityGeoTests(unittest.TestCase):
         self.assertEqual(verdict, "FAIL")
         self.assertTrue(any("Toronto" in e for e in evidence) or any("incompatible" in r for r in reasons))
 
+    def test_canada_hybrid_ontario_ineligible_for_montreal(self):
+        """Phase 6: 'Canada Hybrid (Ontario)' is province-restricted, not nationwide."""
+        elig, verdict, reasons, evidence = classify_canada_eligibility(
+            {
+                "title": "Software Engineer II, Toast International",
+                "location_raw": "Canada Hybrid (Ontario)",
+                "description": "Hybrid role in Ontario.",
+            },
+            MONTREAL,
+        )
+        self.assertEqual(elig, "INELIGIBLE")
+        self.assertEqual(verdict, "FAIL")
+        self.assertTrue(
+            any("Ontario" in e for e in evidence)
+            or any("province-restricted" in r for r in reasons)
+        )
+
+    def test_canada_hybrid_ontario_eligible_for_toronto(self):
+        elig, verdict, _, _ = classify_canada_eligibility(
+            {
+                "title": "Software Engineer",
+                "location_raw": "Canada Hybrid (Ontario)",
+                "description": "Hybrid role in Ontario.",
+            },
+            TORONTO,
+        )
+        self.assertEqual(elig, "ELIGIBLE")
+        self.assertEqual(verdict, "PASS")
+
+    def test_canada_hybrid_alberta_eligible_for_calgary(self):
+        elig, verdict, _, _ = classify_canada_eligibility(
+            {
+                "title": "DevOps Engineer",
+                "location_raw": "Canada Hybrid (Alberta)",
+                "description": "Hybrid in Alberta.",
+            },
+            CALGARY,
+        )
+        self.assertEqual(elig, "ELIGIBLE")
+        self.assertEqual(verdict, "PASS")
+
+    def test_remote_ontario_ineligible_for_quebec(self):
+        elig, verdict, _, _ = classify_canada_eligibility(
+            {
+                "title": "Backend Engineer",
+                "location_raw": "Remote, Ontario",
+                "description": "Remote within Ontario only.",
+            },
+            MONTREAL,
+        )
+        self.assertEqual(elig, "INELIGIBLE")
+        self.assertEqual(verdict, "FAIL")
+
+    def test_remote_canada_no_province_still_eligible(self):
+        elig, verdict, _, _ = classify_canada_eligibility(
+            {
+                "title": "Backend Engineer",
+                "location_raw": "Remote, Canada",
+                "description": "Fully remote in Canada.",
+            },
+            MONTREAL,
+        )
+        self.assertEqual(elig, "ELIGIBLE")
+        self.assertEqual(verdict, "PASS")
+
+    def test_remote_canada_with_conflicting_province_uncertain(self):
+        elig, verdict, _, _ = classify_canada_eligibility(
+            {
+                "title": "Backend Engineer",
+                "location_raw": "Remote Canada; Ontario",
+                "description": "Remote in Canada with Ontario hub.",
+            },
+            MONTREAL,
+        )
+        self.assertEqual(elig, "UNCERTAIN")
+        self.assertEqual(verdict, "FLAG")
+
     def test_vancouver_remote_canada_eligible(self):
         elig, verdict, _, _ = classify_canada_eligibility(
             {

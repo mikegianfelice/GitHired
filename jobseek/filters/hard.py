@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from jobseek.filters.apply_url import classify_application_url
 from jobseek.filters.location import classify_canada_eligibility
 from jobseek.filters.tracks import match_track, seniority_gate
 from jobseek.models import HardFilterResult
@@ -117,6 +118,31 @@ def apply_hard_filters(
 
     sal_verdict, sal_reasons = _salary_verdict(job, search_cfg)
     reasons.extend(sal_reasons)
+
+    # Affiliate / WhatJobs-style redirects and Freehire review-only rows must not
+    # enter the confirmed shortlist. LinkedIn index hits are unchanged (separate source).
+    apply_candidate = job.get("apply_url") or job.get("url")
+    apply_verdict = classify_application_url(
+        str(apply_candidate) if apply_candidate else None
+    )
+    source = str(job.get("source") or "")
+    reject_apply = (
+        apply_verdict.kind == "affiliate"
+        or source == "freehire_review"
+        or (source == "freehire" and not apply_verdict.actionable)
+    )
+    if reject_apply:
+        reasons.append(
+            f"application URL not confirmed-actionable: {apply_verdict.reason}"
+        )
+        if apply_verdict.host:
+            evidence.append(apply_verdict.host)
+        # Preserve geographic classification in reasons, but demote eligibility so
+        # githired jobs (ELIGIBLE-only) never surfaces affiliate-only rows.
+        if eligibility == "ELIGIBLE":
+            eligibility = "UNCERTAIN"
+        if loc_verdict == "PASS":
+            loc_verdict = "FLAG"
 
     if eligibility == "INELIGIBLE" or sal_verdict == "FAIL":
         overall = "FAIL"

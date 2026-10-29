@@ -164,7 +164,23 @@ sources:
   linkedin_search_index: true
   linkedin_alert_import: true
   linkedin_guest: false
+  # Optional Freehire.me aggregator (public API, no key). Default off — enable
+  # only after reviewing affiliate-URL filtering; not required for core discovery.
   freehire: false
+
+# Optional Freehire queries (used only when sources.freehire: true)
+freehire_queries:
+  - q: "title:Data Engineer"
+    countries: ca
+    seniority: [senior, staff]
+  - q: "title:Software Engineer OR title:AI Engineer OR title:Machine Learning"
+    countries: ca
+  - q: "title:Backend Engineer OR title:Software Developer"
+    countries: ca
+    seniority: [junior, middle]
+  - q: "title:DevOps OR title:SRE OR title:Platform Engineer"
+    countries: ca
+    seniority: [senior, staff]
 
 # Company discovery (separate from daily job discover)
 company_discovery:

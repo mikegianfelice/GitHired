@@ -59,7 +59,8 @@ class DeterministicRankTests(unittest.TestCase):
             use_llm=False,
         )
         self.assertEqual(result.overall, 0)
-        self.assertEqual(result.score_kind, "hard_filter")
+        self.assertEqual(result.score_kind, "deterministic")
+        self.assertTrue(str(result.model).startswith("hard_filter/"))
 
     def test_not_labeled_as_ai(self):
         job = {

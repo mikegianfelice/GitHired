@@ -507,6 +507,26 @@ class Database:
                     """,
                     payload,
                 )
+            # Hard-filter failures historically used score_kind=hard_filter while
+            # confirmed shortlists read score_kind=deterministic — delete the
+            # sibling hard_filter row when writing deterministic so stale PASS
+            # rows cannot shadow a newer FAIL (and vice versa).
+            if score_kind == "deterministic":
+                self._conn.execute(
+                    """
+                    DELETE FROM job_scores
+                    WHERE job_id = ? AND description_hash = ? AND score_kind = 'hard_filter'
+                    """,
+                    (job_id, description_hash),
+                )
+            elif score_kind == "hard_filter":
+                self._conn.execute(
+                    """
+                    DELETE FROM job_scores
+                    WHERE job_id = ? AND description_hash = ? AND score_kind = 'deterministic'
+                    """,
+                    (job_id, description_hash),
+                )
             self._conn.execute(
                 "UPDATE jobs SET status = 'ranked' WHERE id = ?", (job_id,)
             )

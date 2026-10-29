@@ -23,7 +23,8 @@ from jobseek.rank.weights import WEIGHTS
 _JSON_BLOCK = re.compile(r"\{[\s\S]*\}")
 
 # Bump when deterministic scoring / eligibility logic changes so stale rows re-rank.
-SCORER_VERSION = "v7"
+# v8: province-restricted hybrid (e.g. Canada Hybrid (Ontario)) is not nationwide CA.
+SCORER_VERSION = "v8"
 DETERMINISTIC_MODEL = f"deterministic/{SCORER_VERSION}"
 HARD_FILTER_MODEL = f"hard_filter/{SCORER_VERSION}"
 # A job is "current" for Stage-1 ranking if it has either model from this run.
@@ -155,6 +156,9 @@ def score_deterministic(
     """Transparent Stage-1 score. Never labeled as AI-generated."""
     hard = hard or apply_hard_filters(job, search_cfg, profile)
     if hard.verdict == "FAIL":
+        # Persist as score_kind=deterministic so list_jobs / confirmed shortlists
+        # replace any prior deterministic PASS for the same posting text. The
+        # model string still records hard_filter/<version> for audit.
         return ScoreResult(
             overall=0,
             scores={
@@ -173,7 +177,7 @@ def score_deterministic(
             rejection_reasons=hard.reasons,
             evidence=hard.evidence,
             model=HARD_FILTER_MODEL,
-            score_kind="hard_filter",
+            score_kind="deterministic",
             hard_filter=hard,
         )
 
@@ -420,7 +424,7 @@ def score_job(
             rejection_reasons=hard.reasons,
             evidence=hard.evidence,
             model=HARD_FILTER_MODEL,
-            score_kind="hard_filter",
+            score_kind="deterministic",
             hard_filter=hard,
         )
 

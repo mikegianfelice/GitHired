@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import threading
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -35,19 +36,23 @@ class RateLimitedClient:
         self.timeout_s = timeout_s
         self.user_agent = user_agent
         self._last_request_at = 0.0
+        self._lock = threading.Lock()
         self._client = httpx.Client(
             timeout=timeout_s,
             headers={"User-Agent": user_agent, "Accept": "application/json, text/html;q=0.9,*/*;q=0.8"},
             follow_redirects=True,
+            limits=httpx.Limits(max_connections=16, max_keepalive_connections=8),
         )
 
     def close(self) -> None:
         self._client.close()
 
     def _throttle(self) -> None:
-        elapsed = time.monotonic() - self._last_request_at
-        if elapsed < self.min_interval_s:
-            time.sleep(self.min_interval_s - elapsed)
+        with self._lock:
+            elapsed = time.monotonic() - self._last_request_at
+            if elapsed < self.min_interval_s:
+                time.sleep(self.min_interval_s - elapsed)
+            self._last_request_at = time.monotonic()
 
     def get(
         self,
@@ -80,7 +85,6 @@ class RateLimitedClient:
         for attempt in range(self.max_retries + 1):
             self._throttle()
             try:
-                self._last_request_at = time.monotonic()
                 resp = self._client.request(
                     method,
                     url,

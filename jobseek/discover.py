@@ -14,6 +14,7 @@ from jobseek.adapters.linkedin_compliant import LinkedInSearchIndexAdapter
 from jobseek.adapters.rippling import RipplingAdapter
 from jobseek.adapters.rss import RssAdapter
 from jobseek.adapters.workable import WorkableAdapter
+from jobseek.adapters.freehire import FreehireAdapter, default_freehire_queries
 from jobseek.adapters.workday import WorkdayAdapter
 from jobseek.companies.registry import load_local_overrides, load_merged_companies
 from jobseek.config_loader import Settings, load_companies, load_search
@@ -87,10 +88,12 @@ def _source_status(sources: dict[str, Any], settings: Settings) -> dict[str, Any
             }
         )
     if sources.get("freehire"):
+        enabled.append("freehire")
+    else:
         skipped.append(
             {
                 "source": "freehire",
-                "reason": "not wired into jobseek discover yet",
+                "reason": "disabled in search.yaml (optional aggregator; default off)",
             }
         )
     return {"sources_enabled": enabled, "sources_skipped": skipped}
@@ -306,6 +309,38 @@ def run_discover(
                     summary["new"] += 1
                 else:
                     summary["updated"] += 1
+
+        # Optional Freehire aggregator — default off; soft-fail on provider errors
+        if sources.get("freehire"):
+            fh = FreehireAdapter(client=client)
+            fh_queries = default_freehire_queries(search)
+            fh_result = fh.search(fh_queries)
+            fh_stats = getattr(fh, "last_stats", {}) or {}
+            summary["freehire"] = fh_stats
+            for err in fh_result.errors:
+                summary["warnings"].append(err)
+                db.add_run_event(run_id, "warning", err, {"source": "freehire"})
+            if fh_result.jobs:
+                db.store_raw(
+                    source="freehire",
+                    request_key=fh_result.request_key,
+                    status_code=fh_result.raw_status,
+                    body=json.dumps(
+                        [j.to_dict() for j in fh_result.jobs], ensure_ascii=False
+                    )[:500000],
+                )
+            for job in fh_result.jobs:
+                summary["fetched"] += 1
+                job_id, is_new = db.upsert_job(job)
+                if is_new:
+                    summary["new"] += 1
+                else:
+                    summary["updated"] += 1
+            if fh_stats.get("affiliate_rejected"):
+                summary["warnings"].append(
+                    f"freehire: {fh_stats['affiliate_rejected']} affiliate-only "
+                    "URL(s) stored as freehire_review (excluded from confirmed shortlist)"
+                )
 
         removed = 0
         for source, ids in seen_by_source.items():

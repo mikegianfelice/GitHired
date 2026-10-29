@@ -50,8 +50,10 @@ GitHired ships configured for **Canada-remote and Canada-eligible** engineering 
 - Location modes: remote Canada, province remote, hybrid, on-site cities  
 - Salary floors (configurable): CAD / USD in `config/search.yaml`  
 - Company boards expand via `githired companies discover` — Day-1 install works without editing a company list  
-- Adapters: Greenhouse, Lever, Ashby, Workable, RSS/XML (e.g. Shopify feed), Rippling, Workday guest CXS; Gem adapter present but disabled until markup is extractable  
-- Portal CLIs ship country-agnostic only (`linkedin-search`, `freehire-search`); add local boards with `/add-portal`
+- Adapters: Greenhouse, Lever, Ashby, Workable, RSS/XML (e.g. Shopify feed), Rippling, **Workday guest CXS** (on by default for verified boards); Gem adapter present but disabled until markup is extractable  
+- **Freehire.me** is an optional aggregator (`sources.freehire`, **default off**) — public API, no key, no Bun required for `githired discover`. Affiliate-only apply links (e.g. WhatJobs) are excluded from confirmed recommendations; direct employer ATS URLs are preferred. Do not treat Freehire as a primary reliable source unless you have validated it for your search.  
+- Portal CLIs ship country-agnostic only (`linkedin-search`, `freehire-search`); add local boards with `/add-portal`  
+- **No paid APIs required** for core ATS + Workday discovery and deterministic ranking
 
 ---
 
@@ -131,6 +133,8 @@ githired run-daily
 ```
 
 **LinkedIn** is optional. Free web-index search often fails (rate limits); ATS boards still work (Greenhouse, Lever, Ashby, Workable, Rippling, Workday guest boards, RSS). You can import LinkedIn email alerts (`linkedin_alert_import`) or set `SERPAPI_KEY` for a paid index — neither is required.
+
+**Freehire** (`sources.freehire: true`) is optional and off by default. When enabled, `githired discover` queries the public Freehire API directly (no Bun, no API key). Confirmed shortlists prefer direct employer application URLs; affiliate/aggregator redirects such as WhatJobs are stored for review only and never padded into `githired jobs` as ELIGIBLE matches.
 
 Details: [docs/discovery.md](docs/discovery.md).
 

@@ -18,6 +18,7 @@ Company config (verified boards only; never invent endpoints)::
 from __future__ import annotations
 
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 from jobseek.adapters.base import AdapterResult
@@ -25,8 +26,30 @@ from jobseek.http_client import RateLimitedClient
 from jobseek.models import RawJob
 
 _PAGE_SIZE = 20
+_DEFAULT_DETAIL_CONCURRENCY = 4
 _LOCATION_COUNT = re.compile(r"^\s*\d+\s+locations?\s*$", re.I)
 _POSTED_AGO = re.compile(r"Posted\s+(\d+)\s+Days?\s+Ago", re.I)
+
+
+def list_location_needs_detail(locations_text: str | None) -> bool:
+    """True when list-level location is missing or a multi-location stub."""
+    text = (locations_text or "").strip()
+    if not text:
+        return True
+    return bool(_LOCATION_COUNT.match(text))
+
+
+def detail_required_for_listing(listing: dict[str, Any]) -> bool:
+    """Whether CXS detail hydration is required for location/description completeness.
+
+    List payloads never include job descriptions. Multi-location stubs ("5 Locations")
+    also lack usable geography. Always hydrate in those cases. When list location is
+    already specific we still hydrate for description (ranking/geo evidence) — callers
+    that only need URLs can pass ``fetch_details=False``.
+    """
+    # Description is never on the list endpoint — detail is required for completeness.
+    _ = listing
+    return True
 
 
 def parse_workday_board(company: dict[str, Any]) -> tuple[str, str, str] | None:
@@ -202,11 +225,15 @@ class WorkdayAdapter:
         page_size: int = _PAGE_SIZE,
         fetch_details: bool = True,
         max_jobs: int | None = None,
+        detail_concurrency: int = _DEFAULT_DETAIL_CONCURRENCY,
     ) -> None:
-        self.client = client or RateLimitedClient(min_interval_s=0.4)
+        # Shared keep-alive client; slightly tighter spacing is safe with the
+        # global throttle lock and bounded detail concurrency below.
+        self.client = client or RateLimitedClient(min_interval_s=0.25)
         self.page_size = max(1, min(page_size, 20))  # Workday CXS commonly caps at 20
         self.fetch_details = fetch_details
         self.max_jobs = max_jobs
+        self.detail_concurrency = max(1, min(int(detail_concurrency), 8))
 
     def fetch_company(self, company: dict) -> AdapterResult:
         parsed = parse_workday_board(company)
@@ -230,18 +257,16 @@ class WorkdayAdapter:
             if self.max_jobs is not None:
                 listings = listings[: self.max_jobs]
 
-            detail_failures = 0
+            details_by_path = self._hydrate_details(host, tenant, site, listings)
+            detail_failures = sum(1 for _path, (detail, err) in details_by_path.items() if err)
+
             for listing in listings:
                 if not isinstance(listing, dict):
                     continue
                 detail: dict[str, Any] | None = None
-                if self.fetch_details:
-                    path_id = _job_path_id(str(listing.get("externalPath") or ""))
-                    if path_id:
-                        detail, derr = self._fetch_detail(host, tenant, site, path_id)
-                        if derr:
-                            detail_failures += 1
-                            # Keep going with list-level fields; do not invent URLs.
+                path_id = _job_path_id(str(listing.get("externalPath") or ""))
+                if path_id and path_id in details_by_path:
+                    detail, _derr = details_by_path[path_id]
                 job = normalize_workday_job(
                     company_name=company_name,
                     host=host,
@@ -268,6 +293,54 @@ class WorkdayAdapter:
             if result.raw_status is None:
                 result.raw_status = None
             return result
+
+    def _hydrate_details(
+        self,
+        host: str,
+        tenant: str,
+        site: str,
+        listings: list[dict[str, Any]],
+    ) -> dict[str, tuple[dict[str, Any] | None, str | None]]:
+        """Fetch job details with bounded concurrency; never skip required fields."""
+        out: dict[str, tuple[dict[str, Any] | None, str | None]] = {}
+        if not self.fetch_details:
+            return out
+
+        path_ids: list[str] = []
+        seen: set[str] = set()
+        for listing in listings:
+            if not isinstance(listing, dict):
+                continue
+            # List payloads omit descriptions; always hydrate for completeness.
+            # Multi-location stubs also need detail for usable geography
+            # (see list_location_needs_detail / detail_required_for_listing).
+            path_id = _job_path_id(str(listing.get("externalPath") or ""))
+            if not path_id or path_id in seen:
+                continue
+            seen.add(path_id)
+            path_ids.append(path_id)
+
+        if not path_ids:
+            return out
+
+        workers = min(self.detail_concurrency, len(path_ids))
+        if workers == 1:
+            for path_id in path_ids:
+                out[path_id] = self._fetch_detail(host, tenant, site, path_id)
+            return out
+
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {
+                pool.submit(self._fetch_detail, host, tenant, site, path_id): path_id
+                for path_id in path_ids
+            }
+            for fut in as_completed(futures):
+                path_id = futures[fut]
+                try:
+                    out[path_id] = fut.result()
+                except Exception as exc:  # noqa: BLE001
+                    out[path_id] = (None, str(exc))
+        return out
 
     def _paginate_listings(
         self, list_url: str

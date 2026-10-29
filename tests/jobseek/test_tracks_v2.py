@@ -116,7 +116,8 @@ class RankingRelevanceTests(unittest.TestCase):
         )
         self.assertEqual(toronto.hard_filter.eligibility, "ELIGIBLE")
         self.assertEqual(london.overall, 0)
-        self.assertEqual(london.score_kind, "hard_filter")
+        self.assertEqual(london.score_kind, "deterministic")
+        self.assertTrue(str(london.model).startswith("hard_filter/"))
         self.assertGreater(toronto.overall, 70)
 
     def test_missing_salary_not_boosted(self):

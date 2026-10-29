@@ -295,6 +295,29 @@ class WorkdayAdapterTests(unittest.TestCase):
             sorted(j.ats_job_id for j in b.jobs),
         )
 
+    def test_bounded_concurrency_fetches_all_details(self):
+        client = _FakeClient(
+            post_pages=[_load("workday_list_page1.json")],
+            details=self._detail_map(),
+        )
+        adapter = WorkdayAdapter(client=client, detail_concurrency=4)  # type: ignore[arg-type]
+        result = adapter.fetch_company(COMPANY)
+        self.assertEqual(len(result.jobs), 3)
+        self.assertEqual(len(client.get_calls), 3)
+        self.assertTrue(all(j.description for j in result.jobs))
+
+    def test_fetch_details_false_skips_hydration(self):
+        client = _FakeClient(
+            post_pages=[_load("workday_list_page1.json")],
+            details=self._detail_map(),
+        )
+        adapter = WorkdayAdapter(client=client, fetch_details=False)  # type: ignore[arg-type]
+        result = adapter.fetch_company(COMPANY)
+        self.assertEqual(len(result.jobs), 3)
+        self.assertEqual(client.get_calls, [])
+        # List-only still constructs official apply URLs
+        self.assertTrue(all("myworkdayjobs.com" in (j.url or "") for j in result.jobs))
+
 
 class WorkdayGeoTests(unittest.TestCase):
     def test_toronto_hybrid_not_for_vancouver(self):
