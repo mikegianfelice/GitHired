@@ -25,6 +25,9 @@ _JSON_BLOCK = re.compile(r"\{[\s\S]*\}")
 # Bump when deterministic scoring / eligibility logic changes so stale rows re-rank.
 SCORER_VERSION = "v2"
 DETERMINISTIC_MODEL = f"deterministic/{SCORER_VERSION}"
+HARD_FILTER_MODEL = f"hard_filter/{SCORER_VERSION}"
+# A job is "current" for Stage-1 ranking if it has either model from this run.
+STAGE1_MODELS = (DETERMINISTIC_MODEL, HARD_FILTER_MODEL)
 
 
 def _rubric_from_profile(profile: dict[str, Any]) -> str:
@@ -169,8 +172,8 @@ def score_deterministic(
             salary_alignment="n/a",
             rejection_reasons=hard.reasons,
             evidence=hard.evidence,
-            model="deterministic",
-            score_kind="hard_filter" if hard.verdict == "FAIL" else "deterministic",
+            model=HARD_FILTER_MODEL,
+            score_kind="hard_filter",
             hard_filter=hard,
         )
 
@@ -416,7 +419,7 @@ def score_job(
             salary_alignment="n/a",
             rejection_reasons=hard.reasons,
             evidence=hard.evidence,
-            model="hard_filter",
+            model=HARD_FILTER_MODEL,
             score_kind="hard_filter",
             hard_filter=hard,
         )

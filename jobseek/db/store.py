@@ -304,21 +304,29 @@ class Database:
             """
             rows = self._conn.execute(sql, (pool,)).fetchall()
         elif current_model:
-            # Missing score OR stale scoring model (logic changed) → needs (re)score.
-            sql = """
+            # current_model may be a single string or a sequence of acceptable Stage-1 models
+            # (deterministic + hard_filter share a scorer version).
+            models = (
+                list(current_model)
+                if isinstance(current_model, (list, tuple, set))
+                else [current_model]
+            )
+            placeholders = ",".join("?" for _ in models)
+            sql = f"""
                 SELECT j.* FROM jobs j
-                LEFT JOIN job_scores s
-                  ON s.job_id = j.id
-                 AND s.description_hash = j.description_hash
-                 AND s.score_kind = ?
                 WHERE j.removed_at IS NULL
                   AND j.status != 'removed'
                   AND j.description IS NOT NULL
-                  AND (s.id IS NULL OR s.model IS NULL OR s.model != ?)
+                  AND NOT EXISTS (
+                    SELECT 1 FROM job_scores s
+                    WHERE s.job_id = j.id
+                      AND s.description_hash = j.description_hash
+                      AND s.model IN ({placeholders})
+                  )
                 ORDER BY j.first_seen DESC
                 LIMIT ?
             """
-            rows = self._conn.execute(sql, (score_kind, current_model, pool)).fetchall()
+            rows = self._conn.execute(sql, (*models, pool)).fetchall()
         else:
             sql = """
                 SELECT j.* FROM jobs j

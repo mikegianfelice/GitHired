@@ -179,7 +179,7 @@ class RankHeuristicTests(unittest.TestCase):
             "url": "https://example.com/x",
         }
         scored = score_job(job, search_cfg=SEARCH, profile=PROFILE)
-        self.assertEqual(scored.model, "hard_filter")
+        self.assertTrue(str(scored.model).startswith("hard_filter"))
         self.assertEqual(scored.overall, 0)
         self.assertTrue(scored.rejection_reasons)
 

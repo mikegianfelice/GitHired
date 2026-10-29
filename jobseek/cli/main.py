@@ -72,11 +72,11 @@ def cmd_rank(args: argparse.Namespace) -> int:
     profile = load_profile()
     from jobseek.filters.tracks import title_matches_selected_tracks
     from jobseek.profile_util import profile_warnings
-    from jobseek.rank.scorer import DETERMINISTIC_MODEL
+    from jobseek.rank.scorer import STAGE1_MODELS
 
     use_llm = bool(args.llm) or settings.rank_llm
     score_kind = "llm" if use_llm else "deterministic"
-    current_model = None if use_llm else DETERMINISTIC_MODEL
+    current_model = None if use_llm else STAGE1_MODELS
     # Default: score all unscored / stale track-relevant jobs in bounded batches.
     # Explicit --limit still caps total persisted scores this run.
     user_limit = args.limit  # None → unbounded
@@ -161,7 +161,9 @@ def cmd_rank(args: argparse.Namespace) -> int:
                 "scored": persisted,
                 "reported": len(results),
                 "score_kind": score_kind,
-                "model": current_model or score_kind,
+                "model": (
+                    list(current_model) if current_model is not None else score_kind
+                ),
                 "profile_warnings": warn,
                 "companies_in_batch": companies,
                 "results": results,
