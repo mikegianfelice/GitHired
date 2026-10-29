@@ -61,6 +61,7 @@ def _source_status(sources: dict[str, Any], settings: Settings) -> dict[str, Any
         "workable",
         "rss",
         "rippling",
+        "workday",
         "gem",
         "career_pages",
     ):

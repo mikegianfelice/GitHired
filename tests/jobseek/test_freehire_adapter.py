@@ -135,6 +135,17 @@ class ConfigTests(unittest.TestCase):
         info = _source_status({"freehire": True}, Settings.from_env())
         self.assertIn("freehire", info["sources_enabled"])
 
+    def test_workday_listed_when_enabled(self):
+        info = _source_status({"workday": True, "freehire": False}, Settings.from_env())
+        self.assertIn("workday", info["sources_enabled"])
+
+    def test_workday_skipped_when_disabled(self):
+        info = _source_status({"workday": False}, Settings.from_env())
+        self.assertNotIn("workday", info["sources_enabled"])
+        self.assertTrue(
+            any(s.get("source") == "workday" for s in info["sources_skipped"])
+        )
+
     def test_default_queries_canada(self):
         qs = default_freehire_queries({})
         self.assertTrue(qs)

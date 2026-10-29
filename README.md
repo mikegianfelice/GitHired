@@ -121,8 +121,11 @@ Advanced edits (optional after setup):
 ### 3. Discover, rank, shortlist
 
 ```bash
-githired companies discover   # expand/validate company boards (optional but recommended once)
-githired discover             # then: githired rank
+# Optional board expansion (several minutes; free web search may warn and skip).
+# Builtin ATS + Workday boards already work without this step.
+githired companies discover
+
+githired discover             # often 20–45+ minutes on a laptop with Workday boards
 githired rank                 # scores all unscored / stale-model jobs (batched); optional --limit N
 githired jobs                 # confirmed geographically compatible matches only
 githired jobs --eligibility uncertain   # inspect unverified Canada eligibility (not padded into main list)

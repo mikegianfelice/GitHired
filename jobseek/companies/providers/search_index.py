@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
 from typing import Any
 from urllib.parse import urlparse
 
@@ -10,6 +11,10 @@ from jobseek.adapters.detector import classify_host
 from jobseek.companies.domain_util import canonical_domain
 from jobseek.companies.providers.base import CompanyCandidate
 from jobseek.http_client import RateLimitedClient
+
+# Free DuckDuckGo / DDGS calls have no reliable client-side deadline and can
+# stall `githired companies discover` for many minutes with no output.
+_DDGS_TIMEOUT_S = 12.0
 
 _ATS_QUERY_TEMPLATES = [
     'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "{track}" Canada',
@@ -37,23 +42,39 @@ def _default_queries(search_cfg: dict[str, Any]) -> list[str]:
     return queries
 
 
-def _ddg_results(query: str, client: RateLimitedClient) -> list[dict[str, str]]:
-    """Best-effort DuckDuckGo HTML results; empty on failure."""
-    try:
-        from duckduckgo_search import DDGS  # type: ignore
+def _ddgs_text(query: str, *, max_results: int = 8) -> list[dict[str, str]]:
+    from duckduckgo_search import DDGS  # type: ignore
 
-        with DDGS() as ddgs:
-            rows = list(ddgs.text(query, max_results=8))
-        out = []
-        for row in rows:
-            href = row.get("href") or row.get("link") or ""
-            title = row.get("title") or ""
-            if href:
-                out.append({"url": href, "title": title})
-        return out
+    with DDGS() as ddgs:
+        rows = list(ddgs.text(query, max_results=max_results))
+    out: list[dict[str, str]] = []
+    for row in rows:
+        href = row.get("href") or row.get("link") or ""
+        title = row.get("title") or ""
+        if href:
+            out.append({"url": href, "title": title})
+    return out
+
+
+def _ddg_results(query: str, client: RateLimitedClient) -> list[dict[str, str]]:
+    """Best-effort DuckDuckGo results; empty on failure or timeout."""
+    pool = ThreadPoolExecutor(max_workers=1)
+    try:
+        fut = pool.submit(_ddgs_text, query)
+        try:
+            return fut.result(timeout=_DDGS_TIMEOUT_S)
+        except FuturesTimeout:
+            fut.cancel()
+            return []
     except Exception:  # noqa: BLE001
         pass
-    # HTML fallback
+    finally:
+        # Do not wait on a hung DDGS thread — fall through to HTML / empty.
+        try:
+            pool.shutdown(wait=False, cancel_futures=True)
+        except TypeError:
+            pool.shutdown(wait=False)
+    # HTML fallback (httpx already has a request timeout)
     try:
         resp = client.get(
             "https://html.duckduckgo.com/html/",
