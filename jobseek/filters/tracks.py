@@ -60,6 +60,7 @@ DEFAULT_TRACK_ALIASES: dict[str, list[str]] = {
         "Cloud Data Engineer",
         "Data Platform Engineer",
         "Data Engineering",
+        "Risk Data Engineering",
         "ETL Engineer",
         "ELT Engineer",
     ],
@@ -228,17 +229,26 @@ class TrackMatch:
     primary_family: str | None = None
 
 
+def _normalize_role_token(token: str) -> str:
+    """Allow Engineer / Engineers / Engineering as equivalent role stems."""
+    if re.fullmatch(r"engineers?", token, flags=re.I):
+        return r"Engineer(?:ing)?s?"
+    if re.fullmatch(r"engineering", token, flags=re.I):
+        return r"Engineer(?:ing)?s?"
+    return re.escape(token)
+
+
 def _phrase_to_pattern(phrase: str) -> re.Pattern[str]:
     """Build a contiguous title matcher (word-bounded, not a token bag).
 
     Matches the role phrase anywhere in the title so
-    ``Staff Software Engineer, Risk Data Engineering`` matches ``Data Engineering``.
+    ``Staff Software Engineer, Risk Data Engineering`` matches ``Data Engineer``.
     Seniority words may appear before the phrase but are not required.
     """
-    tokens = [re.escape(t) for t in re.split(r"\s+", phrase.strip()) if t]
+    tokens = [t for t in re.split(r"\s+", phrase.strip()) if t]
     if not tokens:
         return re.compile(r"(?!)")  # never matches
-    body = r"[\s\-_/]+".join(tokens)
+    body = r"[\s\-_/]+".join(_normalize_role_token(t) for t in tokens)
     # Word-boundary contiguous match; optional seniority immediately before.
     pattern = (
         rf"(?i)(?:(?<![a-z0-9])(?:{_SENIORITY_PREFIX})[\s,/\-]*)*"

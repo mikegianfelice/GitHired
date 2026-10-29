@@ -23,7 +23,7 @@ from jobseek.rank.weights import WEIGHTS
 _JSON_BLOCK = re.compile(r"\{[\s\S]*\}")
 
 # Bump when deterministic scoring / eligibility logic changes so stale rows re-rank.
-SCORER_VERSION = "v3"
+SCORER_VERSION = "v4"
 DETERMINISTIC_MODEL = f"deterministic/{SCORER_VERSION}"
 HARD_FILTER_MODEL = f"hard_filter/{SCORER_VERSION}"
 # A job is "current" for Stage-1 ranking if it has either model from this run.
