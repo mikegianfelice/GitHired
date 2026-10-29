@@ -33,6 +33,11 @@ _RIPPLING_BOARD = re.compile(
     r"ats\.rippling\.com/(?:api/v2/board/)?([a-zA-Z0-9_-]+)", re.I
 )
 _GEM_BOARD = re.compile(r"jobs\.gem\.com/([a-zA-Z0-9_-]+)/?", re.I)
+# Guest board URL: https://{tenant}.wdN.myworkdayjobs.com/{site}/...
+_WORKDAY_BOARD = re.compile(
+    r"https?://([a-z0-9.-]+\.myworkdayjobs\.com)/(?:[a-z]{2}(?:-[A-Z]{2})/)?([A-Za-z0-9_-]+)",
+    re.I,
+)
 
 
 @dataclass
@@ -43,7 +48,24 @@ class Detection:
     confidence: str  # high | medium | low
 
 
+def _workday_token_from_url(url: str) -> str | None:
+    """Return host/tenant/site token when the URL is a Workday guest board."""
+    match = _WORKDAY_BOARD.search(url)
+    if not match:
+        return None
+    host = match.group(1).lower()
+    site = match.group(2)
+    if site.lower() in {"wday", "cxs", "en-us", "en-ca", "fr-ca"}:
+        return None
+    tenant = host.split(".")[0]
+    if not tenant:
+        return None
+    return f"{host}/{tenant}/{site}"
+
+
 def _token_from_url(provider: str, url: str) -> str | None:
+    if provider == "workday":
+        return _workday_token_from_url(url)
     patterns = {
         "greenhouse": _GH_BOARD,
         "lever": _LEVER_BOARD,
@@ -90,6 +112,11 @@ def detect_from_html(html: str, base_url: str) -> Detection | None:
         match = pattern.search(html) or pattern.search(base_url)
         if match:
             return Detection(provider, match.group(1), match.group(0), "medium")
+    wd = _WORKDAY_BOARD.search(html) or _WORKDAY_BOARD.search(base_url)
+    if wd:
+        token = _workday_token_from_url(wd.group(0))
+        if token:
+            return Detection("workday", token, wd.group(0), "medium")
     feed = discover_feed_url(html, base_url)
     if feed:
         return Detection("rss", feed, feed, "medium")
@@ -101,6 +128,7 @@ def detect_from_html(html: str, base_url: str) -> Detection | None:
         ("workable.com", "workable"),
         ("rippling.com", "rippling"),
         ("jobs.gem.com", "gem"),
+        ("myworkdayjobs.com", "workday"),
     )
     for needle, provider in hints:
         if needle in html:

@@ -158,6 +158,7 @@ sources:
   workable: true
   rss: true
   rippling: true
+  workday: true
   gem: false
   career_pages: true
   linkedin_search_index: true

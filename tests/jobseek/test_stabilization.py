@@ -44,18 +44,35 @@ SEARCH = {
 class HttpClientHeadersTests(unittest.TestCase):
     def test_get_accepts_headers_kwarg(self):
         client = RateLimitedClient(min_interval_s=0)
-        with patch.object(client._client, "get") as mock_get:
+        with patch.object(client._client, "request") as mock_request:
             mock_resp = MagicMock()
             mock_resp.status_code = 200
             mock_resp.text = "ok"
             mock_resp.url = "https://example.com"
             mock_resp.headers = {}
-            mock_get.return_value = mock_resp
+            mock_request.return_value = mock_resp
             resp = client.get("https://example.com", headers={"User-Agent": "test"})
             self.assertEqual(resp.status_code, 200)
-            kwargs = mock_get.call_args.kwargs
+            args, kwargs = mock_request.call_args
+            self.assertEqual(args[0], "GET")
             self.assertIn("headers", kwargs)
             self.assertEqual(kwargs["headers"]["User-Agent"], "test")
+        client.close()
+
+    def test_post_json_body(self):
+        client = RateLimitedClient(min_interval_s=0)
+        with patch.object(client._client, "request") as mock_request:
+            mock_resp = MagicMock()
+            mock_resp.status_code = 200
+            mock_resp.text = "{}"
+            mock_resp.url = "https://example.com"
+            mock_resp.headers = {}
+            mock_request.return_value = mock_resp
+            resp = client.post("https://example.com", json_body={"limit": 20})
+            self.assertEqual(resp.status_code, 200)
+            args, kwargs = mock_request.call_args
+            self.assertEqual(args[0], "POST")
+            self.assertEqual(kwargs.get("json"), {"limit": 20})
         client.close()
 
 

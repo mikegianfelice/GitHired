@@ -3,498 +3,594 @@
 # Never invent board tokens. Do not include personal data or API keys.
 version: 1
 companies:
-  - name: 1Password
-    domain: 1password.com
-    careers_url: "https://1password.com/jobs"
-    ats: ashby
-    board_token: 1password
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/1password \u2192 88 jobs (https://api.ashbyhq.com/posting-api/job-board/1password)"
-    contributor: phase3-research
-  - name: Affirm
-    domain: affirm.com
-    careers_url: "https://www.affirm.com/careers"
-    ats: greenhouse
-    board_token: affirm
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/affirm \u2192 240 jobs (https://boards-api.greenhouse.io/v1/boards/affirm/jobs)"
-    contributor: phase3-research
-  - name: Airbnb
-    domain: airbnb.com
-    careers_url: "https://careers.airbnb.com/"
-    ats: greenhouse
-    board_token: airbnb
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/airbnb \u2192 190 jobs (https://boards-api.greenhouse.io/v1/boards/airbnb/jobs)"
-    contributor: phase3-research
-  - name: Asana
-    domain: asana.com
-    careers_url: "https://asana.com/jobs"
-    ats: greenhouse
-    board_token: asana
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/asana \u2192 112 jobs (https://boards-api.greenhouse.io/v1/boards/asana/jobs)"
-    contributor: phase3-research
-  - name: Benevity
-    domain: benevity.com
-    careers_url: "https://www.benevity.com/careers"
-    ats: ashby
-    board_token: benevity
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/benevity \u2192 23 jobs (https://api.ashbyhq.com/posting-api/job-board/benevity)"
-    contributor: phase3-research
-  - name: Block
-    domain: block.xyz
-    careers_url: "https://block.xyz/careers"
-    ats: greenhouse
-    board_token: block
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/block \u2192 203 jobs (https://boards-api.greenhouse.io/v1/boards/block/jobs)"
-    contributor: phase3-research
-  - name: Borrowell
-    domain: borrowell.com
-    careers_url: "https://borrowell.com/careers"
-    ats: workable
-    board_token: borrowell
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: workable/borrowell \u2192 2 jobs (https://apply.workable.com/api/v1/widget/accounts/borrowell)"
-    contributor: phase3-research
-  - name: Brex
-    domain: brex.com
-    careers_url: "https://www.brex.com/careers"
-    ats: greenhouse
-    board_token: brex
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/brex \u2192 262 jobs (https://boards-api.greenhouse.io/v1/boards/brex/jobs)"
-    contributor: phase3-research
-  - name: Clearco
-    domain: clear.co
-    careers_url: "https://clear.co/careers"
-    ats: ashby
-    board_token: clearco
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/clearco \u2192 5 jobs (https://api.ashbyhq.com/posting-api/job-board/clearco)"
-    contributor: phase3-research
-  - name: Coinbase
-    domain: coinbase.com
-    careers_url: "https://www.coinbase.com/careers"
-    ats: greenhouse
-    board_token: coinbase
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/coinbase \u2192 228 jobs (https://boards-api.greenhouse.io/v1/boards/coinbase/jobs)"
-    contributor: phase3-research
-  - name: Crunchyroll
-    domain: crunchyroll.com
-    careers_url: "https://www.crunchyroll.com/jobs"
-    ats: greenhouse
-    board_token: crunchyroll
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/crunchyroll \u2192 100 jobs (https://boards-api.greenhouse.io/v1/boards/crunchyroll/jobs)"
-    contributor: phase3-research
-  - name: D2L
-    domain: d2l.com
-    careers_url: "https://www.d2l.com/careers/"
-    ats: greenhouse
-    board_token: d2l
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/d2l \u2192 15 jobs (https://boards-api.greenhouse.io/v1/boards/d2l/jobs)"
-    contributor: phase3-research
-  - name: Databricks
-    domain: databricks.com
-    careers_url: "https://www.databricks.com/company/careers"
-    ats: greenhouse
-    board_token: databricks
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/databricks \u2192 902 jobs (https://boards-api.greenhouse.io/v1/boards/databricks/jobs)"
-    contributor: phase3-research
-  - name: Deep Genomics
-    domain: deepgenomics.com
-    careers_url: "https://www.deepgenomics.com/careers"
-    ats: lever
-    board_token: deepgenomics
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: lever/deepgenomics \u2192 2 jobs (https://api.lever.co/v0/postings/deepgenomics?mode=json)"
-    contributor: phase3-research
-  - name: Dropbox
-    domain: dropbox.com
-    careers_url: "https://jobs.dropbox.com/"
-    ats: greenhouse
-    board_token: dropbox
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/dropbox \u2192 21 jobs (https://boards-api.greenhouse.io/v1/boards/dropbox/jobs)"
-    contributor: phase3-research
-  - name: Faire
-    domain: faire.com
-    careers_url: "https://www.faire.com/careers"
-    ats: greenhouse
-    board_token: faire
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/faire \u2192 67 jobs (https://boards-api.greenhouse.io/v1/boards/faire/jobs)"
-    contributor: phase3-research
-  - name: Flexport
-    domain: flexport.com
-    careers_url: "https://www.flexport.com/careers"
-    ats: greenhouse
-    board_token: flexport
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/flexport \u2192 192 jobs (https://boards-api.greenhouse.io/v1/boards/flexport/jobs)"
-    contributor: phase3-research
-  - name: Flipp
-    domain: flipp.com
-    careers_url: "https://careers.flipp.com/"
-    ats: greenhouse
-    board_token: flipp
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/flipp \u2192 12 jobs (https://boards-api.greenhouse.io/v1/boards/flipp/jobs)"
-    contributor: phase3-research
-  - name: Geotab
-    domain: geotab.com
-    careers_url: "https://www.geotab.com/careers/"
-    ats: greenhouse
-    board_token: geotab
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/geotab \u2192 60 jobs"
-    contributor: phase3-research
-  - name: Gusto
-    domain: gusto.com
-    careers_url: "https://gusto.com/about/careers"
-    ats: greenhouse
-    board_token: gusto
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/gusto \u2192 88 jobs (https://boards-api.greenhouse.io/v1/boards/gusto/jobs)"
-    contributor: phase3-research
-  - name: Hootsuite
-    domain: hootsuite.com
-    careers_url: "https://careers.hootsuite.com/"
-    ats: greenhouse
-    board_token: hootsuite
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/hootsuite \u2192 3 jobs (https://boards-api.greenhouse.io/v1/boards/hootsuite/jobs)"
-    contributor: phase3-research
-  - name: Hopper
-    domain: hopper.com
-    careers_url: "https://hopper.com/careers"
-    ats: ashby
-    board_token: hopper
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/hopper \u2192 18 jobs (https://api.ashbyhq.com/posting-api/job-board/hopper)"
-    contributor: phase3-research
-  - name: Instacart
-    domain: instacart.com
-    careers_url: "https://instacart.careers/"
-    ats: greenhouse
-    board_token: instacart
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/instacart \u2192 93 jobs (https://boards-api.greenhouse.io/v1/boards/instacart/jobs)"
-    contributor: phase3-research
-  - name: Integrate.ai
-    domain: integrate.ai
-    careers_url: "https://www.integrate.ai/careers"
-    ats: ashby
-    board_token: integrate
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/integrate \u2192 9 jobs"
-    contributor: phase3-research
-  - name: Jobber
-    domain: getjobber.com
-    careers_url: "https://getjobber.com/about/careers/"
-    ats: ashby
-    board_token: jobber
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/jobber \u2192 39 jobs (https://api.ashbyhq.com/posting-api/job-board/jobber)"
-    contributor: phase3-research
-  - name: Kin
-    domain: kin.com
-    careers_url: "https://www.kin.com/careers"
-    ats: ashby
-    board_token: kin
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/kin \u2192 21 jobs (https://api.ashbyhq.com/posting-api/job-board/kin)"
-    contributor: phase3-research
-  - name: KOHO
-    domain: koho.ca
-    careers_url: "https://www.koho.ca/careers"
-    ats: ashby
-    board_token: koho
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/koho \u2192 9 jobs (https://api.ashbyhq.com/posting-api/job-board/koho)"
-    contributor: phase3-research
-  - name: Later
-    domain: later.com
-    careers_url: "https://later.com/careers/"
-    ats: greenhouse
-    board_token: later
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/later \u2192 38 jobs (https://boards-api.greenhouse.io/v1/boards/later/jobs)"
-    contributor: phase3-research
-  - name: League
-    domain: league.com
-    careers_url: "https://league.com/careers"
-    ats: greenhouse
-    board_token: leagueinc
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/leagueinc \u2192 5 jobs"
-    contributor: phase3-research
-  - name: Lightspeed
-    domain: lightspeedhq.com
-    careers_url: "https://www.lightspeedhq.com/careers/"
-    ats: ashby
-    board_token: lightspeed
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/lightspeed \u2192 8 jobs (https://api.ashbyhq.com/posting-api/job-board/lightspeed)"
-    contributor: phase3-research
-  - name: Loopio
-    domain: loopio.com
-    careers_url: "https://loopio.com/careers/"
-    ats: ashby
-    board_token: loopio
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/loopio \u2192 16 jobs"
-    contributor: phase3-research
-  - name: Neo Financial
-    domain: neofinancial.com
-    careers_url: "https://www.neofinancial.com/careers"
-    ats: ashby
-    board_token: neofinancial
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/neofinancial \u2192 63 jobs (https://api.ashbyhq.com/posting-api/job-board/neofinancial)"
-    contributor: phase3-research
-  - name: Nesto
-    domain: nesto.ca
-    careers_url: "https://www.nesto.ca/careers"
-    ats: rippling
-    board_token: nesto
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: rippling/nesto \u2192 20 jobs (https://ats.rippling.com/api/v2/board/nesto/jobs)"
-    contributor: phase3-research
-  - name: Okta
-    domain: okta.com
-    careers_url: "https://www.okta.com/company/careers/"
-    ats: greenhouse
-    board_token: okta
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/okta \u2192 385 jobs (https://boards-api.greenhouse.io/v1/boards/okta/jobs)"
-    contributor: phase3-research
-  - name: PagerDuty
-    domain: pagerduty.com
-    careers_url: "https://www.pagerduty.com/careers/"
-    ats: greenhouse
-    board_token: pagerduty
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/pagerduty \u2192 49 jobs (https://boards-api.greenhouse.io/v1/boards/pagerduty/jobs)"
-    contributor: phase3-research
-  - name: Plaid
-    domain: plaid.com
-    careers_url: "https://plaid.com/careers/"
-    ats: ashby
-    board_token: plaid
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/plaid \u2192 129 jobs (https://api.ashbyhq.com/posting-api/job-board/plaid)"
-    contributor: phase3-research
-  - name: PointClickCare
-    domain: pointclickcare.com
-    careers_url: "https://pointclickcare.com/company/careers/"
-    ats: lever
-    board_token: pointclickcare
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: lever/pointclickcare \u2192 72 jobs (https://api.lever.co/v0/postings/pointclickcare?mode=json)"
-    contributor: phase3-research
-  - name: PolicyMe
-    domain: policyme.com
-    careers_url: "https://www.policyme.com/careers"
-    ats: lever
-    board_token: policyme
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: lever/policyme \u2192 10 jobs (https://api.lever.co/v0/postings/policyme?mode=json)"
-    contributor: phase3-research
-  - name: Ritual
-    domain: ritual.co
-    careers_url: "https://ritual.co/careers"
-    ats: greenhouse
-    board_token: ritual
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/ritual \u2192 15 jobs (https://boards-api.greenhouse.io/v1/boards/ritual/jobs)"
-    contributor: phase3-research
-  - name: Robinhood
-    domain: robinhood.com
-    careers_url: "https://careers.robinhood.com/"
-    ats: greenhouse
-    board_token: robinhood
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/robinhood \u2192 162 jobs (https://boards-api.greenhouse.io/v1/boards/robinhood/jobs)"
-    contributor: phase3-research
-  - name: Samsara
-    domain: samsara.com
-    careers_url: "https://www.samsara.com/company/careers"
-    ats: greenhouse
-    board_token: samsara
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/samsara \u2192 324 jobs (https://boards-api.greenhouse.io/v1/boards/samsara/jobs)"
-    contributor: phase3-research
-  - name: Sanctuary AI
-    domain: sanctuary.ai
-    careers_url: "https://www.sanctuary.ai/careers"
-    ats: ashby
-    board_token: sanctuary
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/sanctuary \u2192 7 jobs (https://api.ashbyhq.com/posting-api/job-board/sanctuary)"
-    contributor: phase3-research
-  - name: Snowflake
-    domain: snowflake.com
-    careers_url: "https://careers.snowflake.com/"
-    ats: ashby
-    board_token: snowflake
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/snowflake \u2192 361 jobs (https://api.ashbyhq.com/posting-api/job-board/snowflake)"
-    contributor: phase3-research
-  - name: StackAdapt
-    domain: stackadapt.com
-    careers_url: "https://www.stackadapt.com/careers"
-    ats: greenhouse
-    board_token: stackadapt
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/stackadapt \u2192 75 jobs (https://boards-api.greenhouse.io/v1/boards/stackadapt/jobs)"
-    contributor: phase3-research
-  - name: Thinkific
-    domain: thinkific.com
-    careers_url: "https://www.thinkific.com/careers/"
-    ats: ashby
-    board_token: thinkific
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/thinkific \u2192 3 jobs (https://api.ashbyhq.com/posting-api/job-board/thinkific)"
-    contributor: phase3-research
-  - name: Thoughtworks
-    domain: thoughtworks.com
-    careers_url: "https://www.thoughtworks.com/careers"
-    ats: greenhouse
-    board_token: thoughtworks
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/thoughtworks \u2192 49 jobs (https://boards-api.greenhouse.io/v1/boards/thoughtworks/jobs)"
-    contributor: phase3-research
-  - name: Toast
-    domain: toasttab.com
-    careers_url: "https://careers.toasttab.com/"
-    ats: greenhouse
-    board_token: toast
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/toast \u2192 340 jobs"
-    contributor: phase3-research
-  - name: Trulioo
-    domain: trulioo.com
-    careers_url: "https://www.trulioo.com/about/careers"
-    ats: ashby
-    board_token: trulioo
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/trulioo \u2192 25 jobs (https://api.ashbyhq.com/posting-api/job-board/trulioo)"
-    contributor: phase3-research
-  - name: Twilio
-    domain: twilio.com
-    careers_url: "https://www.twilio.com/company/jobs"
-    ats: greenhouse
-    board_token: twilio
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/twilio \u2192 130 jobs (https://boards-api.greenhouse.io/v1/boards/twilio/jobs)"
-    contributor: phase3-research
-  - name: Unbounce
-    domain: unbounce.com
-    careers_url: "https://unbounce.com/careers/"
-    ats: greenhouse
-    board_token: unbounce
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/unbounce \u2192 1 jobs (https://boards-api.greenhouse.io/v1/boards/unbounce/jobs)"
-    contributor: phase3-research
-  - name: Visier
-    domain: visier.com
-    careers_url: "https://www.visier.com/company/careers/"
-    ats: ashby
-    board_token: visier
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/visier \u2192 3 jobs (https://api.ashbyhq.com/posting-api/job-board/visier)"
-    contributor: phase3-research
-  - name: Waabi
-    domain: waabi.ai
-    careers_url: "https://waabi.ai/careers"
-    ats: lever
-    board_token: waabi
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: lever/waabi \u2192 94 jobs (https://api.lever.co/v0/postings/waabi?mode=json)"
-    contributor: phase3-research
-  - name: Wattpad
-    domain: wattpad.com
-    careers_url: "https://company.wattpad.com/careers"
-    ats: lever
-    board_token: wattpad
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: lever/wattpad \u2192 16 jobs (https://api.lever.co/v0/postings/wattpad?mode=json)"
-    contributor: phase3-research
-  - name: Wealthsimple
-    domain: wealthsimple.com
-    careers_url: "https://www.wealthsimple.com/en-ca/careers"
-    ats: ashby
-    board_token: wealthsimple
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: ashby/wealthsimple \u2192 38 jobs (https://api.ashbyhq.com/posting-api/job-board/wealthsimple)"
-    contributor: phase3-research
-  - name: ZoomInfo
-    domain: zoominfo.com
-    careers_url: "https://www.zoominfo.com/careers"
-    ats: greenhouse
-    board_token: zoominfo
-    validation_status: ok
-    last_validated_at: "2026-10-29T12:56:08Z"
-    notes: "Validated 2026-10-29: greenhouse/zoominfo \u2192 102 jobs"
-    contributor: phase3-research
+- name: 1Password
+  domain: 1password.com
+  careers_url: https://1password.com/jobs
+  ats: ashby
+  board_token: 1password
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/1password → 88 jobs (https://api.ashbyhq.com/posting-api/job-board/1password)'
+  contributor: phase3-research
+- name: Affirm
+  domain: affirm.com
+  careers_url: https://www.affirm.com/careers
+  ats: greenhouse
+  board_token: affirm
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/affirm → 240 jobs (https://boards-api.greenhouse.io/v1/boards/affirm/jobs)'
+  contributor: phase3-research
+- name: Airbnb
+  domain: airbnb.com
+  careers_url: https://careers.airbnb.com/
+  ats: greenhouse
+  board_token: airbnb
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/airbnb → 190 jobs (https://boards-api.greenhouse.io/v1/boards/airbnb/jobs)'
+  contributor: phase3-research
+- name: Asana
+  domain: asana.com
+  careers_url: https://asana.com/jobs
+  ats: greenhouse
+  board_token: asana
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/asana → 112 jobs (https://boards-api.greenhouse.io/v1/boards/asana/jobs)'
+  contributor: phase3-research
+- name: Benevity
+  domain: benevity.com
+  careers_url: https://www.benevity.com/careers
+  ats: ashby
+  board_token: benevity
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/benevity → 23 jobs (https://api.ashbyhq.com/posting-api/job-board/benevity)'
+  contributor: phase3-research
+- name: Block
+  domain: block.xyz
+  careers_url: https://block.xyz/careers
+  ats: greenhouse
+  board_token: block
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/block → 203 jobs (https://boards-api.greenhouse.io/v1/boards/block/jobs)'
+  contributor: phase3-research
+- name: BMO
+  domain: bmo.com
+  careers_url: https://jobs.bmo.com/
+  ats: workday
+  board_token: bmo.wd3.myworkdayjobs.com/bmo/External
+  workday_host: bmo.wd3.myworkdayjobs.com
+  workday_tenant: bmo
+  workday_site: External
+  enabled: true
+  discovery_source: community
+  validation_status: ok
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Borrowell
+  domain: borrowell.com
+  careers_url: https://borrowell.com/careers
+  ats: workable
+  board_token: borrowell
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: workable/borrowell → 2 jobs (https://apply.workable.com/api/v1/widget/accounts/borrowell)'
+  contributor: phase3-research
+- name: Brex
+  domain: brex.com
+  careers_url: https://www.brex.com/careers
+  ats: greenhouse
+  board_token: brex
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/brex → 262 jobs (https://boards-api.greenhouse.io/v1/boards/brex/jobs)'
+  contributor: phase3-research
+- name: CIBC
+  domain: cibc.com
+  careers_url: https://cibc.wd3.myworkdayjobs.com/campus
+  ats: workday
+  board_token: cibc.wd3.myworkdayjobs.com/cibc/campus
+  workday_host: cibc.wd3.myworkdayjobs.com
+  workday_tenant: cibc
+  workday_site: campus
+  enabled: true
+  discovery_source: community
+  validation_status: ok
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Clearco
+  domain: clear.co
+  careers_url: https://clear.co/careers
+  ats: ashby
+  board_token: clearco
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/clearco → 5 jobs (https://api.ashbyhq.com/posting-api/job-board/clearco)'
+  contributor: phase3-research
+- name: Coinbase
+  domain: coinbase.com
+  careers_url: https://www.coinbase.com/careers
+  ats: greenhouse
+  board_token: coinbase
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/coinbase → 228 jobs (https://boards-api.greenhouse.io/v1/boards/coinbase/jobs)'
+  contributor: phase3-research
+- name: Crunchyroll
+  domain: crunchyroll.com
+  careers_url: https://www.crunchyroll.com/jobs
+  ats: greenhouse
+  board_token: crunchyroll
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/crunchyroll → 100 jobs (https://boards-api.greenhouse.io/v1/boards/crunchyroll/jobs)'
+  contributor: phase3-research
+- name: D2L
+  domain: d2l.com
+  careers_url: https://www.d2l.com/careers/
+  ats: greenhouse
+  board_token: d2l
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/d2l → 15 jobs (https://boards-api.greenhouse.io/v1/boards/d2l/jobs)'
+  contributor: phase3-research
+- name: Databricks
+  domain: databricks.com
+  careers_url: https://www.databricks.com/company/careers
+  ats: greenhouse
+  board_token: databricks
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/databricks → 902 jobs (https://boards-api.greenhouse.io/v1/boards/databricks/jobs)'
+  contributor: phase3-research
+- name: Deep Genomics
+  domain: deepgenomics.com
+  careers_url: https://www.deepgenomics.com/careers
+  ats: lever
+  board_token: deepgenomics
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: lever/deepgenomics → 2 jobs (https://api.lever.co/v0/postings/deepgenomics?mode=json)'
+  contributor: phase3-research
+- name: Dropbox
+  domain: dropbox.com
+  careers_url: https://jobs.dropbox.com/
+  ats: greenhouse
+  board_token: dropbox
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/dropbox → 21 jobs (https://boards-api.greenhouse.io/v1/boards/dropbox/jobs)'
+  contributor: phase3-research
+- name: Faire
+  domain: faire.com
+  careers_url: https://www.faire.com/careers
+  ats: greenhouse
+  board_token: faire
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/faire → 67 jobs (https://boards-api.greenhouse.io/v1/boards/faire/jobs)'
+  contributor: phase3-research
+- name: Flexport
+  domain: flexport.com
+  careers_url: https://www.flexport.com/careers
+  ats: greenhouse
+  board_token: flexport
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/flexport → 192 jobs (https://boards-api.greenhouse.io/v1/boards/flexport/jobs)'
+  contributor: phase3-research
+- name: Flipp
+  domain: flipp.com
+  careers_url: https://careers.flipp.com/
+  ats: greenhouse
+  board_token: flipp
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/flipp → 12 jobs (https://boards-api.greenhouse.io/v1/boards/flipp/jobs)'
+  contributor: phase3-research
+- name: Geotab
+  domain: geotab.com
+  careers_url: https://www.geotab.com/careers/
+  ats: greenhouse
+  board_token: geotab
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/geotab → 60 jobs'
+  contributor: phase3-research
+- name: Gusto
+  domain: gusto.com
+  careers_url: https://gusto.com/about/careers
+  ats: greenhouse
+  board_token: gusto
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/gusto → 88 jobs (https://boards-api.greenhouse.io/v1/boards/gusto/jobs)'
+  contributor: phase3-research
+- name: Hootsuite
+  domain: hootsuite.com
+  careers_url: https://careers.hootsuite.com/
+  ats: greenhouse
+  board_token: hootsuite
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/hootsuite → 3 jobs (https://boards-api.greenhouse.io/v1/boards/hootsuite/jobs)'
+  contributor: phase3-research
+- name: Hopper
+  domain: hopper.com
+  careers_url: https://hopper.com/careers
+  ats: ashby
+  board_token: hopper
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/hopper → 18 jobs (https://api.ashbyhq.com/posting-api/job-board/hopper)'
+  contributor: phase3-research
+- name: Instacart
+  domain: instacart.com
+  careers_url: https://instacart.careers/
+  ats: greenhouse
+  board_token: instacart
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/instacart → 93 jobs (https://boards-api.greenhouse.io/v1/boards/instacart/jobs)'
+  contributor: phase3-research
+- name: Intact
+  domain: intactfc.com
+  careers_url: https://careers.intactfc.com/
+  ats: workday
+  board_token: intactfc.wd3.myworkdayjobs.com/intactfc/intactfc
+  workday_host: intactfc.wd3.myworkdayjobs.com
+  workday_tenant: intactfc
+  workday_site: intactfc
+  enabled: true
+  discovery_source: community
+  validation_status: ok
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Integrate.ai
+  domain: integrate.ai
+  careers_url: https://www.integrate.ai/careers
+  ats: ashby
+  board_token: integrate
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/integrate → 9 jobs'
+  contributor: phase3-research
+- name: Jobber
+  domain: getjobber.com
+  careers_url: https://getjobber.com/about/careers/
+  ats: ashby
+  board_token: jobber
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/jobber → 39 jobs (https://api.ashbyhq.com/posting-api/job-board/jobber)'
+  contributor: phase3-research
+- name: Kin
+  domain: kin.com
+  careers_url: https://www.kin.com/careers
+  ats: ashby
+  board_token: kin
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/kin → 21 jobs (https://api.ashbyhq.com/posting-api/job-board/kin)'
+  contributor: phase3-research
+- name: KOHO
+  domain: koho.ca
+  careers_url: https://www.koho.ca/careers
+  ats: ashby
+  board_token: koho
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/koho → 9 jobs (https://api.ashbyhq.com/posting-api/job-board/koho)'
+  contributor: phase3-research
+- name: Later
+  domain: later.com
+  careers_url: https://later.com/careers/
+  ats: greenhouse
+  board_token: later
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/later → 38 jobs (https://boards-api.greenhouse.io/v1/boards/later/jobs)'
+  contributor: phase3-research
+- name: League
+  domain: league.com
+  careers_url: https://league.com/careers
+  ats: greenhouse
+  board_token: leagueinc
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/leagueinc → 5 jobs'
+  contributor: phase3-research
+- name: Lightspeed
+  domain: lightspeedhq.com
+  careers_url: https://www.lightspeedhq.com/careers/
+  ats: ashby
+  board_token: lightspeed
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/lightspeed → 8 jobs (https://api.ashbyhq.com/posting-api/job-board/lightspeed)'
+  contributor: phase3-research
+- name: Loopio
+  domain: loopio.com
+  careers_url: https://loopio.com/careers/
+  ats: ashby
+  board_token: loopio
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/loopio → 16 jobs'
+  contributor: phase3-research
+- name: Manulife
+  domain: manulife.com
+  careers_url: https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs
+  ats: workday
+  board_token: manulife.wd3.myworkdayjobs.com/manulife/MFCJH_Jobs
+  workday_host: manulife.wd3.myworkdayjobs.com
+  workday_tenant: manulife
+  workday_site: MFCJH_Jobs
+  enabled: true
+  discovery_source: community
+  validation_status: ok
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Neo Financial
+  domain: neofinancial.com
+  careers_url: https://www.neofinancial.com/careers
+  ats: ashby
+  board_token: neofinancial
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/neofinancial → 63 jobs (https://api.ashbyhq.com/posting-api/job-board/neofinancial)'
+  contributor: phase3-research
+- name: Nesto
+  domain: nesto.ca
+  careers_url: https://www.nesto.ca/careers
+  ats: rippling
+  board_token: nesto
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: rippling/nesto → 20 jobs (https://ats.rippling.com/api/v2/board/nesto/jobs)'
+  contributor: phase3-research
+- name: Okta
+  domain: okta.com
+  careers_url: https://www.okta.com/company/careers/
+  ats: greenhouse
+  board_token: okta
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/okta → 385 jobs (https://boards-api.greenhouse.io/v1/boards/okta/jobs)'
+  contributor: phase3-research
+- name: PagerDuty
+  domain: pagerduty.com
+  careers_url: https://www.pagerduty.com/careers/
+  ats: greenhouse
+  board_token: pagerduty
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/pagerduty → 49 jobs (https://boards-api.greenhouse.io/v1/boards/pagerduty/jobs)'
+  contributor: phase3-research
+- name: Plaid
+  domain: plaid.com
+  careers_url: https://plaid.com/careers/
+  ats: ashby
+  board_token: plaid
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/plaid → 129 jobs (https://api.ashbyhq.com/posting-api/job-board/plaid)'
+  contributor: phase3-research
+- name: PointClickCare
+  domain: pointclickcare.com
+  careers_url: https://pointclickcare.com/company/careers/
+  ats: lever
+  board_token: pointclickcare
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: lever/pointclickcare → 72 jobs (https://api.lever.co/v0/postings/pointclickcare?mode=json)'
+  contributor: phase3-research
+- name: PolicyMe
+  domain: policyme.com
+  careers_url: https://www.policyme.com/careers
+  ats: lever
+  board_token: policyme
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: lever/policyme → 10 jobs (https://api.lever.co/v0/postings/policyme?mode=json)'
+  contributor: phase3-research
+- name: RBC
+  domain: rbc.com
+  careers_url: https://jobs.rbc.com/
+  ats: workday
+  board_token: rbc.wd3.myworkdayjobs.com/rbc/RBCGLOBAL1
+  workday_host: rbc.wd3.myworkdayjobs.com
+  workday_tenant: rbc
+  workday_site: RBCGLOBAL1
+  enabled: true
+  discovery_source: community
+  validation_status: ok
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Ritual
+  domain: ritual.co
+  careers_url: https://ritual.co/careers
+  ats: greenhouse
+  board_token: ritual
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/ritual → 15 jobs (https://boards-api.greenhouse.io/v1/boards/ritual/jobs)'
+  contributor: phase3-research
+- name: Robinhood
+  domain: robinhood.com
+  careers_url: https://careers.robinhood.com/
+  ats: greenhouse
+  board_token: robinhood
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/robinhood → 162 jobs (https://boards-api.greenhouse.io/v1/boards/robinhood/jobs)'
+  contributor: phase3-research
+- name: Samsara
+  domain: samsara.com
+  careers_url: https://www.samsara.com/company/careers
+  ats: greenhouse
+  board_token: samsara
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/samsara → 324 jobs (https://boards-api.greenhouse.io/v1/boards/samsara/jobs)'
+  contributor: phase3-research
+- name: Sanctuary AI
+  domain: sanctuary.ai
+  careers_url: https://www.sanctuary.ai/careers
+  ats: ashby
+  board_token: sanctuary
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/sanctuary → 7 jobs (https://api.ashbyhq.com/posting-api/job-board/sanctuary)'
+  contributor: phase3-research
+- name: Snowflake
+  domain: snowflake.com
+  careers_url: https://careers.snowflake.com/
+  ats: ashby
+  board_token: snowflake
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/snowflake → 361 jobs (https://api.ashbyhq.com/posting-api/job-board/snowflake)'
+  contributor: phase3-research
+- name: StackAdapt
+  domain: stackadapt.com
+  careers_url: https://www.stackadapt.com/careers
+  ats: greenhouse
+  board_token: stackadapt
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/stackadapt → 75 jobs (https://boards-api.greenhouse.io/v1/boards/stackadapt/jobs)'
+  contributor: phase3-research
+- name: Sun Life
+  domain: sunlife.com
+  careers_url: https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs
+  ats: workday
+  board_token: sunlife.wd3.myworkdayjobs.com/sunlife/Experienced-Jobs
+  workday_host: sunlife.wd3.myworkdayjobs.com
+  workday_tenant: sunlife
+  workday_site: Experienced-Jobs
+  enabled: true
+  discovery_source: community
+  validation_status: ok
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: TD
+  domain: td.com
+  careers_url: https://careers.td.com/
+  ats: workday
+  board_token: td.wd3.myworkdayjobs.com/td/TD_Bank_Careers
+  workday_host: td.wd3.myworkdayjobs.com
+  workday_tenant: td
+  workday_site: TD_Bank_Careers
+  enabled: true
+  discovery_source: community
+  validation_status: ok
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: TELUS
+  domain: telus.com
+  careers_url: https://careers.telus.com/
+  ats: workday
+  board_token: lifeworks.wd3.myworkdayjobs.com/lifeworks/External
+  workday_host: lifeworks.wd3.myworkdayjobs.com
+  workday_tenant: lifeworks
+  workday_site: External
+  enabled: true
+  discovery_source: community
+  validation_status: ok
+  notes: 'Phase 5: TELUS/LifeWorks verified CXS guest board 2026-10-29'
+- name: Thinkific
+  domain: thinkific.com
+  careers_url: https://www.thinkific.com/careers/
+  ats: ashby
+  board_token: thinkific
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/thinkific → 3 jobs (https://api.ashbyhq.com/posting-api/job-board/thinkific)'
+  contributor: phase3-research
+- name: Thoughtworks
+  domain: thoughtworks.com
+  careers_url: https://www.thoughtworks.com/careers
+  ats: greenhouse
+  board_token: thoughtworks
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/thoughtworks → 49 jobs (https://boards-api.greenhouse.io/v1/boards/thoughtworks/jobs)'
+  contributor: phase3-research
+- name: Toast
+  domain: toasttab.com
+  careers_url: https://careers.toasttab.com/
+  ats: greenhouse
+  board_token: toast
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/toast → 340 jobs'
+  contributor: phase3-research
+- name: Trulioo
+  domain: trulioo.com
+  careers_url: https://www.trulioo.com/about/careers
+  ats: ashby
+  board_token: trulioo
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/trulioo → 25 jobs (https://api.ashbyhq.com/posting-api/job-board/trulioo)'
+  contributor: phase3-research
+- name: Twilio
+  domain: twilio.com
+  careers_url: https://www.twilio.com/company/jobs
+  ats: greenhouse
+  board_token: twilio
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/twilio → 130 jobs (https://boards-api.greenhouse.io/v1/boards/twilio/jobs)'
+  contributor: phase3-research
+- name: Unbounce
+  domain: unbounce.com
+  careers_url: https://unbounce.com/careers/
+  ats: greenhouse
+  board_token: unbounce
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/unbounce → 1 jobs (https://boards-api.greenhouse.io/v1/boards/unbounce/jobs)'
+  contributor: phase3-research
+- name: Visier
+  domain: visier.com
+  careers_url: https://www.visier.com/company/careers/
+  ats: ashby
+  board_token: visier
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/visier → 3 jobs (https://api.ashbyhq.com/posting-api/job-board/visier)'
+  contributor: phase3-research
+- name: Waabi
+  domain: waabi.ai
+  careers_url: https://waabi.ai/careers
+  ats: lever
+  board_token: waabi
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: lever/waabi → 94 jobs (https://api.lever.co/v0/postings/waabi?mode=json)'
+  contributor: phase3-research
+- name: Wattpad
+  domain: wattpad.com
+  careers_url: https://company.wattpad.com/careers
+  ats: lever
+  board_token: wattpad
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: lever/wattpad → 16 jobs (https://api.lever.co/v0/postings/wattpad?mode=json)'
+  contributor: phase3-research
+- name: Wealthsimple
+  domain: wealthsimple.com
+  careers_url: https://www.wealthsimple.com/en-ca/careers
+  ats: ashby
+  board_token: wealthsimple
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: ashby/wealthsimple → 38 jobs (https://api.ashbyhq.com/posting-api/job-board/wealthsimple)'
+  contributor: phase3-research
+- name: ZoomInfo
+  domain: zoominfo.com
+  careers_url: https://www.zoominfo.com/careers
+  ats: greenhouse
+  board_token: zoominfo
+  validation_status: ok
+  last_validated_at: '2026-10-29T12:56:08Z'
+  notes: 'Validated 2026-10-29: greenhouse/zoominfo → 102 jobs'
+  contributor: phase3-research

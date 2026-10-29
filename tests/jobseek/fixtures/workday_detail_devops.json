@@ -1,0 +1,23 @@
+{
+  "jobPostingInfo": {
+    "id": "abc-do-002",
+    "title": "Senior DevOps Engineer",
+    "jobDescription": "<p>Platform and SRE work across Canadian offices.</p>",
+    "location": "Calgary, Alberta, CAN",
+    "additionalLocations": [
+      "Toronto, Ontario, CAN",
+      "Montreal, Quebec, CAN",
+      "Vancouver, British Columbia, CAN",
+      "Edmonton, Alberta, CAN"
+    ],
+    "remoteType": null,
+    "externalUrl": "https://intactfc.wd3.myworkdayjobs.com/intactfc/job/Calgary-Alberta-CAN/Senior-DevOps-Engineer_R1002",
+    "jobReqId": "R1002",
+    "startDate": "2026-10-15",
+    "postedOn": "Posted 5 Days Ago",
+    "timeType": "Full time",
+    "country": "Canada"
+  },
+  "hiringOrganization": {"name": "Intact"},
+  "userAuthenticated": false
+}

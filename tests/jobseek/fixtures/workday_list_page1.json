@@ -1,0 +1,28 @@
+{
+  "total": 3,
+  "jobPostings": [
+    {
+      "title": "Senior Data Engineer",
+      "externalPath": "/job/Toronto-Ontario-CAN/Senior-Data-Engineer_R1001",
+      "locationsText": "Toronto, Ontario, CAN",
+      "postedOn": "Posted 2 Days Ago",
+      "bulletFields": ["R1001"]
+    },
+    {
+      "title": "Senior DevOps Engineer",
+      "externalPath": "/job/Calgary-Alberta-CAN/Senior-DevOps-Engineer_R1002",
+      "locationsText": "5 Locations",
+      "postedOn": "Posted 5 Days Ago",
+      "bulletFields": ["R1002"]
+    },
+    {
+      "title": "Software Engineer",
+      "externalPath": "/job/Vancouver-British-Columbia-CAN/Software-Engineer_R1003",
+      "locationsText": "Vancouver, British Columbia, CAN",
+      "postedOn": "Posted Today",
+      "bulletFields": ["R1003"]
+    }
+  ],
+  "facets": {},
+  "userAuthenticated": false
+}

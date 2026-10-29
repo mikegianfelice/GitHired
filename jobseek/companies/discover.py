@@ -11,6 +11,7 @@ from jobseek.adapters.lever import LeverAdapter
 from jobseek.adapters.rippling import RipplingAdapter
 from jobseek.adapters.rss import RssAdapter
 from jobseek.adapters.workable import WorkableAdapter
+from jobseek.adapters.workday import WorkdayAdapter
 from jobseek.companies.domain_util import canonical_domain
 from jobseek.companies.providers.builtin_seed import collect_builtin_candidates
 from jobseek.companies.providers.career_page import collect_career_page_candidates
@@ -37,6 +38,7 @@ COMPANY_ADAPTERS: dict[str, type] = {
     "rss": RssAdapter,
     "rippling": RipplingAdapter,
     "gem": GemAdapter,
+    "workday": WorkdayAdapter,
 }
 
 

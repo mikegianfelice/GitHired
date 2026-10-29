@@ -1,0 +1,18 @@
+{
+  "jobPostingInfo": {
+    "id": "abc-de-001",
+    "title": "Senior Data Engineer",
+    "jobDescription": "<p>Build pipelines in Toronto. Hybrid role.</p>",
+    "location": "Toronto, Ontario, CAN",
+    "additionalLocations": [],
+    "remoteType": "Hybrid",
+    "externalUrl": "https://intactfc.wd3.myworkdayjobs.com/intactfc/job/Toronto-Ontario-CAN/Senior-Data-Engineer_R1001",
+    "jobReqId": "R1001",
+    "startDate": "2026-10-20",
+    "postedOn": "Posted 2 Days Ago",
+    "timeType": "Full time",
+    "country": "Canada"
+  },
+  "hiringOrganization": {"name": "Intact"},
+  "userAuthenticated": false
+}

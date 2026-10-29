@@ -14,6 +14,7 @@ from jobseek.adapters.linkedin_compliant import LinkedInSearchIndexAdapter
 from jobseek.adapters.rippling import RipplingAdapter
 from jobseek.adapters.rss import RssAdapter
 from jobseek.adapters.workable import WorkableAdapter
+from jobseek.adapters.workday import WorkdayAdapter
 from jobseek.companies.registry import load_local_overrides, load_merged_companies
 from jobseek.config_loader import Settings, load_companies, load_search
 from jobseek.db.store import Database
@@ -29,6 +30,7 @@ ADAPTERS = {
     "rss": RssAdapter,
     "rippling": RipplingAdapter,
     "gem": GemAdapter,
+    "workday": WorkdayAdapter,
 }
 
 _FETCHABLE_ATS = tuple(ADAPTERS.keys())

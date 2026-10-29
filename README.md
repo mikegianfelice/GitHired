@@ -50,7 +50,7 @@ GitHired ships configured for **Canada-remote and Canada-eligible** engineering 
 - Location modes: remote Canada, province remote, hybrid, on-site cities  
 - Salary floors (configurable): CAD / USD in `config/search.yaml`  
 - Company boards expand via `githired companies discover` — Day-1 install works without editing a company list  
-- Adapters: Greenhouse, Lever, Ashby, Workable, RSS/XML (e.g. Shopify feed), Rippling; Gem adapter present but disabled until markup is extractable  
+- Adapters: Greenhouse, Lever, Ashby, Workable, RSS/XML (e.g. Shopify feed), Rippling, Workday guest CXS; Gem adapter present but disabled until markup is extractable  
 - Portal CLIs ship country-agnostic only (`linkedin-search`, `freehire-search`); add local boards with `/add-portal`
 
 ---
@@ -130,7 +130,7 @@ githired digest
 githired run-daily
 ```
 
-**LinkedIn** is optional. Free web-index search often fails (rate limits); ATS boards still work. You can import LinkedIn email alerts (`linkedin_alert_import`) or set `SERPAPI_KEY` for a paid index — neither is required.
+**LinkedIn** is optional. Free web-index search often fails (rate limits); ATS boards still work (Greenhouse, Lever, Ashby, Workable, Rippling, Workday guest boards, RSS). You can import LinkedIn email alerts (`linkedin_alert_import`) or set `SERPAPI_KEY` for a paid index — neither is required.
 
 Details: [docs/discovery.md](docs/discovery.md).
 
@@ -191,7 +191,7 @@ Full agent command list and LaTeX details live in [SETUP.md](SETUP.md) and [`.cl
 
 **Scheduled discovery prefers:**
 
-1. Public ATS APIs via the company registry (Greenhouse, Lever, Ashby, Workable, RSS/XML, Rippling) — expanded with `githired companies discover`
+1. Public ATS APIs via the company registry (Greenhouse, Lever, Ashby, Workable, RSS/XML, Rippling, Workday guest CXS) — expanded with `githired companies discover`
 2. LinkedIn via **free search-index** (best-effort), optional **SerpAPI** (`SERPAPI_KEY`), and/or **saved-alert imports** (`githired import-alerts`)
 
 Missing SerpAPI is a warning, not a discover failure. LinkedIn guest scraping (`.agents/skills/linkedin-search`) is **off** for scheduled runs (`sources.linkedin_guest: false`) because automated access conflicts with LinkedIn’s Terms of Service.
@@ -205,7 +205,7 @@ Community board contributions: [`registry/community/`](registry/community/). Per
 ```
 GitHired/
 ├── jobseek/                 # Discovery, filters, ranking, digest CLI (githired)
-│   ├── adapters/            # Greenhouse, Lever, Ashby, Workable, RSS, Rippling, …
+│   ├── adapters/            # Greenhouse, Lever, Ashby, Workable, RSS, Rippling, Workday, …
 │   └── companies/           # Registry merge, validation, discovery providers
 ├── config/                  # companies.yaml, search.yaml, profile.yaml
 ├── registry/community/      # PR-based public company registry

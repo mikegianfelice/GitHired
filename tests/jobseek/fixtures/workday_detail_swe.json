@@ -1,0 +1,18 @@
+{
+  "jobPostingInfo": {
+    "id": "abc-swe-003",
+    "title": "Software Engineer",
+    "jobDescription": "<p>Fully remote within Canada.</p>",
+    "location": "Vancouver, British Columbia, CAN",
+    "additionalLocations": [],
+    "remoteType": "Remote",
+    "externalUrl": "https://intactfc.wd3.myworkdayjobs.com/intactfc/job/Vancouver-British-Columbia-CAN/Software-Engineer_R1003",
+    "jobReqId": "R1003",
+    "startDate": "2026-10-25",
+    "postedOn": "Posted Today",
+    "timeType": "Full time",
+    "country": "Canada"
+  },
+  "hiringOrganization": {"name": "Intact"},
+  "userAuthenticated": false
+}

@@ -5,7 +5,7 @@ Production-oriented discovery and ranking for engineering roles that accept cand
 ## Architecture
 
 1. **Three-layer company registry** — builtin [`config/companies.yaml`](../config/companies.yaml) → community [`registry/community/`](../registry/community/) → SQLite discoveries → user [`config/companies.local.yaml`](../config/companies.local.yaml.example) (overrides win; auto-discovery never writes overrides)
-2. **Company discovery** — `githired companies discover` validates public ATS boards (Greenhouse, Lever, Ashby, Workable, RSS/XML, Rippling; Gem adapter present but opt-in)
+2. **Company discovery** — `githired companies discover` validates public ATS boards (Greenhouse, Lever, Ashby, Workable, RSS/XML, Rippling, Workday guest CXS; Gem adapter present but opt-in)
 3. **Job discover** — `githired discover` fetches enabled boards + LinkedIn search-index / SerpAPI / alert import
 4. **SQLite** — `data/jobseek.db` stores raw responses, normalized jobs (`first_seen` / `last_seen` / `removed_at`), scores, applications, companies, runs
 5. **Hard filters** — engineering tracks, Canada eligibility modes, salary floors (no LLM)

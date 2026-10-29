@@ -1,596 +1,604 @@
 # Configurable company registry for ATS board discovery.
-# ats: greenhouse | lever | ashby | workable | rippling | gem | unknown
+# ats: greenhouse | lever | ashby | workable | rippling | gem | workday | unknown
 # board_token / site_slug: provider-specific public board identifier
 # Phase 3: expanded with verified Canadian-relevant employers (live ATS validation).
-
 companies:
-  - name: 1Password
-    domain: 1password.com
-    careers_url: "https://1password.com/jobs"
-    ats: ashby
-    board_token: 1password
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/1password \u2192 88 jobs (https://api.ashbyhq.com/posting-api/job-board/1password)"
-
-  - name: Affirm
-    domain: affirm.com
-    careers_url: "https://www.affirm.com/careers"
-    ats: greenhouse
-    board_token: affirm
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/affirm \u2192 240 jobs (https://boards-api.greenhouse.io/v1/boards/affirm/jobs)"
-
-  - name: Airbnb
-    domain: airbnb.com
-    careers_url: "https://careers.airbnb.com/"
-    ats: greenhouse
-    board_token: airbnb
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/airbnb \u2192 190 jobs (https://boards-api.greenhouse.io/v1/boards/airbnb/jobs)"
-
-  - name: Airtable
-    domain: airtable.com
-    careers_url: "https://airtable.com/careers"
-    ats: greenhouse
-    board_token: airtable
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/airtable \u2192 5 jobs (https://boards-api.greenhouse.io/v1/boards/airtable/jobs)"
-
-  - name: Anthropic
-    domain: anthropic.com
-    careers_url: "https://www.anthropic.com/careers"
-    ats: greenhouse
-    board_token: anthropic
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/anthropic \u2192 680 jobs (https://boards-api.greenhouse.io/v1/boards/anthropic/jobs)"
-
-  - name: Asana
-    domain: asana.com
-    careers_url: "https://asana.com/jobs"
-    ats: greenhouse
-    board_token: asana
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/asana \u2192 112 jobs (https://boards-api.greenhouse.io/v1/boards/asana/jobs)"
-
-  - name: Benevity
-    domain: benevity.com
-    careers_url: "https://www.benevity.com/careers"
-    ats: ashby
-    board_token: benevity
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/benevity \u2192 23 jobs (https://api.ashbyhq.com/posting-api/job-board/benevity)"
-
-  - name: Block
-    domain: block.xyz
-    careers_url: "https://block.xyz/careers"
-    ats: greenhouse
-    board_token: block
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/block \u2192 203 jobs (https://boards-api.greenhouse.io/v1/boards/block/jobs)"
-
-  - name: Borrowell
-    domain: borrowell.com
-    careers_url: "https://borrowell.com/careers"
-    ats: workable
-    board_token: borrowell
-    enabled: true
-    notes: "Validated 2026-10-29: workable/borrowell \u2192 2 jobs (https://apply.workable.com/api/v1/widget/accounts/borrowell)"
-
-  - name: Brex
-    domain: brex.com
-    careers_url: "https://www.brex.com/careers"
-    ats: greenhouse
-    board_token: brex
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/brex \u2192 262 jobs (https://boards-api.greenhouse.io/v1/boards/brex/jobs)"
-
-  - name: Clearco
-    domain: clear.co
-    careers_url: "https://clear.co/careers"
-    ats: ashby
-    board_token: clearco
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/clearco \u2192 5 jobs (https://api.ashbyhq.com/posting-api/job-board/clearco)"
-
-  - name: Cloudflare
-    domain: cloudflare.com
-    careers_url: "https://www.cloudflare.com/careers"
-    ats: greenhouse
-    board_token: cloudflare
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/cloudflare \u2192 460 jobs (https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs)"
-
-  - name: Cohere
-    domain: cohere.com
-    careers_url: "https://cohere.com/careers"
-    ats: ashby
-    board_token: cohere
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/cohere \u2192 119 jobs (https://api.ashbyhq.com/posting-api/job-board/cohere)"
-
-  - name: Coinbase
-    domain: coinbase.com
-    careers_url: "https://www.coinbase.com/careers"
-    ats: greenhouse
-    board_token: coinbase
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/coinbase \u2192 228 jobs (https://boards-api.greenhouse.io/v1/boards/coinbase/jobs)"
-
-  - name: Crunchyroll
-    domain: crunchyroll.com
-    careers_url: "https://www.crunchyroll.com/jobs"
-    ats: greenhouse
-    board_token: crunchyroll
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/crunchyroll \u2192 100 jobs (https://boards-api.greenhouse.io/v1/boards/crunchyroll/jobs)"
-
-  - name: D2L
-    domain: d2l.com
-    careers_url: "https://www.d2l.com/careers/"
-    ats: greenhouse
-    board_token: d2l
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/d2l \u2192 15 jobs (https://boards-api.greenhouse.io/v1/boards/d2l/jobs)"
-
-  - name: Databricks
-    domain: databricks.com
-    careers_url: "https://www.databricks.com/company/careers"
-    ats: greenhouse
-    board_token: databricks
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/databricks \u2192 902 jobs (https://boards-api.greenhouse.io/v1/boards/databricks/jobs)"
-
-  - name: Datadog
-    domain: datadoghq.com
-    careers_url: "https://careers.datadoghq.com"
-    ats: greenhouse
-    board_token: datadog
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/datadog \u2192 394 jobs (https://boards-api.greenhouse.io/v1/boards/datadog/jobs)"
-
-  - name: Deep Genomics
-    domain: deepgenomics.com
-    careers_url: "https://www.deepgenomics.com/careers"
-    ats: lever
-    board_token: deepgenomics
-    enabled: true
-    notes: "Validated 2026-10-29: lever/deepgenomics \u2192 2 jobs (https://api.lever.co/v0/postings/deepgenomics?mode=json)"
-
-  - name: Dropbox
-    domain: dropbox.com
-    careers_url: "https://jobs.dropbox.com/"
-    ats: greenhouse
-    board_token: dropbox
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/dropbox \u2192 21 jobs (https://boards-api.greenhouse.io/v1/boards/dropbox/jobs)"
-
-  - name: Elastic
-    domain: elastic.co
-    careers_url: "https://www.elastic.co/careers"
-    ats: greenhouse
-    board_token: elastic
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/elastic \u2192 404 jobs (https://boards-api.greenhouse.io/v1/boards/elastic/jobs)"
-
-  - name: Faire
-    domain: faire.com
-    careers_url: "https://www.faire.com/careers"
-    ats: greenhouse
-    board_token: faire
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/faire \u2192 67 jobs (https://boards-api.greenhouse.io/v1/boards/faire/jobs)"
-
-  - name: Figma
-    domain: figma.com
-    careers_url: "https://www.figma.com/careers"
-    ats: greenhouse
-    board_token: figma
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/figma \u2192 141 jobs (https://boards-api.greenhouse.io/v1/boards/figma/jobs)"
-
-  - name: Flexport
-    domain: flexport.com
-    careers_url: "https://www.flexport.com/careers"
-    ats: greenhouse
-    board_token: flexport
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/flexport \u2192 192 jobs (https://boards-api.greenhouse.io/v1/boards/flexport/jobs)"
-
-  - name: Flipp
-    domain: flipp.com
-    careers_url: "https://careers.flipp.com/"
-    ats: greenhouse
-    board_token: flipp
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/flipp \u2192 12 jobs (https://boards-api.greenhouse.io/v1/boards/flipp/jobs)"
-
-  - name: Geotab
-    domain: geotab.com
-    careers_url: "https://www.geotab.com/careers/"
-    ats: greenhouse
-    board_token: geotab
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/geotab \u2192 60 jobs"
-
-  - name: GitLab
-    domain: gitlab.com
-    careers_url: "https://about.gitlab.com/jobs"
-    ats: greenhouse
-    board_token: gitlab
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/gitlab \u2192 231 jobs (https://boards-api.greenhouse.io/v1/boards/gitlab/jobs)"
-
-  - name: Gusto
-    domain: gusto.com
-    careers_url: "https://gusto.com/about/careers"
-    ats: greenhouse
-    board_token: gusto
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/gusto \u2192 88 jobs (https://boards-api.greenhouse.io/v1/boards/gusto/jobs)"
-
-  - name: Hootsuite
-    domain: hootsuite.com
-    careers_url: "https://careers.hootsuite.com/"
-    ats: greenhouse
-    board_token: hootsuite
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/hootsuite \u2192 3 jobs (https://boards-api.greenhouse.io/v1/boards/hootsuite/jobs)"
-
-  - name: Hopper
-    domain: hopper.com
-    careers_url: "https://hopper.com/careers"
-    ats: ashby
-    board_token: hopper
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/hopper \u2192 18 jobs (https://api.ashbyhq.com/posting-api/job-board/hopper)"
-
-  - name: Hugging Face
-    domain: huggingface.co
-    careers_url: "https://apply.workable.com/huggingface/"
-    ats: workable
-    board_token: huggingface
-    enabled: true
-    notes: "Validated 2026-10-29: workable/huggingface \u2192 6 jobs (https://apply.workable.com/api/v1/widget/accounts/huggingface)"
-
-  - name: Instacart
-    domain: instacart.com
-    careers_url: "https://instacart.careers/"
-    ats: greenhouse
-    board_token: instacart
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/instacart \u2192 93 jobs (https://boards-api.greenhouse.io/v1/boards/instacart/jobs)"
-
-  - name: Integrate.ai
-    domain: integrate.ai
-    careers_url: "https://www.integrate.ai/careers"
-    ats: ashby
-    board_token: integrate
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/integrate \u2192 9 jobs"
-
-  - name: Jobber
-    domain: getjobber.com
-    careers_url: "https://getjobber.com/about/careers/"
-    ats: ashby
-    board_token: jobber
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/jobber \u2192 39 jobs (https://api.ashbyhq.com/posting-api/job-board/jobber)"
-
-  - name: Kin
-    domain: kin.com
-    careers_url: "https://www.kin.com/careers"
-    ats: ashby
-    board_token: kin
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/kin \u2192 21 jobs (https://api.ashbyhq.com/posting-api/job-board/kin)"
-
-  - name: KOHO
-    domain: koho.ca
-    careers_url: "https://www.koho.ca/careers"
-    ats: ashby
-    board_token: koho
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/koho \u2192 9 jobs (https://api.ashbyhq.com/posting-api/job-board/koho)"
-
-  - name: Later
-    domain: later.com
-    careers_url: "https://later.com/careers/"
-    ats: greenhouse
-    board_token: later
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/later \u2192 38 jobs (https://boards-api.greenhouse.io/v1/boards/later/jobs)"
-
-  - name: League
-    domain: league.com
-    careers_url: "https://league.com/careers"
-    ats: greenhouse
-    board_token: leagueinc
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/leagueinc \u2192 5 jobs"
-
-  - name: Lightspeed
-    domain: lightspeedhq.com
-    careers_url: "https://www.lightspeedhq.com/careers/"
-    ats: ashby
-    board_token: lightspeed
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/lightspeed \u2192 8 jobs (https://api.ashbyhq.com/posting-api/job-board/lightspeed)"
-
-  - name: Loopio
-    domain: loopio.com
-    careers_url: "https://loopio.com/careers/"
-    ats: ashby
-    board_token: loopio
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/loopio \u2192 16 jobs"
-
-  - name: MongoDB
-    domain: mongodb.com
-    careers_url: "https://www.mongodb.com/careers"
-    ats: greenhouse
-    board_token: mongodb
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/mongodb \u2192 369 jobs (https://boards-api.greenhouse.io/v1/boards/mongodb/jobs)"
-
-  - name: Neo Financial
-    domain: neofinancial.com
-    careers_url: "https://www.neofinancial.com/careers"
-    ats: ashby
-    board_token: neofinancial
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/neofinancial \u2192 63 jobs (https://api.ashbyhq.com/posting-api/job-board/neofinancial)"
-
-  - name: Nesto
-    domain: nesto.ca
-    careers_url: "https://www.nesto.ca/careers"
-    ats: rippling
-    board_token: nesto
-    enabled: true
-    notes: "Validated 2026-10-29: rippling/nesto \u2192 20 jobs (https://ats.rippling.com/api/v2/board/nesto/jobs)"
-
-  - name: Notion
-    domain: notion.so
-    careers_url: "https://www.notion.so/careers"
-    ats: ashby
-    board_token: notion
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/notion \u2192 143 jobs (https://api.ashbyhq.com/posting-api/job-board/notion)"
-
-  - name: Okta
-    domain: okta.com
-    careers_url: "https://www.okta.com/company/careers/"
-    ats: greenhouse
-    board_token: okta
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/okta \u2192 385 jobs (https://boards-api.greenhouse.io/v1/boards/okta/jobs)"
-
-  - name: OpenAI
-    domain: openai.com
-    careers_url: "https://openai.com/careers"
-    ats: ashby
-    board_token: openai
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/openai \u2192 812 jobs (https://api.ashbyhq.com/posting-api/job-board/openai)"
-
-  - name: PagerDuty
-    domain: pagerduty.com
-    careers_url: "https://www.pagerduty.com/careers/"
-    ats: greenhouse
-    board_token: pagerduty
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/pagerduty \u2192 49 jobs (https://boards-api.greenhouse.io/v1/boards/pagerduty/jobs)"
-
-  - name: Plaid
-    domain: plaid.com
-    careers_url: "https://plaid.com/careers/"
-    ats: ashby
-    board_token: plaid
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/plaid \u2192 129 jobs (https://api.ashbyhq.com/posting-api/job-board/plaid)"
-
-  - name: PointClickCare
-    domain: pointclickcare.com
-    careers_url: "https://pointclickcare.com/company/careers/"
-    ats: lever
-    board_token: pointclickcare
-    enabled: true
-    notes: "Validated 2026-10-29: lever/pointclickcare \u2192 72 jobs (https://api.lever.co/v0/postings/pointclickcare?mode=json)"
-
-  - name: PolicyMe
-    domain: policyme.com
-    careers_url: "https://www.policyme.com/careers"
-    ats: lever
-    board_token: policyme
-    enabled: true
-    notes: "Validated 2026-10-29: lever/policyme \u2192 10 jobs (https://api.lever.co/v0/postings/policyme?mode=json)"
-
-  - name: Ramp
-    domain: ramp.com
-    careers_url: "https://ramp.com/careers"
-    ats: ashby
-    board_token: ramp
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/ramp \u2192 168 jobs (https://api.ashbyhq.com/posting-api/job-board/ramp)"
-
-  - name: Rippling
-    domain: rippling.com
-    careers_url: "https://www.rippling.com/careers/open-roles"
-    ats: rippling
-    board_token: rippling
-    enabled: true
-    notes: "Validated 2026-10-29: rippling/rippling \u2192 20 jobs (https://ats.rippling.com/api/v2/board/rippling/jobs)"
-
-  - name: Ritual
-    domain: ritual.co
-    careers_url: "https://ritual.co/careers"
-    ats: greenhouse
-    board_token: ritual
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/ritual \u2192 15 jobs (https://boards-api.greenhouse.io/v1/boards/ritual/jobs)"
-
-  - name: Robinhood
-    domain: robinhood.com
-    careers_url: "https://careers.robinhood.com/"
-    ats: greenhouse
-    board_token: robinhood
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/robinhood \u2192 162 jobs (https://boards-api.greenhouse.io/v1/boards/robinhood/jobs)"
-
-  - name: Samsara
-    domain: samsara.com
-    careers_url: "https://www.samsara.com/company/careers"
-    ats: greenhouse
-    board_token: samsara
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/samsara \u2192 324 jobs (https://boards-api.greenhouse.io/v1/boards/samsara/jobs)"
-
-  - name: Sanctuary AI
-    domain: sanctuary.ai
-    careers_url: "https://www.sanctuary.ai/careers"
-    ats: ashby
-    board_token: sanctuary
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/sanctuary \u2192 7 jobs (https://api.ashbyhq.com/posting-api/job-board/sanctuary)"
-
-  - name: Scale AI
-    domain: scale.com
-    careers_url: "https://scale.com/careers"
-    ats: greenhouse
-    board_token: scaleai
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/scaleai \u2192 171 jobs (https://boards-api.greenhouse.io/v1/boards/scaleai/jobs)"
-
-  - name: Shopify
-    domain: shopify.com
-    careers_url: "https://www.shopify.com/careers"
-    ats: rss
-    board_token: "https://www.shopify.com/careers/feed.xml"
-    enabled: true
-    notes: "Validated 2026-10-29: RSS feed URL responds HTTP 200 but currently 0 items; retained for when feed repopulates"
-
-  - name: Snowflake
-    domain: snowflake.com
-    careers_url: "https://careers.snowflake.com/"
-    ats: ashby
-    board_token: snowflake
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/snowflake \u2192 361 jobs (https://api.ashbyhq.com/posting-api/job-board/snowflake)"
-
-  - name: StackAdapt
-    domain: stackadapt.com
-    careers_url: "https://www.stackadapt.com/careers"
-    ats: greenhouse
-    board_token: stackadapt
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/stackadapt \u2192 75 jobs (https://boards-api.greenhouse.io/v1/boards/stackadapt/jobs)"
-
-  - name: Stripe
-    domain: stripe.com
-    careers_url: "https://stripe.com/jobs"
-    ats: greenhouse
-    board_token: stripe
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/stripe \u2192 725 jobs (https://boards-api.greenhouse.io/v1/boards/stripe/jobs)"
-
-  - name: Thinkific
-    domain: thinkific.com
-    careers_url: "https://www.thinkific.com/careers/"
-    ats: ashby
-    board_token: thinkific
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/thinkific \u2192 3 jobs (https://api.ashbyhq.com/posting-api/job-board/thinkific)"
-
-  - name: Thoughtworks
-    domain: thoughtworks.com
-    careers_url: "https://www.thoughtworks.com/careers"
-    ats: greenhouse
-    board_token: thoughtworks
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/thoughtworks \u2192 49 jobs (https://boards-api.greenhouse.io/v1/boards/thoughtworks/jobs)"
-
-  - name: Toast
-    domain: toasttab.com
-    careers_url: "https://careers.toasttab.com/"
-    ats: greenhouse
-    board_token: toast
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/toast \u2192 340 jobs"
-
-  - name: Trulioo
-    domain: trulioo.com
-    careers_url: "https://www.trulioo.com/about/careers"
-    ats: ashby
-    board_token: trulioo
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/trulioo \u2192 25 jobs (https://api.ashbyhq.com/posting-api/job-board/trulioo)"
-
-  - name: Twilio
-    domain: twilio.com
-    careers_url: "https://www.twilio.com/company/jobs"
-    ats: greenhouse
-    board_token: twilio
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/twilio \u2192 130 jobs (https://boards-api.greenhouse.io/v1/boards/twilio/jobs)"
-
-  - name: Unbounce
-    domain: unbounce.com
-    careers_url: "https://unbounce.com/careers/"
-    ats: greenhouse
-    board_token: unbounce
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/unbounce \u2192 1 jobs (https://boards-api.greenhouse.io/v1/boards/unbounce/jobs)"
-
-  - name: Visier
-    domain: visier.com
-    careers_url: "https://www.visier.com/company/careers/"
-    ats: ashby
-    board_token: visier
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/visier \u2192 3 jobs (https://api.ashbyhq.com/posting-api/job-board/visier)"
-
-  - name: Waabi
-    domain: waabi.ai
-    careers_url: "https://waabi.ai/careers"
-    ats: lever
-    board_token: waabi
-    enabled: true
-    notes: "Validated 2026-10-29: lever/waabi \u2192 94 jobs (https://api.lever.co/v0/postings/waabi?mode=json)"
-
-  - name: Wattpad
-    domain: wattpad.com
-    careers_url: "https://company.wattpad.com/careers"
-    ats: lever
-    board_token: wattpad
-    enabled: true
-    notes: "Validated 2026-10-29: lever/wattpad \u2192 16 jobs (https://api.lever.co/v0/postings/wattpad?mode=json)"
-
-  - name: Wealthsimple
-    domain: wealthsimple.com
-    careers_url: "https://www.wealthsimple.com/en-ca/careers"
-    ats: ashby
-    board_token: wealthsimple
-    enabled: true
-    notes: "Validated 2026-10-29: ashby/wealthsimple \u2192 38 jobs (https://api.ashbyhq.com/posting-api/job-board/wealthsimple)"
-
-  - name: ZoomInfo
-    domain: zoominfo.com
-    careers_url: "https://www.zoominfo.com/careers"
-    ats: greenhouse
-    board_token: zoominfo
-    enabled: true
-    notes: "Validated 2026-10-29: greenhouse/zoominfo \u2192 102 jobs"
-
-  - name: Adept
-    careers_url: "https://www.adept.ai/careers"
-    ats: ashby
-    board_token: adept
-    enabled: false
-    notes: Example disabled entry
-
-  - name: Retool
-    domain: retool.com
-    careers_url: "https://retool.com/careers"
-    ats: gem
-    board_token: retool
-    enabled: false
-    notes: jobs.gem.com/retool returns HTTP 200 but no extractable public job links; left disabled
+- name: 1Password
+  domain: 1password.com
+  careers_url: https://1password.com/jobs
+  ats: ashby
+  board_token: 1password
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/1password → 88 jobs (https://api.ashbyhq.com/posting-api/job-board/1password)'
+- name: Adept
+  careers_url: https://www.adept.ai/careers
+  ats: ashby
+  board_token: adept
+  enabled: false
+  notes: Example disabled entry
+- name: Affirm
+  domain: affirm.com
+  careers_url: https://www.affirm.com/careers
+  ats: greenhouse
+  board_token: affirm
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/affirm → 240 jobs (https://boards-api.greenhouse.io/v1/boards/affirm/jobs)'
+- name: Airbnb
+  domain: airbnb.com
+  careers_url: https://careers.airbnb.com/
+  ats: greenhouse
+  board_token: airbnb
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/airbnb → 190 jobs (https://boards-api.greenhouse.io/v1/boards/airbnb/jobs)'
+- name: Airtable
+  domain: airtable.com
+  careers_url: https://airtable.com/careers
+  ats: greenhouse
+  board_token: airtable
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/airtable → 5 jobs (https://boards-api.greenhouse.io/v1/boards/airtable/jobs)'
+- name: Anthropic
+  domain: anthropic.com
+  careers_url: https://www.anthropic.com/careers
+  ats: greenhouse
+  board_token: anthropic
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/anthropic → 680 jobs (https://boards-api.greenhouse.io/v1/boards/anthropic/jobs)'
+- name: Asana
+  domain: asana.com
+  careers_url: https://asana.com/jobs
+  ats: greenhouse
+  board_token: asana
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/asana → 112 jobs (https://boards-api.greenhouse.io/v1/boards/asana/jobs)'
+- name: Benevity
+  domain: benevity.com
+  careers_url: https://www.benevity.com/careers
+  ats: ashby
+  board_token: benevity
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/benevity → 23 jobs (https://api.ashbyhq.com/posting-api/job-board/benevity)'
+- name: Block
+  domain: block.xyz
+  careers_url: https://block.xyz/careers
+  ats: greenhouse
+  board_token: block
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/block → 203 jobs (https://boards-api.greenhouse.io/v1/boards/block/jobs)'
+- name: BMO
+  domain: bmo.com
+  careers_url: https://jobs.bmo.com/
+  ats: workday
+  board_token: bmo.wd3.myworkdayjobs.com/bmo/External
+  workday_host: bmo.wd3.myworkdayjobs.com
+  workday_tenant: bmo
+  workday_site: External
+  enabled: true
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Borrowell
+  domain: borrowell.com
+  careers_url: https://borrowell.com/careers
+  ats: workable
+  board_token: borrowell
+  enabled: true
+  notes: 'Validated 2026-10-29: workable/borrowell → 2 jobs (https://apply.workable.com/api/v1/widget/accounts/borrowell)'
+- name: Brex
+  domain: brex.com
+  careers_url: https://www.brex.com/careers
+  ats: greenhouse
+  board_token: brex
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/brex → 262 jobs (https://boards-api.greenhouse.io/v1/boards/brex/jobs)'
+- name: CIBC
+  domain: cibc.com
+  careers_url: https://cibc.wd3.myworkdayjobs.com/campus
+  ats: workday
+  board_token: cibc.wd3.myworkdayjobs.com/cibc/campus
+  workday_host: cibc.wd3.myworkdayjobs.com
+  workday_tenant: cibc
+  workday_site: campus
+  enabled: true
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Clearco
+  domain: clear.co
+  careers_url: https://clear.co/careers
+  ats: ashby
+  board_token: clearco
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/clearco → 5 jobs (https://api.ashbyhq.com/posting-api/job-board/clearco)'
+- name: Cloudflare
+  domain: cloudflare.com
+  careers_url: https://www.cloudflare.com/careers
+  ats: greenhouse
+  board_token: cloudflare
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/cloudflare → 460 jobs (https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs)'
+- name: Cohere
+  domain: cohere.com
+  careers_url: https://cohere.com/careers
+  ats: ashby
+  board_token: cohere
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/cohere → 119 jobs (https://api.ashbyhq.com/posting-api/job-board/cohere)'
+- name: Coinbase
+  domain: coinbase.com
+  careers_url: https://www.coinbase.com/careers
+  ats: greenhouse
+  board_token: coinbase
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/coinbase → 228 jobs (https://boards-api.greenhouse.io/v1/boards/coinbase/jobs)'
+- name: Crunchyroll
+  domain: crunchyroll.com
+  careers_url: https://www.crunchyroll.com/jobs
+  ats: greenhouse
+  board_token: crunchyroll
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/crunchyroll → 100 jobs (https://boards-api.greenhouse.io/v1/boards/crunchyroll/jobs)'
+- name: D2L
+  domain: d2l.com
+  careers_url: https://www.d2l.com/careers/
+  ats: greenhouse
+  board_token: d2l
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/d2l → 15 jobs (https://boards-api.greenhouse.io/v1/boards/d2l/jobs)'
+- name: Databricks
+  domain: databricks.com
+  careers_url: https://www.databricks.com/company/careers
+  ats: greenhouse
+  board_token: databricks
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/databricks → 902 jobs (https://boards-api.greenhouse.io/v1/boards/databricks/jobs)'
+- name: Datadog
+  domain: datadoghq.com
+  careers_url: https://careers.datadoghq.com
+  ats: greenhouse
+  board_token: datadog
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/datadog → 394 jobs (https://boards-api.greenhouse.io/v1/boards/datadog/jobs)'
+- name: Deep Genomics
+  domain: deepgenomics.com
+  careers_url: https://www.deepgenomics.com/careers
+  ats: lever
+  board_token: deepgenomics
+  enabled: true
+  notes: 'Validated 2026-10-29: lever/deepgenomics → 2 jobs (https://api.lever.co/v0/postings/deepgenomics?mode=json)'
+- name: Dropbox
+  domain: dropbox.com
+  careers_url: https://jobs.dropbox.com/
+  ats: greenhouse
+  board_token: dropbox
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/dropbox → 21 jobs (https://boards-api.greenhouse.io/v1/boards/dropbox/jobs)'
+- name: Elastic
+  domain: elastic.co
+  careers_url: https://www.elastic.co/careers
+  ats: greenhouse
+  board_token: elastic
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/elastic → 404 jobs (https://boards-api.greenhouse.io/v1/boards/elastic/jobs)'
+- name: Faire
+  domain: faire.com
+  careers_url: https://www.faire.com/careers
+  ats: greenhouse
+  board_token: faire
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/faire → 67 jobs (https://boards-api.greenhouse.io/v1/boards/faire/jobs)'
+- name: Figma
+  domain: figma.com
+  careers_url: https://www.figma.com/careers
+  ats: greenhouse
+  board_token: figma
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/figma → 141 jobs (https://boards-api.greenhouse.io/v1/boards/figma/jobs)'
+- name: Flexport
+  domain: flexport.com
+  careers_url: https://www.flexport.com/careers
+  ats: greenhouse
+  board_token: flexport
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/flexport → 192 jobs (https://boards-api.greenhouse.io/v1/boards/flexport/jobs)'
+- name: Flipp
+  domain: flipp.com
+  careers_url: https://careers.flipp.com/
+  ats: greenhouse
+  board_token: flipp
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/flipp → 12 jobs (https://boards-api.greenhouse.io/v1/boards/flipp/jobs)'
+- name: Geotab
+  domain: geotab.com
+  careers_url: https://www.geotab.com/careers/
+  ats: greenhouse
+  board_token: geotab
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/geotab → 60 jobs'
+- name: GitLab
+  domain: gitlab.com
+  careers_url: https://about.gitlab.com/jobs
+  ats: greenhouse
+  board_token: gitlab
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/gitlab → 231 jobs (https://boards-api.greenhouse.io/v1/boards/gitlab/jobs)'
+- name: Gusto
+  domain: gusto.com
+  careers_url: https://gusto.com/about/careers
+  ats: greenhouse
+  board_token: gusto
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/gusto → 88 jobs (https://boards-api.greenhouse.io/v1/boards/gusto/jobs)'
+- name: Hootsuite
+  domain: hootsuite.com
+  careers_url: https://careers.hootsuite.com/
+  ats: greenhouse
+  board_token: hootsuite
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/hootsuite → 3 jobs (https://boards-api.greenhouse.io/v1/boards/hootsuite/jobs)'
+- name: Hopper
+  domain: hopper.com
+  careers_url: https://hopper.com/careers
+  ats: ashby
+  board_token: hopper
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/hopper → 18 jobs (https://api.ashbyhq.com/posting-api/job-board/hopper)'
+- name: Hugging Face
+  domain: huggingface.co
+  careers_url: https://apply.workable.com/huggingface/
+  ats: workable
+  board_token: huggingface
+  enabled: true
+  notes: 'Validated 2026-10-29: workable/huggingface → 6 jobs (https://apply.workable.com/api/v1/widget/accounts/huggingface)'
+- name: Instacart
+  domain: instacart.com
+  careers_url: https://instacart.careers/
+  ats: greenhouse
+  board_token: instacart
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/instacart → 93 jobs (https://boards-api.greenhouse.io/v1/boards/instacart/jobs)'
+- name: Intact
+  domain: intactfc.com
+  careers_url: https://careers.intactfc.com/
+  ats: workday
+  board_token: intactfc.wd3.myworkdayjobs.com/intactfc/intactfc
+  workday_host: intactfc.wd3.myworkdayjobs.com
+  workday_tenant: intactfc
+  workday_site: intactfc
+  enabled: true
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Integrate.ai
+  domain: integrate.ai
+  careers_url: https://www.integrate.ai/careers
+  ats: ashby
+  board_token: integrate
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/integrate → 9 jobs'
+- name: Jobber
+  domain: getjobber.com
+  careers_url: https://getjobber.com/about/careers/
+  ats: ashby
+  board_token: jobber
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/jobber → 39 jobs (https://api.ashbyhq.com/posting-api/job-board/jobber)'
+- name: Kin
+  domain: kin.com
+  careers_url: https://www.kin.com/careers
+  ats: ashby
+  board_token: kin
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/kin → 21 jobs (https://api.ashbyhq.com/posting-api/job-board/kin)'
+- name: KOHO
+  domain: koho.ca
+  careers_url: https://www.koho.ca/careers
+  ats: ashby
+  board_token: koho
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/koho → 9 jobs (https://api.ashbyhq.com/posting-api/job-board/koho)'
+- name: Later
+  domain: later.com
+  careers_url: https://later.com/careers/
+  ats: greenhouse
+  board_token: later
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/later → 38 jobs (https://boards-api.greenhouse.io/v1/boards/later/jobs)'
+- name: League
+  domain: league.com
+  careers_url: https://league.com/careers
+  ats: greenhouse
+  board_token: leagueinc
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/leagueinc → 5 jobs'
+- name: Lightspeed
+  domain: lightspeedhq.com
+  careers_url: https://www.lightspeedhq.com/careers/
+  ats: ashby
+  board_token: lightspeed
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/lightspeed → 8 jobs (https://api.ashbyhq.com/posting-api/job-board/lightspeed)'
+- name: Loopio
+  domain: loopio.com
+  careers_url: https://loopio.com/careers/
+  ats: ashby
+  board_token: loopio
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/loopio → 16 jobs'
+- name: Manulife
+  domain: manulife.com
+  careers_url: https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs
+  ats: workday
+  board_token: manulife.wd3.myworkdayjobs.com/manulife/MFCJH_Jobs
+  workday_host: manulife.wd3.myworkdayjobs.com
+  workday_tenant: manulife
+  workday_site: MFCJH_Jobs
+  enabled: true
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: MongoDB
+  domain: mongodb.com
+  careers_url: https://www.mongodb.com/careers
+  ats: greenhouse
+  board_token: mongodb
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/mongodb → 369 jobs (https://boards-api.greenhouse.io/v1/boards/mongodb/jobs)'
+- name: Neo Financial
+  domain: neofinancial.com
+  careers_url: https://www.neofinancial.com/careers
+  ats: ashby
+  board_token: neofinancial
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/neofinancial → 63 jobs (https://api.ashbyhq.com/posting-api/job-board/neofinancial)'
+- name: Nesto
+  domain: nesto.ca
+  careers_url: https://www.nesto.ca/careers
+  ats: rippling
+  board_token: nesto
+  enabled: true
+  notes: 'Validated 2026-10-29: rippling/nesto → 20 jobs (https://ats.rippling.com/api/v2/board/nesto/jobs)'
+- name: Notion
+  domain: notion.so
+  careers_url: https://www.notion.so/careers
+  ats: ashby
+  board_token: notion
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/notion → 143 jobs (https://api.ashbyhq.com/posting-api/job-board/notion)'
+- name: Okta
+  domain: okta.com
+  careers_url: https://www.okta.com/company/careers/
+  ats: greenhouse
+  board_token: okta
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/okta → 385 jobs (https://boards-api.greenhouse.io/v1/boards/okta/jobs)'
+- name: OpenAI
+  domain: openai.com
+  careers_url: https://openai.com/careers
+  ats: ashby
+  board_token: openai
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/openai → 812 jobs (https://api.ashbyhq.com/posting-api/job-board/openai)'
+- name: PagerDuty
+  domain: pagerduty.com
+  careers_url: https://www.pagerduty.com/careers/
+  ats: greenhouse
+  board_token: pagerduty
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/pagerduty → 49 jobs (https://boards-api.greenhouse.io/v1/boards/pagerduty/jobs)'
+- name: Plaid
+  domain: plaid.com
+  careers_url: https://plaid.com/careers/
+  ats: ashby
+  board_token: plaid
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/plaid → 129 jobs (https://api.ashbyhq.com/posting-api/job-board/plaid)'
+- name: PointClickCare
+  domain: pointclickcare.com
+  careers_url: https://pointclickcare.com/company/careers/
+  ats: lever
+  board_token: pointclickcare
+  enabled: true
+  notes: 'Validated 2026-10-29: lever/pointclickcare → 72 jobs (https://api.lever.co/v0/postings/pointclickcare?mode=json)'
+- name: PolicyMe
+  domain: policyme.com
+  careers_url: https://www.policyme.com/careers
+  ats: lever
+  board_token: policyme
+  enabled: true
+  notes: 'Validated 2026-10-29: lever/policyme → 10 jobs (https://api.lever.co/v0/postings/policyme?mode=json)'
+- name: Ramp
+  domain: ramp.com
+  careers_url: https://ramp.com/careers
+  ats: ashby
+  board_token: ramp
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/ramp → 168 jobs (https://api.ashbyhq.com/posting-api/job-board/ramp)'
+- name: RBC
+  domain: rbc.com
+  careers_url: https://jobs.rbc.com/
+  ats: workday
+  board_token: rbc.wd3.myworkdayjobs.com/rbc/RBCGLOBAL1
+  workday_host: rbc.wd3.myworkdayjobs.com
+  workday_tenant: rbc
+  workday_site: RBCGLOBAL1
+  enabled: true
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Retool
+  domain: retool.com
+  careers_url: https://retool.com/careers
+  ats: gem
+  board_token: retool
+  enabled: false
+  notes: jobs.gem.com/retool returns HTTP 200 but no extractable public job links;
+    left disabled
+- name: Rippling
+  domain: rippling.com
+  careers_url: https://www.rippling.com/careers/open-roles
+  ats: rippling
+  board_token: rippling
+  enabled: true
+  notes: 'Validated 2026-10-29: rippling/rippling → 20 jobs (https://ats.rippling.com/api/v2/board/rippling/jobs)'
+- name: Ritual
+  domain: ritual.co
+  careers_url: https://ritual.co/careers
+  ats: greenhouse
+  board_token: ritual
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/ritual → 15 jobs (https://boards-api.greenhouse.io/v1/boards/ritual/jobs)'
+- name: Robinhood
+  domain: robinhood.com
+  careers_url: https://careers.robinhood.com/
+  ats: greenhouse
+  board_token: robinhood
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/robinhood → 162 jobs (https://boards-api.greenhouse.io/v1/boards/robinhood/jobs)'
+- name: Samsara
+  domain: samsara.com
+  careers_url: https://www.samsara.com/company/careers
+  ats: greenhouse
+  board_token: samsara
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/samsara → 324 jobs (https://boards-api.greenhouse.io/v1/boards/samsara/jobs)'
+- name: Sanctuary AI
+  domain: sanctuary.ai
+  careers_url: https://www.sanctuary.ai/careers
+  ats: ashby
+  board_token: sanctuary
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/sanctuary → 7 jobs (https://api.ashbyhq.com/posting-api/job-board/sanctuary)'
+- name: Scale AI
+  domain: scale.com
+  careers_url: https://scale.com/careers
+  ats: greenhouse
+  board_token: scaleai
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/scaleai → 171 jobs (https://boards-api.greenhouse.io/v1/boards/scaleai/jobs)'
+- name: Shopify
+  domain: shopify.com
+  careers_url: https://www.shopify.com/careers
+  ats: rss
+  board_token: https://www.shopify.com/careers/feed.xml
+  enabled: true
+  notes: 'Validated 2026-10-29: RSS feed URL responds HTTP 200 but currently 0 items;
+    retained for when feed repopulates'
+- name: Snowflake
+  domain: snowflake.com
+  careers_url: https://careers.snowflake.com/
+  ats: ashby
+  board_token: snowflake
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/snowflake → 361 jobs (https://api.ashbyhq.com/posting-api/job-board/snowflake)'
+- name: StackAdapt
+  domain: stackadapt.com
+  careers_url: https://www.stackadapt.com/careers
+  ats: greenhouse
+  board_token: stackadapt
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/stackadapt → 75 jobs (https://boards-api.greenhouse.io/v1/boards/stackadapt/jobs)'
+- name: Stripe
+  domain: stripe.com
+  careers_url: https://stripe.com/jobs
+  ats: greenhouse
+  board_token: stripe
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/stripe → 725 jobs (https://boards-api.greenhouse.io/v1/boards/stripe/jobs)'
+- name: Sun Life
+  domain: sunlife.com
+  careers_url: https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs
+  ats: workday
+  board_token: sunlife.wd3.myworkdayjobs.com/sunlife/Experienced-Jobs
+  workday_host: sunlife.wd3.myworkdayjobs.com
+  workday_tenant: sunlife
+  workday_site: Experienced-Jobs
+  enabled: true
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: TD
+  domain: td.com
+  careers_url: https://careers.td.com/
+  ats: workday
+  board_token: td.wd3.myworkdayjobs.com/td/TD_Bank_Careers
+  workday_host: td.wd3.myworkdayjobs.com
+  workday_tenant: td
+  workday_site: TD_Bank_Careers
+  enabled: true
+  notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: TELUS
+  domain: telus.com
+  careers_url: https://careers.telus.com/
+  ats: workday
+  board_token: lifeworks.wd3.myworkdayjobs.com/lifeworks/External
+  workday_host: lifeworks.wd3.myworkdayjobs.com
+  workday_tenant: lifeworks
+  workday_site: External
+  enabled: true
+  notes: 'Phase 5: TELUS/LifeWorks verified CXS guest board 2026-10-29'
+- name: Thinkific
+  domain: thinkific.com
+  careers_url: https://www.thinkific.com/careers/
+  ats: ashby
+  board_token: thinkific
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/thinkific → 3 jobs (https://api.ashbyhq.com/posting-api/job-board/thinkific)'
+- name: Thoughtworks
+  domain: thoughtworks.com
+  careers_url: https://www.thoughtworks.com/careers
+  ats: greenhouse
+  board_token: thoughtworks
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/thoughtworks → 49 jobs (https://boards-api.greenhouse.io/v1/boards/thoughtworks/jobs)'
+- name: Toast
+  domain: toasttab.com
+  careers_url: https://careers.toasttab.com/
+  ats: greenhouse
+  board_token: toast
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/toast → 340 jobs'
+- name: Trulioo
+  domain: trulioo.com
+  careers_url: https://www.trulioo.com/about/careers
+  ats: ashby
+  board_token: trulioo
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/trulioo → 25 jobs (https://api.ashbyhq.com/posting-api/job-board/trulioo)'
+- name: Twilio
+  domain: twilio.com
+  careers_url: https://www.twilio.com/company/jobs
+  ats: greenhouse
+  board_token: twilio
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/twilio → 130 jobs (https://boards-api.greenhouse.io/v1/boards/twilio/jobs)'
+- name: Unbounce
+  domain: unbounce.com
+  careers_url: https://unbounce.com/careers/
+  ats: greenhouse
+  board_token: unbounce
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/unbounce → 1 jobs (https://boards-api.greenhouse.io/v1/boards/unbounce/jobs)'
+- name: Visier
+  domain: visier.com
+  careers_url: https://www.visier.com/company/careers/
+  ats: ashby
+  board_token: visier
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/visier → 3 jobs (https://api.ashbyhq.com/posting-api/job-board/visier)'
+- name: Waabi
+  domain: waabi.ai
+  careers_url: https://waabi.ai/careers
+  ats: lever
+  board_token: waabi
+  enabled: true
+  notes: 'Validated 2026-10-29: lever/waabi → 94 jobs (https://api.lever.co/v0/postings/waabi?mode=json)'
+- name: Wattpad
+  domain: wattpad.com
+  careers_url: https://company.wattpad.com/careers
+  ats: lever
+  board_token: wattpad
+  enabled: true
+  notes: 'Validated 2026-10-29: lever/wattpad → 16 jobs (https://api.lever.co/v0/postings/wattpad?mode=json)'
+- name: Wealthsimple
+  domain: wealthsimple.com
+  careers_url: https://www.wealthsimple.com/en-ca/careers
+  ats: ashby
+  board_token: wealthsimple
+  enabled: true
+  notes: 'Validated 2026-10-29: ashby/wealthsimple → 38 jobs (https://api.ashbyhq.com/posting-api/job-board/wealthsimple)'
+- name: ZoomInfo
+  domain: zoominfo.com
+  careers_url: https://www.zoominfo.com/careers
+  ats: greenhouse
+  board_token: zoominfo
+  enabled: true
+  notes: 'Validated 2026-10-29: greenhouse/zoominfo → 102 jobs'
