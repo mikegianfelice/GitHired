@@ -123,7 +123,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md docs/showcase/top_paying_snapshot.json
+          git add README.md docs/showcase/top_paying_snapshot.json assets/showcase/top-paying-jobs.svg
           if git diff --staged --quiet; then
             echo "No showcase changes to commit."
             exit 0
@@ -131,8 +131,8 @@ jobs:
           git commit -m "$(cat <<'EOF'
           chore(showcase): refresh top-paying jobs in README
 
-          Automated daily update of the delimited Top Paying Jobs section from
-          discovered listings with employer-advertised salaries.
+          Automated daily update of the delimited Top Paying Jobs SVG dashboard
+          from discovered listings with employer-advertised salaries.
           EOF
           )"
           git push

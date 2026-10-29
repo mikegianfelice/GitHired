@@ -169,6 +169,11 @@ class ShowcaseJob:
     verified_at: str  # ISO date YYYY-MM-DD (from last_seen)
     source: str
     rank_cad: float
+    career_page_verified: bool = False
+    discovered_today: bool = False
+    first_seen: str = ""  # ISO date YYYY-MM-DD
+    location_tag: str = ""
+    work_mode_tag: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -193,9 +198,44 @@ def parse_iso_date(value: str | None) -> datetime | None:
 
 
 def verified_date_label(verified_at: str, *, today: datetime | None = None) -> str:
-    """Human label that never says 'today' even when the date is current."""
-    _ = today  # reserved for callers; label is always the calendar date
+    """Fallback calendar label (never claims discovery-day freshness)."""
+    _ = today
     return f"Verified {verified_at}"
+
+
+def discovery_date_label(
+    *,
+    discovered_today: bool,
+    verified_at: str,
+    today: datetime | None = None,
+) -> str:
+    """Per-job freshness: 'Discovered Today' only when first_seen is today."""
+    _ = today
+    if discovered_today:
+        return "Discovered Today"
+    return f"Verified {verified_at}"
+
+
+def infer_work_mode_tag(location_raw: str | None) -> str:
+    text = (location_raw or "").casefold()
+    if "hybrid" in text:
+        return "Hybrid"
+    if "remote" in text or "anywhere" in text:
+        return "Remote"
+    return "On-site"
+
+
+def infer_location_tag(location_raw: str | None) -> str:
+    loc = " ".join((location_raw or "").split()).strip() or "Canada"
+    return loc[:40]
+
+
+def is_career_page_verified(url: str | None) -> bool:
+    """True only for direct employer ATS / career-page hosts (not affiliates)."""
+    if not url or not str(url).strip():
+        return False
+    verdict = classify_application_url(str(url).strip())
+    return verdict.kind == "direct" and verdict.actionable
 
 
 def annualize_for_rank(
@@ -230,6 +270,7 @@ def format_salary_range(salary_min: float, salary_max: float, currency: str) -> 
 
 
 def is_valid_apply_url(url: str | None) -> bool:
+    """Showcase apply links must be direct employer career / ATS URLs."""
     if not url or not str(url).strip():
         return False
     text = str(url).strip()
@@ -239,8 +280,7 @@ def is_valid_apply_url(url: str | None) -> bool:
         return False
     if parsed.scheme not in ("http", "https") or not parsed.netloc:
         return False
-    verdict = classify_application_url(text)
-    return verdict.kind != "affiliate"
+    return is_career_page_verified(text)
 
 
 def eligibility_label(location_raw: str | None, eligibility: str) -> str:
@@ -316,6 +356,12 @@ def select_top_paying_jobs(
             continue
 
         verified_at = last_seen.date().isoformat()
+        first_seen_dt = parse_iso_date(job.get("first_seen")) or last_seen
+        first_seen = first_seen_dt.date().isoformat()
+        today_date = now.astimezone(timezone.utc).date()
+        discovered_today = first_seen_dt.astimezone(timezone.utc).date() == today_date
+        clean_url = apply_url.split("?")[0] if "utm_" in apply_url else apply_url
+        loc_raw = str(job.get("location_raw") or "").strip() or "Canada"
         selected.append(
             ShowcaseJob(
                 title=title,
@@ -323,12 +369,17 @@ def select_top_paying_jobs(
                 salary_min=min(amin_f, amax_f),
                 salary_max=max(amin_f, amax_f),
                 salary_currency=currency,
-                location_raw=str(job.get("location_raw") or "").strip() or "Canada",
+                location_raw=loc_raw,
                 eligibility_label=eligibility_label(job.get("location_raw"), elig),
-                apply_url=apply_url.split("?")[0] if "utm_" in apply_url else apply_url,
+                apply_url=clean_url,
                 verified_at=verified_at,
                 source=str(job.get("source") or ""),
                 rank_cad=rank_cad,
+                career_page_verified=is_career_page_verified(clean_url),
+                discovered_today=discovered_today,
+                first_seen=first_seen,
+                location_tag=infer_location_tag(loc_raw),
+                work_mode_tag=infer_work_mode_tag(loc_raw),
             )
         )
 

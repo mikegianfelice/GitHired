@@ -19,7 +19,7 @@
 <p align="center">
   <a href="#quick-start"><strong>Install</strong></a> ·
   <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#top-5-high-paying-jobs"><strong>Top salaries</strong></a> ·
+  <a href="#top-5-high-paying-jobs-discovered-today"><strong>Top salaries</strong></a> ·
   <a href="SETUP.md">Setup guide</a> ·
   <a href="docs/discovery.md">Discovery docs</a> ·
   <a href="docs/showcase/ARCHITECTURE.md">Showcase architecture</a>
@@ -29,28 +29,38 @@
 
 <!-- TOP-PAYING-JOBS:START -->
 
-## Top 5 High-Paying Jobs
+## Top 5 High-Paying Jobs Discovered Today
 
-> Real listings discovered by GitHired with **employer-advertised** annual base salaries. No estimates. Ranked by annual high end (CAD-comparable for sorting; USD×1.35). Last refreshed: **2026-10-29 18:00 UTC**.
+*Real opportunities. Direct from company career pages. Powered by GitHired.*
 
-| # | Role | Company | Annual base | Location | Verified | Apply |
-| -: | --- | --- | --- | --- | --- | --- |
-| 1 | **[Wattpad] Head of Engineering** | Wattpad | `CAD 240,000–280,000` | Toronto, Ontario | Verified 2026-10-29 | [Apply](https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply) |
-| 2 | **(Canada) Principal ML System Engineer** | PointClickCare | `CAD 179,000–224,000` | Remote or Mississauga | Verified 2026-10-29 | [Apply](https://jobs.lever.co/pointclickcare/ccdecc93-aef2-4b2b-a981-6843f3c16221/apply) |
-| 3 | **Senior Machine Learning Systems Engineer (CAD)** | PointClickCare | `CAD 174,000–218,000` | Mississauga | Verified 2026-10-29 | [Apply](https://jobs.lever.co/pointclickcare/150b07cd-04e9-46c4-9015-114498f3798c/apply) |
-| 4 | **Principal AI Platform Engineer** | PointClickCare | `CAD 191,700–213,000` | Mississauga | Verified 2026-10-29 | [Apply](https://jobs.lever.co/pointclickcare/d27ec0dd-570d-4626-9962-2db3fc56b991/apply) |
-| 5 | **[Wattpad] Engineering Manager** | Wattpad | `CAD 140,000–180,000` | Toronto, Ontario | Verified 2026-10-29 | [Apply](https://jobs.lever.co/wattpad/da811487-88c8-440b-b6c2-5da90eb80ca1/apply) |
+<p align="center"><img src="assets/showcase/top-paying-jobs.svg" alt="Top 5 high-paying Canada-eligible engineering jobs discovered by GitHired" width="880" /></p>
+
+<p align="center">
+<a href="https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply"><strong>1. Wattpad — Apply →</strong></a> &nbsp;·&nbsp; <a href="https://jobs.lever.co/pointclickcare/ccdecc93-aef2-4b2b-a981-6843f3c16221/apply"><strong>2. PointClickCare — Apply →</strong></a> &nbsp;·&nbsp; <a href="https://jobs.lever.co/pointclickcare/150b07cd-04e9-46c4-9015-114498f3798c/apply"><strong>3. PointClickCare — Apply →</strong></a> &nbsp;·&nbsp; <a href="https://jobs.lever.co/pointclickcare/d27ec0dd-570d-4626-9962-2db3fc56b991/apply"><strong>4. PointClickCare — Apply →</strong></a> &nbsp;·&nbsp; <a href="https://jobs.lever.co/wattpad/da811487-88c8-440b-b6c2-5da90eb80ca1/apply"><strong>5. Wattpad — Apply →</strong></a>
+</p>
+
+<p align="center"><strong>Discovered and verified by GitHired · Open Source</strong></p>
+
+<p align="center"><a href="#quick-start"><strong>Get Started with GitHired →</strong></a></p>
 
 <details>
-<summary>Ranking & eligibility rules</summary>
+<summary>Listings detail & ranking rules</summary>
+
+| # | Role | Company | Annual base | Location | Date | Apply |
+| -: | --- | --- | --- | --- | --- | --- |
+| 1 | **\[Wattpad\] Head of Engineering** | Wattpad ✓ | `CAD 240,000–280,000` | Toronto, Ontario · On-site | Discovered Today | [Apply →](https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply) |
+| 2 | **(Canada) Principal ML System Engineer** | PointClickCare ✓ | `CAD 179,000–224,000` | Remote or Mississauga · Remote | Discovered Today | [Apply →](https://jobs.lever.co/pointclickcare/ccdecc93-aef2-4b2b-a981-6843f3c16221/apply) |
+| 3 | **Senior Machine Learning Systems Engineer (CAD)** | PointClickCare ✓ | `CAD 174,000–218,000` | Mississauga · On-site | Discovered Today | [Apply →](https://jobs.lever.co/pointclickcare/150b07cd-04e9-46c4-9015-114498f3798c/apply) |
+| 4 | **Principal AI Platform Engineer** | PointClickCare ✓ | `CAD 191,700–213,000` | Mississauga · On-site | Discovered Today | [Apply →](https://jobs.lever.co/pointclickcare/d27ec0dd-570d-4626-9962-2db3fc56b991/apply) |
+| 5 | **\[Wattpad\] Engineering Manager** | Wattpad ✓ | `CAD 140,000–180,000` | Toronto, Ontario · On-site | Discovered Today | [Apply →](https://jobs.lever.co/wattpad/da811487-88c8-440b-b6c2-5da90eb80ca1/apply) |
 
 Rank by advertised annual base salary high end, converted to CAD for sorting only (USD×1.35; other currencies excluded). Display the employer-stated currency and range unchanged. No estimates for undisclosed pay.
 
-- Canada geographic eligibility required (remote Canada / hybrid / on-site / province as configured).
-- Direct ATS apply URLs only (affiliates excluded).
-- Engineering tracks only; listings older than 14 days excluded.
-- Dates use **Verified YYYY-MM-DD** from discovery `last_seen` (calendar date only — no same-day marketing labels).
-- Fewer than five rows means fewer than five qualified.
+- Snapshot refreshed: **2026-10-29 18:00 UTC** (preserved on failure — never backdated).
+- Blue ✓ marks listings confirmed against a direct employer career / ATS URL.
+- **Discovered Today** is shown only when the job’s `first_seen` date is today; otherwise the card shows the last verified date.
+- Advertised annual base only (CAD / USD); no estimates for undisclosed pay.
+- Fewer than five cards means fewer than five qualified.
 
 </details>
 

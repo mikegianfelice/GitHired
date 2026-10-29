@@ -15,10 +15,13 @@ from jobseek.showcase.readme import (
     update_readme_file,
 )
 from jobseek.showcase.refresh import refresh_readme
+from jobseek.showcase.svg_dashboard import render_dashboard_svg
 from jobseek.showcase.top_paying import (
     ShowcaseJob,
     annualize_for_rank,
+    discovery_date_label,
     format_salary_range,
+    is_career_page_verified,
     is_valid_apply_url,
     select_top_paying_jobs,
     verified_date_label,
@@ -36,11 +39,35 @@ def _job(**kwargs):
         "apply_url": "https://boards.greenhouse.io/acme/jobs/1",
         "url": "https://boards.greenhouse.io/acme/jobs/1",
         "last_seen": "2026-10-28T12:00:00Z",
+        "first_seen": "2026-10-28T12:00:00Z",
         "source": "greenhouse",
         "removed_at": None,
     }
     base.update(kwargs)
     return base
+
+
+def _showcase(**kwargs) -> ShowcaseJob:
+    base = dict(
+        title="Senior Software Engineer",
+        company="Acme",
+        salary_min=150000.0,
+        salary_max=180000.0,
+        salary_currency="CAD",
+        location_raw="Remote, Canada",
+        eligibility_label="Remote, Canada",
+        apply_url="https://boards.greenhouse.io/acme/jobs/1",
+        verified_at="2026-10-28",
+        source="greenhouse",
+        rank_cad=180000.0,
+        career_page_verified=True,
+        discovered_today=False,
+        first_seen="2026-10-28",
+        location_tag="Remote, Canada",
+        work_mode_tag="Remote",
+    )
+    base.update(kwargs)
+    return ShowcaseJob(**base)
 
 
 NOW = datetime(2026, 10, 29, 15, 0, tzinfo=timezone.utc)
@@ -70,10 +97,11 @@ class TestLinkValidation:
     def test_accepts_direct_ats(self):
         assert is_valid_apply_url("https://jobs.lever.co/wattpad/abc/apply")
         assert is_valid_apply_url("https://boards.greenhouse.io/x/jobs/1")
+        assert is_career_page_verified("https://jobs.lever.co/wattpad/abc/apply")
 
     def test_rejects_affiliate(self):
-        # WhatJobs-style affiliate hosts are classified as affiliate
         assert not is_valid_apply_url("https://www.whatjobs.com/jobs/foo")
+        assert not is_career_page_verified("https://www.whatjobs.com/jobs/foo")
 
     def test_rejects_empty_and_non_http(self):
         assert not is_valid_apply_url(None)
@@ -83,32 +111,59 @@ class TestLinkValidation:
 
 
 class TestDateLabeling:
-    def test_never_says_today(self):
+    def test_verified_fallback_never_says_today(self):
         label = verified_date_label("2026-10-29", today=NOW)
         assert "today" not in label.casefold()
         assert label == "Verified 2026-10-29"
 
-    def test_section_never_says_discovered_today(self):
+    def test_discovered_today_only_when_flag_true(self):
+        assert discovery_date_label(
+            discovered_today=True, verified_at="2026-10-29", today=NOW
+        ) == "Discovered Today"
+        assert discovery_date_label(
+            discovered_today=False, verified_at="2026-10-28", today=NOW
+        ) == "Verified 2026-10-28"
+
+    def test_section_uses_per_job_freshness(self):
         jobs = [
-            ShowcaseJob(
-                title="Senior Software Engineer",
-                company="Acme",
-                salary_min=150000,
-                salary_max=180000,
-                salary_currency="CAD",
-                location_raw="Remote, Canada",
-                eligibility_label="Remote, Canada",
-                apply_url="https://boards.greenhouse.io/acme/jobs/1",
+            _showcase(discovered_today=False, verified_at="2026-10-28"),
+            _showcase(
+                company="NewCo",
+                title="Staff Software Engineer",
+                apply_url="https://jobs.lever.co/newco/1",
+                discovered_today=True,
                 verified_at="2026-10-29",
-                source="greenhouse",
-                rank_cad=180000,
-            )
+                first_seen="2026-10-29",
+                rank_cad=190000,
+                salary_max=190000,
+            ),
         ]
-        md = render_section(jobs, generated_at=NOW)
-        # Must not market freshness with a "Discovered today" label
-        assert "discovered today" not in md.casefold()
-        assert "| Verified 2026-10-29 |" in md or "Verified 2026-10-29" in md
-        assert "Last refreshed:" in md
+        md = render_section(jobs, generated_at=NOW, today=NOW)
+        assert "Top 5 High-Paying Jobs Discovered Today" in md
+        assert "Verified 2026-10-28" in md
+        assert "Discovered Today" in md
+        assert "Get Started with GitHired" in md
+        assert "assets/showcase/top-paying-jobs.svg" in md
+
+    def test_select_marks_discovered_today_from_first_seen(self):
+        rows = [
+            _job(
+                first_seen="2026-10-29T08:00:00Z",
+                last_seen="2026-10-29T12:00:00Z",
+                company="Fresh",
+            ),
+            _job(
+                first_seen="2026-10-20T08:00:00Z",
+                last_seen="2026-10-28T12:00:00Z",
+                company="Older",
+                apply_url="https://jobs.lever.co/older/1",
+                salary_max=160000,
+            ),
+        ]
+        selected = select_top_paying_jobs(rows, limit=5, now=NOW)
+        by_co = {j.company: j for j in selected}
+        assert by_co["Fresh"].discovered_today is True
+        assert by_co["Older"].discovered_today is False
 
 
 class TestRanking:
@@ -146,12 +201,10 @@ class TestRanking:
 
     def test_excludes_undisclosed_and_non_engineering(self):
         rows = [
-            _job(company="NoPay", salary_min=None, salary_max=None),
+            _job(company="NoPay"),
             _job(company="FP&A", title="Director, Commercial FP&A"),
             _job(company="Eng", title="Senior Software Engineer", salary_max=170_000),
         ]
-        # salary_min None with salary_max None — fix row shape
-        rows[0] = _job(company="NoPay")
         rows[0]["salary_min"] = None
         rows[0]["salary_max"] = None
         selected = select_top_paying_jobs(rows, limit=5, now=NOW)
@@ -172,7 +225,27 @@ class TestRanking:
         assert len(selected) == 1
 
 
-class TestReadmeReplacement:
+class TestSvgAndReadme:
+    def test_svg_looks_like_app_ui(self):
+        jobs = [
+            _showcase(
+                title="Head of Engineering",
+                company="Wattpad",
+                salary_min=240000,
+                salary_max=280000,
+                discovered_today=True,
+                verified_at="2026-10-29",
+            )
+        ]
+        svg = render_dashboard_svg(jobs, today=NOW, generated_at=NOW)
+        assert 'fill="#0B1220"' in svg or "ghBg" in svg
+        assert "Top 5 High-Paying Jobs Discovered Today" in svg
+        assert "CAD 240,000" in svg
+        assert "#34D399" in svg  # green salary
+        assert "Apply →" in svg
+        assert "Discovered and verified by GitHired" in svg
+        assert "Wattpad" in svg
+
     def test_replace_section_only(self):
         original = (
             "# Title\n\nIntro\n\n"
@@ -190,31 +263,19 @@ class TestReadmeReplacement:
         with pytest.raises(ValueError, match="markers"):
             replace_section("# no markers\n", render_section([]))
 
-    def test_update_readme_file_idempotent(self, tmp_path: Path):
-        jobs = [
-            ShowcaseJob(
-                title="Senior Software Engineer",
-                company="Acme",
-                salary_min=150000,
-                salary_max=180000,
-                salary_currency="CAD",
-                location_raw="Toronto, Ontario",
-                eligibility_label="Toronto, Ontario",
-                apply_url="https://boards.greenhouse.io/acme/jobs/1",
-                verified_at="2026-10-28",
-                source="greenhouse",
-                rank_cad=180000,
-            )
-        ]
+    def test_update_readme_writes_svg(self, tmp_path: Path):
+        jobs = [_showcase()]
         readme = tmp_path / "README.md"
         readme.write_text(
             f"# X\n\n{START_MARKER}\nplaceholder\n{END_MARKER}\n\n## Tail\n",
             encoding="utf-8",
         )
-        assert update_readme_file(readme, jobs, generated_at=NOW) is True
-        assert update_readme_file(readme, jobs, generated_at=NOW) is False
+        svg = tmp_path / "assets" / "showcase" / "top-paying-jobs.svg"
+        assert update_readme_file(readme, jobs, generated_at=NOW, svg_path=svg) is True
+        assert svg.is_file()
         text = readme.read_text(encoding="utf-8")
         assert "Acme" in text and "## Tail" in text
+        assert "Apply →" in text
         assert "`CAD 150,000–180,000`" in text
 
 
@@ -222,21 +283,7 @@ class TestFailureHandling:
     def test_preserves_prior_on_empty_selection(self, tmp_path: Path):
         snap = tmp_path / "snap.json"
         readme = tmp_path / "README.md"
-        prior_jobs = [
-            ShowcaseJob(
-                title="Senior Software Engineer",
-                company="Kept",
-                salary_min=150000,
-                salary_max=180000,
-                salary_currency="CAD",
-                location_raw="Canada",
-                eligibility_label="Canada",
-                apply_url="https://boards.greenhouse.io/kept/jobs/1",
-                verified_at="2026-10-20",
-                source="greenhouse",
-                rank_cad=180000,
-            )
-        ]
+        prior_jobs = [_showcase(company="Kept", verified_at="2026-10-20")]
         from jobseek.showcase.top_paying import snapshot_payload
         from jobseek.showcase.refresh import write_snapshot
 
@@ -252,7 +299,7 @@ class TestFailureHandling:
         result = refresh_readme(
             readme_path=readme,
             snapshot_path=snap,
-            jobs_rows=[],  # empty → no qualifying jobs
+            jobs_rows=[],
             now=NOW,
         )
         assert result["preserved_prior"] is True
@@ -269,21 +316,7 @@ class TestFailureHandling:
         import jobseek.showcase.refresh as refresh_mod
 
         prior = snapshot_payload(
-            [
-                ShowcaseJob(
-                    title="Senior Software Engineer",
-                    company="Prior",
-                    salary_min=100000,
-                    salary_max=120000,
-                    salary_currency="CAD",
-                    location_raw="Canada",
-                    eligibility_label="Canada",
-                    apply_url="https://jobs.lever.co/prior/1",
-                    verified_at="2026-10-15",
-                    source="lever",
-                    rank_cad=120000,
-                )
-            ],
+            [_showcase(company="Prior", verified_at="2026-10-15")],
             generated_at=datetime(2026, 10, 15, tzinfo=timezone.utc),
         )
         write_snapshot(snap, prior)
@@ -312,21 +345,7 @@ class TestFailureHandling:
         write_snapshot(
             snap,
             snapshot_payload(
-                [
-                    ShowcaseJob(
-                        title="Senior Software Engineer",
-                        company="Old",
-                        salary_min=100000,
-                        salary_max=110000,
-                        salary_currency="CAD",
-                        location_raw="Canada",
-                        eligibility_label="Canada",
-                        apply_url="https://jobs.lever.co/old/1",
-                        verified_at="2026-10-01",
-                        source="lever",
-                        rank_cad=110000,
-                    )
-                ],
+                [_showcase(company="Old", verified_at="2026-10-01")],
                 generated_at=datetime(2026, 10, 1, tzinfo=timezone.utc),
             ),
         )

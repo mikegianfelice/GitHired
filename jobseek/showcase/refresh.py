@@ -10,6 +10,7 @@ from typing import Any
 
 from jobseek.db.store import Database
 from jobseek.showcase.readme import render_section, replace_section, update_readme_file
+from jobseek.showcase.svg_dashboard import SVG_REL_PATH
 from jobseek.showcase.top_paying import (
     DEFAULT_FX_USD_CAD,
     DEFAULT_LIMIT,
@@ -45,11 +46,18 @@ def jobs_from_snapshot(payload: dict[str, Any]) -> list[ShowcaseJob]:
                 salary_max=float(item["salary_max"]),
                 salary_currency=str(item["salary_currency"]),
                 location_raw=str(item.get("location_raw") or ""),
-                eligibility_label=str(item.get("eligibility_label") or item.get("location_raw") or ""),
+                eligibility_label=str(
+                    item.get("eligibility_label") or item.get("location_raw") or ""
+                ),
                 apply_url=str(item["apply_url"]),
                 verified_at=str(item["verified_at"]),
                 source=str(item.get("source") or ""),
                 rank_cad=float(item["rank_cad"]),
+                career_page_verified=bool(item.get("career_page_verified", False)),
+                discovered_today=bool(item.get("discovered_today", False)),
+                first_seen=str(item.get("first_seen") or item.get("verified_at") or ""),
+                location_tag=str(item.get("location_tag") or item.get("location_raw") or ""),
+                work_mode_tag=str(item.get("work_mode_tag") or ""),
             )
         )
     return out
@@ -92,7 +100,8 @@ def refresh_readme(
     - On empty selection with a prior non-empty snapshot: preserve prior data and
       stamp (do not overwrite with empty / do not claim a fresh empty refresh)
       unless ``allow_empty_overwrite`` is True.
-    - Never labels results as “discovered today”.
+    - Per-job “Discovered Today” only when ``first_seen`` is today; otherwise
+      the verified calendar date is shown. Failure paths never rewrite freshness.
     """
     now = now or datetime.now(timezone.utc)
     prior = load_snapshot(snapshot_path)
@@ -146,10 +155,16 @@ def refresh_readme(
     result["count"] = len(selected)
 
     if readme_path.is_file():
-        changed = update_readme_file(readme_path, selected, generated_at=now)
+        svg_path = readme_path.parent / SVG_REL_PATH
+        changed = update_readme_file(
+            readme_path,
+            selected,
+            generated_at=now,
+            svg_path=svg_path,
+            today=now,
+        )
         result["wrote_readme"] = changed
     else:
-        # Still succeed for snapshot-only CI dry runs
         result["wrote_readme"] = False
 
     return result
@@ -167,14 +182,27 @@ def render_from_snapshot(snapshot_path: Path) -> str:
             generated = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
         except ValueError:
             generated = None
-    return render_section(jobs, generated_at=generated)
+    return render_section(jobs, generated_at=generated, today=generated)
 
 
 def apply_snapshot_to_readme(readme_path: Path, snapshot_path: Path) -> bool:
-    section = render_from_snapshot(snapshot_path)
-    text = readme_path.read_text(encoding="utf-8")
-    updated = replace_section(text, section)
-    if updated == text:
-        return False
-    readme_path.write_text(updated, encoding="utf-8")
-    return True
+    payload = load_snapshot(snapshot_path)
+    jobs = jobs_from_snapshot(payload) if payload else []
+    generated = None
+    if payload and payload.get("generated_at"):
+        try:
+            generated = datetime.fromisoformat(
+                str(payload["generated_at"]).replace("Z", "+00:00")
+            )
+        except ValueError:
+            generated = None
+    # When re-applying a preserved snapshot, do NOT flip cards to "Discovered Today"
+    # based on the wall clock — keep the stored discovered_today flags.
+    svg_path = readme_path.parent / SVG_REL_PATH
+    return update_readme_file(
+        readme_path,
+        jobs,
+        generated_at=generated,
+        svg_path=svg_path,
+        today=generated,
+    )

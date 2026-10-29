@@ -5,19 +5,20 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
+from jobseek.showcase.svg_dashboard import SVG_REL_PATH, write_dashboard_svg
 from jobseek.showcase.top_paying import (
     COMPARISON_RULE,
     ShowcaseJob,
+    discovery_date_label,
     format_salary_range,
-    verified_date_label,
 )
 
 START_MARKER = "<!-- TOP-PAYING-JOBS:START -->"
 END_MARKER = "<!-- TOP-PAYING-JOBS:END -->"
 
 
-def _escape_cell(text: str) -> str:
-    return text.replace("|", "\\|").replace("\n", " ").strip()
+def _escape_md(text: str) -> str:
+    return text.replace("|", "\\|").replace("\n", " ").replace("[", "\\[").replace("]", "\\]").strip()
 
 
 def render_section(
@@ -25,41 +26,46 @@ def render_section(
     *,
     generated_at: datetime | None = None,
     comparison_rule: str = COMPARISON_RULE,
+    svg_rel_path: str = SVG_REL_PATH,
+    today: datetime | None = None,
 ) -> str:
     """Return Markdown between (and including) the START/END markers."""
     generated_at = generated_at or datetime.now(timezone.utc)
+    today = today or generated_at
     stamp = generated_at.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     lines: list[str] = [
         START_MARKER,
         "",
-        "## Top 5 High-Paying Jobs",
+        "## Top 5 High-Paying Jobs Discovered Today",
         "",
-        "> Real listings discovered by GitHired with **employer-advertised** annual "
-        "base salaries. No estimates. Ranked by annual high end "
-        f"(CAD-comparable for sorting; USD×{1.35:g}). "
-        f"Last refreshed: **{stamp}**.",
+        "*Real opportunities. Direct from company career pages. Powered by GitHired.*",
         "",
     ]
 
     if not jobs:
         lines.extend(
             [
+                f'<p align="center"><img src="{svg_rel_path}" alt="GitHired top paying jobs showcase" width="880" /></p>',
+                "",
                 "_No qualifying salaried Canada-eligible engineering roles in the "
                 "current snapshot. The previous successful refresh is preserved when "
                 "discovery fails; this empty state means the latest successful run "
                 "found none under the published rules._",
+                "",
+                '<p align="center"><a href="#quick-start"><strong>Get Started with GitHired →</strong></a></p>',
                 "",
                 "<details>",
                 "<summary>Ranking & eligibility rules</summary>",
                 "",
                 comparison_rule,
                 "",
-                "- Canada geographic eligibility required (remote Canada / hybrid / "
-                "on-site / province as configured).",
-                "- Direct ATS apply URLs only (affiliates excluded).",
+                "- Canada geographic eligibility required.",
+                "- Direct employer career / ATS URLs only (affiliates excluded).",
                 "- Engineering tracks only; listings older than 14 days excluded.",
-                "- Fewer than five rows means fewer than five qualified.",
+                "- **Discovered Today** appears on a card only when `first_seen` is today; "
+                "otherwise the card shows **Verified YYYY-MM-DD**.",
+                "- Fewer than five cards means fewer than five qualified.",
                 "",
                 "</details>",
                 "",
@@ -70,39 +76,63 @@ def render_section(
 
     lines.extend(
         [
-            "| # | Role | Company | Annual base | Location | Verified | Apply |",
+            f'<p align="center"><img src="{svg_rel_path}" alt="Top 5 high-paying Canada-eligible engineering jobs discovered by GitHired" width="880" /></p>',
+            "",
+            "<p align=\"center\">",
+        ]
+    )
+
+    # Clickable Apply links (SVG buttons are visual-only on GitHub <img>)
+    apply_bits: list[str] = []
+    for i, job in enumerate(jobs, start=1):
+        label = f"{i}. {_escape_md(job.company)} — Apply →"
+        apply_bits.append(f'<a href="{job.apply_url}"><strong>{label}</strong></a>')
+    lines.append(" &nbsp;·&nbsp; ".join(apply_bits))
+    lines.extend(
+        [
+            "</p>",
+            "",
+            '<p align="center"><strong>Discovered and verified by GitHired · Open Source</strong></p>',
+            "",
+            '<p align="center"><a href="#quick-start"><strong>Get Started with GitHired →</strong></a></p>',
+            "",
+            "<details>",
+            "<summary>Listings detail & ranking rules</summary>",
+            "",
+            "| # | Role | Company | Annual base | Location | Date | Apply |",
             "| -: | --- | --- | --- | --- | --- | --- |",
         ]
     )
     for i, job in enumerate(jobs, start=1):
         salary = format_salary_range(job.salary_min, job.salary_max, job.salary_currency)
-        verified = verified_date_label(job.verified_at)
+        date_label = discovery_date_label(
+            discovered_today=job.discovered_today,
+            verified_at=job.verified_at,
+            today=today,
+        )
+        verified_mark = " ✓" if job.career_page_verified else ""
         row = (
             f"| {i} "
-            f"| **{_escape_cell(job.title)}** "
-            f"| {_escape_cell(job.company)} "
+            f"| **{_escape_md(job.title)}** "
+            f"| {_escape_md(job.company)}{verified_mark} "
             f"| `{salary}` "
-            f"| {_escape_cell(job.eligibility_label)} "
-            f"| {verified} "
-            f"| [Apply]({job.apply_url}) |"
+            f"| {_escape_md(job.location_tag or job.eligibility_label)} · {_escape_md(job.work_mode_tag or '—')} "
+            f"| {date_label} "
+            f"| [Apply →]({job.apply_url}) |"
         )
         lines.append(row)
 
     lines.extend(
         [
             "",
-            "<details>",
-            "<summary>Ranking & eligibility rules</summary>",
-            "",
             comparison_rule,
             "",
-            "- Canada geographic eligibility required (remote Canada / hybrid / "
-            "on-site / province as configured).",
-            "- Direct ATS apply URLs only (affiliates excluded).",
-            "- Engineering tracks only; listings older than 14 days excluded.",
-            "- Dates use **Verified YYYY-MM-DD** from discovery `last_seen` "
-            "(calendar date only — no same-day marketing labels).",
-            "- Fewer than five rows means fewer than five qualified.",
+            f"- Snapshot refreshed: **{stamp}** (preserved on failure — never backdated).",
+            "- Blue ✓ marks listings confirmed against a direct employer career / ATS URL.",
+            "- **Discovered Today** is shown only when the job’s `first_seen` date is today; "
+            "otherwise the card shows the last verified date.",
+            "- Advertised annual base only (CAD / USD); no estimates for undisclosed pay.",
+            "- Fewer than five cards means fewer than five qualified.",
             "",
             "</details>",
             "",
@@ -120,7 +150,6 @@ def replace_section(readme_text: str, new_section: str) -> str:
     end = readme_text.index(END_MARKER) + len(END_MARKER)
     if start > end - len(END_MARKER):
         raise ValueError("TOP-PAYING-JOBS markers out of order")
-    # Ensure new_section includes markers
     if not new_section.startswith(START_MARKER) or not new_section.rstrip().endswith(
         END_MARKER
     ):
@@ -128,10 +157,23 @@ def replace_section(readme_text: str, new_section: str) -> str:
     return readme_text[:start] + new_section.rstrip() + readme_text[end:]
 
 
-def update_readme_file(readme_path: Path, jobs: list[ShowcaseJob], *, generated_at: datetime | None = None) -> bool:
-    """Write README if the Top Paying section changed. Returns True if written."""
+def update_readme_file(
+    readme_path: Path,
+    jobs: list[ShowcaseJob],
+    *,
+    generated_at: datetime | None = None,
+    svg_path: Path | None = None,
+    today: datetime | None = None,
+) -> bool:
+    """Write SVG + README section if changed. Returns True if README written."""
+    generated_at = generated_at or datetime.now(timezone.utc)
+    today = today or generated_at
+    if svg_path is None:
+        svg_path = readme_path.parent / SVG_REL_PATH
+    write_dashboard_svg(svg_path, jobs, today=today, generated_at=generated_at)
+
     text = readme_path.read_text(encoding="utf-8")
-    section = render_section(jobs, generated_at=generated_at)
+    section = render_section(jobs, generated_at=generated_at, today=today)
     updated = replace_section(text, section)
     if updated == text:
         return False
