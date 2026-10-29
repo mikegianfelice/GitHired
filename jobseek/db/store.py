@@ -250,27 +250,46 @@ class Database:
         status: str | None = None,
         limit: int = 50,
         score_kind: str = "deterministic",
+        eligibility: str | None = "ELIGIBLE",
     ) -> list[dict[str, Any]]:
+        """List jobs with scores.
+
+        ``eligibility`` defaults to ``ELIGIBLE`` so the main shortlist is never
+        silently padded with UNCERTAIN/INELIGIBLE roles. Pass ``UNCERTAIN``,
+        ``INELIGIBLE``, ``ALL``, or ``None`` to inspect other buckets.
+        """
         params: list[Any] = []
         clauses = ["j.removed_at IS NULL"]
         if status:
             clauses.append("j.status = ?")
             params.append(status)
         join = ""
-        select_score = "NULL AS overall, NULL AS score_kind, NULL AS model"
-        if min_score is not None or score_kind:
+        select_score = (
+            "NULL AS overall, NULL AS score_kind, NULL AS model, "
+            "NULL AS hard_filter_json"
+        )
+        want_scores = min_score is not None or score_kind or eligibility
+        if want_scores:
             join = """
                 LEFT JOIN job_scores s
                   ON s.job_id = j.id
                  AND s.description_hash = j.description_hash
                  AND s.score_kind = ?
             """
-            params.insert(0, score_kind)
-            select_score = "s.overall AS overall, s.score_kind AS score_kind, s.model AS model"
+            params.insert(0, score_kind or "deterministic")
+            select_score = (
+                "s.overall AS overall, s.score_kind AS score_kind, s.model AS model, "
+                "s.hard_filter_json AS hard_filter_json"
+            )
             if min_score is not None:
                 clauses.append("s.overall >= ?")
                 params.append(min_score)
-        params.append(limit)
+        # Over-fetch when filtering eligibility so LIMIT still fills.
+        elig_filter = (eligibility or "").strip().upper()
+        fetch_limit = limit
+        if elig_filter and elig_filter not in ("ALL", "*"):
+            fetch_limit = max(limit * 20, 100)
+        params.append(fetch_limit)
         sql = f"""
             SELECT j.*, {select_score}
             FROM jobs j
@@ -279,8 +298,71 @@ class Database:
             ORDER BY COALESCE(overall, 0) DESC, j.last_seen DESC
             LIMIT ?
         """
-        rows = self._conn.execute(sql, params).fetchall()
-        return [dict(r) for r in rows]
+        rows = [dict(r) for r in self._conn.execute(sql, params).fetchall()]
+        if not elig_filter or elig_filter in ("ALL", "*"):
+            return rows[:limit]
+        out: list[dict[str, Any]] = []
+        for row in rows:
+            elig = self._eligibility_from_score_row(row)
+            if elig == elig_filter:
+                out.append(row)
+            if len(out) >= limit:
+                break
+        return out
+
+    @staticmethod
+    def _eligibility_from_score_row(row: dict[str, Any]) -> str:
+        import json
+
+        hf = row.get("hard_filter_json")
+        if isinstance(hf, str) and hf:
+            try:
+                return str((json.loads(hf) or {}).get("eligibility") or "UNCERTAIN").upper()
+            except json.JSONDecodeError:
+                return "UNCERTAIN"
+        if isinstance(hf, dict):
+            return str(hf.get("eligibility") or "UNCERTAIN").upper()
+        return "UNCERTAIN"
+
+    def count_scored_by_eligibility(
+        self,
+        *,
+        score_kind: str = "deterministic",
+        min_score: float | None = None,
+    ) -> dict[str, int]:
+        """Count scored jobs by hard-filter eligibility (ELIGIBLE/UNCERTAIN/INELIGIBLE)."""
+        import json
+
+        params: list[Any] = [score_kind]
+        score_clause = ""
+        if min_score is not None:
+            score_clause = "AND s.overall >= ?"
+            params.append(min_score)
+        rows = self._conn.execute(
+            f"""
+            SELECT s.hard_filter_json, s.overall
+            FROM job_scores s
+            JOIN jobs j ON j.id = s.job_id
+            WHERE j.removed_at IS NULL
+              AND s.score_kind = ?
+              AND s.description_hash = j.description_hash
+              {score_clause}
+            """,
+            params,
+        ).fetchall()
+        counts = {"ELIGIBLE": 0, "UNCERTAIN": 0, "INELIGIBLE": 0}
+        for row in rows:
+            elig = "UNCERTAIN"
+            hf = row["hard_filter_json"] if hasattr(row, "keys") else row[0]
+            if isinstance(hf, str) and hf:
+                try:
+                    elig = str((json.loads(hf) or {}).get("eligibility") or "UNCERTAIN").upper()
+                except json.JSONDecodeError:
+                    elig = "UNCERTAIN"
+            if elig not in counts:
+                counts[elig] = 0
+            counts[elig] += 1
+        return counts
 
     def jobs_needing_score(
         self,
@@ -547,9 +629,10 @@ class Database:
         min_score: float = 60.0,
         since: str | None = None,
         score_kind: str = "deterministic",
+        eligibility: str | None = "ELIGIBLE",
     ) -> list[dict[str, Any]]:
-        # Over-fetch so filtering tracked applications can still fill top_n
-        fetch_limit = max(limit * 5, 50)
+        # Over-fetch so filtering tracked applications + eligibility can still fill top_n
+        fetch_limit = max(limit * 25, 100)
         params: list[Any] = [score_kind, min_score]
         since_clause = ""
         if since:
@@ -575,11 +658,15 @@ class Database:
             """,
             params,
         ).fetchall()
+        elig_filter = (eligibility or "ELIGIBLE").strip().upper()
         results = []
         for row in rows:
             item = dict(row)
             if self.should_skip_recommendation(item["company"], item["title"]):
                 continue
+            if elig_filter not in ("ALL", "*"):
+                if self._eligibility_from_score_row(item) != elig_filter:
+                    continue
             results.append(item)
             if len(results) >= limit:
                 break

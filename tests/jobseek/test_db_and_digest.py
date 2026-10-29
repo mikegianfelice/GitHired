@@ -149,7 +149,7 @@ class DatabaseTests(unittest.TestCase):
             job_id,
             overall=80,
             scores={"technical": 80, "experience": 80, "behavioral": 80, "career": 80},
-            hard_filter={"verdict": "PASS"},
+            hard_filter={"verdict": "PASS", "eligibility": "ELIGIBLE"},
             strengths=["strong"],
             gaps=[],
             salary_alignment="ok",

@@ -158,6 +158,18 @@ SENIORITY_PATTERNS: dict[str, re.Pattern[str]] = {
 DEFAULT_SENIORITY_INCLUDE = ["mid", "senior", "staff", "principal", "lead"]
 DEFAULT_SENIORITY_EXCLUDE = ["intern", "coop", "student", "new_grad", "junior"]
 
+# When these appear in a title they must be in ``include`` (not merely absent from
+# ``exclude``) — juniors must not silently receive Staff/Principal/Lead roles.
+_STRICT_TITLE_SENIORITY = frozenset({"senior", "staff", "principal", "lead"})
+
+# Mid is adjacent to junior: allowed when junior is included even if mid is not.
+_JUNIOR_COMPATIBLE = frozenset({"junior", "mid"})
+
+_YEARS_REQUIRED = re.compile(
+    r"(?P<min>\d+)\s*\+?\s*(?:-\s*\d+\s*)?years?\s+(?:of\s+)?(?:experience|exp\.?)",
+    re.I,
+)
+
 TRACK_LABELS: dict[str, str] = {
     "software_engineering": "Software Engineering",
     "ai_engineering": "AI Engineering",
@@ -178,9 +190,7 @@ class SeniorityGate:
     reasons: list[str] = field(default_factory=list)
 
 
-def seniority_gate(title: str, search_cfg: dict[str, Any]) -> SeniorityGate:
-    """Hard-exclude student/intern tracks by default; unknown seniority passes."""
-    seniority = detect_seniority(title)
+def _seniority_config(search_cfg: dict[str, Any]) -> tuple[list[str], list[str]]:
     raw = search_cfg.get("seniority")
     if isinstance(raw, list):
         include = [str(s).casefold() for s in raw] or list(DEFAULT_SENIORITY_INCLUDE)
@@ -191,24 +201,113 @@ def seniority_gate(title: str, search_cfg: dict[str, Any]) -> SeniorityGate:
     else:
         include = list(DEFAULT_SENIORITY_INCLUDE)
         exclude = list(DEFAULT_SENIORITY_EXCLUDE)
+    return include, exclude
 
-    if seniority is None:
-        return SeniorityGate(
-            allowed=True,
-            seniority=None,
-            reasons=["seniority unknown — not rejected solely for missing keywords"],
-        )
-    if seniority.casefold() in exclude:
+
+def _years_requirement(description: str) -> int | None:
+    """Lowest explicit years-of-experience requirement in the posting, if any."""
+    mins = [int(m.group("min")) for m in _YEARS_REQUIRED.finditer(description or "")]
+    return min(mins) if mins else None
+
+
+def seniority_gate(
+    title: str,
+    search_cfg: dict[str, Any],
+    *,
+    description: str = "",
+    candidate_years: int | None = None,
+) -> SeniorityGate:
+    """Hard-exclude student/intern tracks by default; unknown seniority passes.
+
+    Strict title bands (senior/staff/principal/lead) must appear in ``include``.
+    Mid-level titles remain allowed when the candidate include list is junior-focused.
+    Explicit years requirements in the description may reject juniors for senior bars.
+    """
+    seniority = detect_seniority(title)
+    include, exclude = _seniority_config(search_cfg)
+    include_set = set(include)
+
+    if seniority is not None and seniority.casefold() in exclude:
         return SeniorityGate(
             allowed=False,
             seniority=seniority,
             reasons=[f"seniority {seniority} excluded by config (student/entry tracks off by default)"],
         )
-    if include and seniority.casefold() not in include:
+
+    if seniority is not None and seniority.casefold() in _STRICT_TITLE_SENIORITY:
+        if include and seniority.casefold() not in include_set:
+            return SeniorityGate(
+                allowed=False,
+                seniority=seniority,
+                reasons=[
+                    f"seniority {seniority} not in include {include} — "
+                    "strict title band blocked for this profile"
+                ],
+            )
+
+    if seniority is not None and seniority.casefold() == "mid":
+        if include and "mid" not in include_set:
+            # Junior-focused profiles may still take mid roles.
+            if "junior" in include_set:
+                return SeniorityGate(
+                    allowed=True,
+                    seniority=seniority,
+                    reasons=["mid-level title allowed for junior-compatible profile"],
+                )
+            return SeniorityGate(
+                allowed=False,
+                seniority=seniority,
+                reasons=[f"seniority mid outside preferred include {include}"],
+            )
+
+    if seniority is not None and seniority.casefold() == "junior":
+        if include and "junior" not in include_set and seniority.casefold() not in include_set:
+            # Mid+ profiles: junior titles are usually in exclude already.
+            if seniority.casefold() not in exclude:
+                return SeniorityGate(
+                    allowed=True,
+                    seniority=seniority,
+                    reasons=[f"seniority junior outside preferred include {include} — allowed"],
+                )
+
+    # Unknown title seniority: use description years when candidate years known.
+    if seniority is None:
+        req = _years_requirement(description)
+        if req is not None and candidate_years is not None:
+            # Junior profiles: block roles that demand clearly senior tenure.
+            if "junior" in include_set and "senior" not in include_set and req >= 5:
+                return SeniorityGate(
+                    allowed=False,
+                    seniority=None,
+                    reasons=[
+                        f"posting requires {req}+ years; incompatible with junior profile "
+                        f"({candidate_years} years)"
+                    ],
+                )
+            # Soft: if requirement exceeds candidate by a wide margin and include is junior-only
+            if (
+                include_set <= _JUNIOR_COMPATIBLE
+                and req > max(int(candidate_years) + 3, 5)
+            ):
+                return SeniorityGate(
+                    allowed=False,
+                    seniority=None,
+                    reasons=[
+                        f"posting requires {req}+ years vs candidate {candidate_years} years"
+                    ],
+                )
+        return SeniorityGate(
+            allowed=True,
+            seniority=None,
+            reasons=["seniority unknown — not rejected solely for missing keywords"],
+        )
+
+    if include and seniority.casefold() not in include_set:
+        # Non-strict bands already handled; remaining are allowed as adjacent.
         return SeniorityGate(
             allowed=True,
             seniority=seniority,
-            reasons=[f"seniority {seniority} outside preferred include {include} — allowed as unknown-adjacent"],
+            reasons=[f"seniority {seniority} outside preferred include {include} — allowed as adjacent"],
         )
     return SeniorityGate(
         allowed=True,
@@ -369,7 +468,7 @@ def match_track(title: str, search_cfg: dict[str, Any]) -> TrackMatch:
 
     seniority = detect_seniority(title)
     result.seniority = seniority
-    preferred = [str(s).casefold() for s in (search_cfg.get("seniority") or [])]
+    preferred, _exclude = _seniority_config(search_cfg)
     if preferred and seniority and seniority.casefold() not in preferred:
         result.seniority_ok = False
         result.reasons.append(f"seniority {seniority} outside preferred bands {preferred}")

@@ -242,8 +242,19 @@ def apply_answers_to_search(data: dict[str, Any], answers: dict[str, Any]) -> di
     sen = dict(out.get("seniority") or {})
     if not isinstance(sen, dict):
         sen = {}
-    sen["include"] = list(answers["seniority_include"])
-    sen.setdefault("exclude", ["intern", "coop", "student", "new_grad", "junior"])
+    include = [str(s).casefold() for s in answers["seniority_include"]]
+    sen["include"] = include
+    exclude = [str(s).casefold() for s in (sen.get("exclude") or [
+        "intern", "coop", "student", "new_grad", "junior",
+    ])]
+    # Never exclude a band the user explicitly included (e.g. junior profiles).
+    exclude = [e for e in exclude if e not in include]
+    # Junior-focused profiles should hard-exclude senior+ unless included.
+    if "junior" in include and "senior" not in include:
+        for band in ("senior", "staff", "principal", "lead"):
+            if band not in include and band not in exclude:
+                exclude.append(band)
+    sen["exclude"] = exclude
     out["seniority"] = sen
     return out
 

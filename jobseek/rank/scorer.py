@@ -23,7 +23,7 @@ from jobseek.rank.weights import WEIGHTS
 _JSON_BLOCK = re.compile(r"\{[\s\S]*\}")
 
 # Bump when deterministic scoring / eligibility logic changes so stale rows re-rank.
-SCORER_VERSION = "v4"
+SCORER_VERSION = "v7"
 DETERMINISTIC_MODEL = f"deterministic/{SCORER_VERSION}"
 HARD_FILTER_MODEL = f"hard_filter/{SCORER_VERSION}"
 # A job is "current" for Stage-1 ranking if it has either model from this run.
@@ -153,7 +153,7 @@ def score_deterministic(
     hard: HardFilterResult | None = None,
 ) -> ScoreResult:
     """Transparent Stage-1 score. Never labeled as AI-generated."""
-    hard = hard or apply_hard_filters(job, search_cfg)
+    hard = hard or apply_hard_filters(job, search_cfg, profile)
     if hard.verdict == "FAIL":
         return ScoreResult(
             overall=0,
@@ -350,7 +350,7 @@ def score_llm(
     hard: HardFilterResult | None = None,
     llm_caller: Callable[[str], tuple[dict[str, Any], str]] | None = None,
 ) -> ScoreResult:
-    hard = hard or apply_hard_filters(job, search_cfg)
+    hard = hard or apply_hard_filters(job, search_cfg, profile)
     if llm_caller is not None:
         data, model = llm_caller(_build_prompt(job, profile, hard))
     else:
@@ -408,7 +408,7 @@ def score_job(
 ) -> ScoreResult:
     """Score a job. Default is deterministic Stage 1; LLM only when requested."""
     settings = settings or Settings.from_env()
-    hard = apply_hard_filters(job, search_cfg)
+    hard = apply_hard_filters(job, search_cfg, profile)
 
     if hard.verdict == "FAIL" and skip_fail:
         return ScoreResult(

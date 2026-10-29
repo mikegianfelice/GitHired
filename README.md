@@ -42,8 +42,9 @@ Application materials are never auto-submitted. `githired prepare` briefs you; `
 
 GitHired ships configured for **Canada-remote and Canada-eligible** engineering hiring.
 
-- **Three-state eligibility** ([`jobseek/filters/hard.py`](jobseek/filters/hard.py)): **ELIGIBLE** (explicit Canada / genuine worldwide), **UNCERTAIN** (ambiguous remote — visible with a ranking penalty), **INELIGIBLE** (US-only / foreign on-site — hard fail)  
+- **Three-state eligibility** ([`jobseek/filters/hard.py`](jobseek/filters/hard.py)): **ELIGIBLE** (Canada-compatible for *your* city/province + work modes), **UNCERTAIN** (ambiguous — kept in the DB, not padded into the main shortlist), **INELIGIBLE** (US-only / foreign on-site / wrong Canadian city for hybrid)  
 - Eligibility is never invented from a company’s global brand alone; posting evidence is preserved  
+- A Toronto-only hybrid role is **not** eligible for a Vancouver candidate who will not relocate  
 - Engineering **tracks** (software, AI, ML, data, platform, cloud, DevOps/SRE, FDE) in [`config/search.yaml`](config/search.yaml)  
 - **Seniority:** mid / senior / staff / principal / lead by default; internships, co-ops, new-grad, and junior excluded (enable in setup if needed). Titles without seniority keywords are allowed as unknown  
 - Location modes: remote Canada, province remote, hybrid, on-site cities  
@@ -76,7 +77,7 @@ cd GitHired
 
 Keep personal data in a **private** clone if you write profile details into tracked files (`CLAUDE.md`, skill profiles). See [SETUP.md](SETUP.md).
 
-### 2. Install and configure
+### 2. Install and interactive setup
 
 ```bash
 # Python 3.10+ required (3.11+ recommended).
@@ -85,19 +86,28 @@ Keep personal data in a **private** clone if you write profile details into trac
 #   python3.11 -m venv .venv && source .venv/bin/activate
 python3 -m pip install -e ".[dev]"
 
-# Interactive setup collects province/city/tracks/salary/skills (no YAML editing required).
-# Non-interactive example for automation:
+# Interactive setup (recommended) — province, city, tracks, seniority, salary, skills.
+# No YAML editing required for a normal search.
+githired setup
+githired doctor
+```
+
+Engineering **tracks** are role families (software, AI, data, DevOps/SRE, …). Pick the ones that match titles you would actually apply to.
+
+Optional: copy `.env.example` → `.env` for LLM / SerpAPI / email. **None are required** for discover + deterministic ranking.
+
+Non-interactive / CI example:
+
+```bash
 githired setup --non-interactive \
   --tracks data_engineering analytics_engineering \
   --modes remote_canada hybrid \
   --province ON --city Toronto \
   --salary-cad 130000 \
   --skills Python SQL Databricks Spark Azure Airflow \
-  --years 7 --name "Your Name"
-githired doctor
+  --years 7 --name "Your Name" \
+  --seniority-include mid senior staff
 ```
-
-Optional: copy `.env.example` → `.env` for LLM / SerpAPI / email. None are required for discover + deterministic rank.
 
 Advanced edits (optional after setup):
 
@@ -110,14 +120,17 @@ Advanced edits (optional after setup):
 
 ```bash
 githired companies discover   # expand/validate company boards (optional but recommended once)
-githired discover
+githired discover             # then: githired rank
 githired rank                 # scores all unscored / stale-model jobs (batched); optional --limit N
-githired jobs --min-score 60
+githired jobs                 # confirmed geographically compatible matches only
+githired jobs --eligibility uncertain   # inspect unverified Canada eligibility (not padded into main list)
 githired digest
 
 # Full daily loop (cron-friendly); add --companies to expand boards first
 githired run-daily
 ```
+
+**LinkedIn** is optional. Free web-index search often fails (rate limits); ATS boards still work. You can import LinkedIn email alerts (`linkedin_alert_import`) or set `SERPAPI_KEY` for a paid index — neither is required.
 
 Details: [docs/discovery.md](docs/discovery.md).
 
@@ -135,7 +148,7 @@ Or from a scored job:
 githired prepare <job_id>   # briefing only — does not draft or submit
 ```
 
-Then confirm drafting when the agent asks.
+CV/cover-letter drafting via `/apply` needs your profile filled and (for PDF compile) a local LaTeX install. **No paid API is required** for discovery or Stage-1 ranking. Application materials are never auto-submitted — confirm drafting when the agent asks.
 
 ---
 

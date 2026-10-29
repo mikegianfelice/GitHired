@@ -55,6 +55,37 @@ def cmd_discover(args: argparse.Namespace) -> int:
             if args.import_tracker:
                 print(json.dumps({"imported_tracker_rows": n}))
         summary = run_discover(db, settings=settings, detect_unknown=not args.no_detect)
+        summary["next"] = [
+            f"{_prog_name()} rank",
+            f"{_prog_name()} jobs",
+            f"{_prog_name()} digest",
+        ]
+        summary["hint"] = (
+            f"Next: run `{_prog_name()} rank` to score new jobs, then "
+            f"`{_prog_name()} jobs` for confirmed Canada-compatible matches."
+        )
+        # Human-readable source warnings (LinkedIn free index / empty boards).
+        friendly: list[str] = []
+        for w in summary.get("warnings") or []:
+            ws = str(w)
+            if "duckduckgo" in ws.casefold() or "linkedin" in ws.casefold() and "202" in ws:
+                friendly.append(
+                    "LinkedIn free web search is unavailable right now (optional). "
+                    "ATS boards still work. Import LinkedIn email alerts with the "
+                    "linkedin_alert_import source, or set SERPAPI_KEY for paid index search."
+                )
+            elif "empty board" in ws.casefold():
+                friendly.append(f"Source note: {ws}")
+            else:
+                friendly.append(ws)
+        if friendly:
+            # Dedupe while preserving order
+            seen: set[str] = set()
+            summary["warnings_human"] = []
+            for msg in friendly:
+                if msg not in seen:
+                    seen.add(msg)
+                    summary["warnings_human"].append(msg)
         _print_json(summary)
         # Board failures are warnings; nonzero only when summary.errors is set
         # (e.g. all boards failed and nothing fetched).
@@ -156,6 +187,7 @@ def cmd_rank(args: argparse.Namespace) -> int:
                 break
 
         companies = sorted({r.get("company") for r in results if r.get("company")})
+        counts = db.count_scored_by_eligibility(score_kind=score_kind)
         _print_json(
             {
                 "scored": persisted,
@@ -166,6 +198,18 @@ def cmd_rank(args: argparse.Namespace) -> int:
                 ),
                 "profile_warnings": warn,
                 "companies_in_batch": companies,
+                "eligibility_counts": counts,
+                "next": [
+                    f"{_prog_name()} jobs",
+                    f"{_prog_name()} jobs --eligibility uncertain",
+                    f"{_prog_name()} digest",
+                ],
+                "hint": (
+                    f"Next: `{_prog_name()} jobs` shows confirmed geographically "
+                    f"compatible matches only. "
+                    f"Use `{_prog_name()} jobs --eligibility uncertain` to inspect "
+                    "unverified Canada eligibility without padding the main shortlist."
+                ),
                 "results": results,
             }
         )
@@ -534,17 +578,68 @@ def cmd_jobs(args: argparse.Namespace) -> int:
     settings = Settings.from_env()
     db = _db(settings)
     try:
+        elig = getattr(args, "eligibility", "eligible") or "eligible"
+        elig_norm = elig.strip().upper()
+        if elig_norm in ("ELIGIBLE", "CONFIRMED", "MATCH", "MATCHES"):
+            elig_norm = "ELIGIBLE"
+        elif elig_norm in ("UNCERTAIN", "FLAG", "UNVERIFIED"):
+            elig_norm = "UNCERTAIN"
+        elif elig_norm in ("INELIGIBLE", "REJECTED", "FAIL"):
+            elig_norm = "INELIGIBLE"
+        elif elig_norm in ("ALL", "*", "ANY"):
+            elig_norm = "ALL"
         rows = db.list_jobs(
             min_score=args.min_score,
             status=args.status,
             limit=args.limit,
             score_kind=args.score_kind,
+            eligibility=elig_norm,
         )
+        counts = db.count_scored_by_eligibility(
+            score_kind=args.score_kind or "deterministic",
+            min_score=args.min_score,
+        )
+        confirmed = int(counts.get("ELIGIBLE") or 0)
+        uncertain = int(counts.get("UNCERTAIN") or 0)
+        summary = {
+            "count": len(rows),
+            "eligibility": elig_norm,
+            "confirmed_matches": confirmed,
+            "uncertain_opportunities": uncertain,
+            "eligibility_counts": counts,
+            "jobs": rows,
+        }
+        if elig_norm == "ELIGIBLE" and uncertain:
+            summary["next"] = f"{_prog_name()} jobs --eligibility uncertain"
+            summary["message"] = (
+                f"Found {confirmed} confirmed match"
+                f"{'es' if confirmed != 1 else ''}. "
+                f"There are {uncertain} additional opportunities with unverified "
+                f"Canadian eligibility. Run `{summary['next']}` to review them."
+            )
         if args.json:
-            _print_json({"count": len(rows), "jobs": rows})
+            _print_json(summary)
             return 0
+        if elig_norm == "ELIGIBLE":
+            print(
+                f"Found {confirmed} confirmed match"
+                f"{'es' if confirmed != 1 else ''}."
+            )
+            if uncertain:
+                print(
+                    f"There are {uncertain} additional opportunities with unverified "
+                    f"Canadian eligibility. Run `{_prog_name()} jobs --eligibility uncertain` "
+                    "to review them."
+                )
+            print()
+        elif elig_norm == "UNCERTAIN":
+            print(
+                f"Showing uncertain opportunities ({len(rows)} listed; "
+                f"{uncertain} scored UNCERTAIN in total)."
+            )
+            print()
         if not rows:
-            print("No jobs matched.")
+            print("No jobs matched this filter.")
             return 0
         for row in rows:
             score = row.get("overall")
@@ -737,6 +832,11 @@ def cmd_setup(args: argparse.Namespace) -> int:
             skills=list(args.skills) if getattr(args, "skills", None) else None,
             years=getattr(args, "years", None),
             name=getattr(args, "name", None),
+            seniority_include=(
+                list(args.seniority_include)
+                if getattr(args, "seniority_include", None)
+                else None
+            ),
         )
     except ValueError as exc:
         _err(f"setup error: {exc}")
@@ -830,6 +930,13 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     s.add_argument("--skills", nargs="*", default=None, help="Primary technical skills")
     s.add_argument("--years", type=int, default=None, help="Years of experience")
     s.add_argument("--name", default=None, help="Candidate display name")
+    s.add_argument(
+        "--seniority-include",
+        nargs="*",
+        default=None,
+        dest="seniority_include",
+        help="Seniority bands to include (e.g. junior mid). Default: mid senior staff principal lead",
+    )
     s.set_defaults(func=cmd_setup)
 
     d = sub.add_parser("discover", help="Run ATS + compliant LinkedIn discovery")
@@ -852,11 +959,22 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     )
     r.set_defaults(func=cmd_rank)
 
-    j = sub.add_parser("jobs", help="List scored shortlist from SQLite")
+    j = sub.add_parser(
+        "jobs",
+        help="List confirmed shortlist (default: ELIGIBLE only; never pads with UNCERTAIN)",
+    )
     j.add_argument("--min-score", type=float, default=None)
     j.add_argument("--status", default=None)
     j.add_argument("--limit", type=int, default=25)
     j.add_argument("--score-kind", default="deterministic", choices=["deterministic", "llm", "hard_filter"])
+    j.add_argument(
+        "--eligibility",
+        default="eligible",
+        help=(
+            "eligible (default confirmed matches) | uncertain | ineligible | all. "
+            "Uncertain roles stay in the DB; use --eligibility uncertain to inspect them."
+        ),
+    )
     j.add_argument("--json", action="store_true")
     j.set_defaults(func=cmd_jobs)
 

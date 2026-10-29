@@ -60,7 +60,11 @@ def evaluate_location(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[
     return verdict, reasons, evidence
 
 
-def apply_hard_filters(job: dict[str, Any], search_cfg: dict[str, Any]) -> HardFilterResult:
+def apply_hard_filters(
+    job: dict[str, Any],
+    search_cfg: dict[str, Any],
+    profile: dict[str, Any] | None = None,
+) -> HardFilterResult:
     reasons: list[str] = []
     evidence: list[str] = []
 
@@ -77,7 +81,22 @@ def apply_hard_filters(job: dict[str, Any], search_cfg: dict[str, Any]) -> HardF
 
     reasons.extend(track.reasons)
 
-    sen = seniority_gate(job.get("title") or "", search_cfg)
+    candidate_years = None
+    if profile:
+        exp = profile.get("experience") or {}
+        raw_years = exp.get("years")
+        if raw_years is not None:
+            try:
+                candidate_years = int(raw_years)
+            except (TypeError, ValueError):
+                candidate_years = None
+
+    sen = seniority_gate(
+        job.get("title") or "",
+        search_cfg,
+        description=str(job.get("description") or ""),
+        candidate_years=candidate_years,
+    )
     if not sen.allowed:
         return HardFilterResult(
             verdict="FAIL",

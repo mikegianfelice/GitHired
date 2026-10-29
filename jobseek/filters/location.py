@@ -350,6 +350,266 @@ def _part_is_clearly_foreign(part: str) -> bool:
     return False
 
 
+def find_any_canadian_province(location: str) -> list[str]:
+    """All Canadian provinces mentioned in a location string (ignores candidate prefs)."""
+    if not location or not str(location).strip():
+        return []
+    found: list[str] = []
+    seen: set[str] = set()
+    loc = str(location)
+    loc_cf = loc.casefold()
+    for name_key, canonical in sorted(_PROVINCE_NAMES.items(), key=lambda kv: -len(kv[0])):
+        if re.search(rf"\b{re.escape(name_key)}\b", loc_cf) and canonical not in seen:
+            found.append(canonical)
+            seen.add(canonical)
+    for match in _PROVINCE_CODE_IN_LOCATION.finditer(loc):
+        code = (match.group("code") or match.group("code2") or "").upper()
+        canonical = _PROVINCE_CODES.get(code)
+        if canonical and canonical not in seen:
+            found.append(canonical)
+            seen.add(canonical)
+    return found
+
+
+def find_any_canadian_cities(location: str) -> list[str]:
+    """All known Canadian cities mentioned in a location string (ignores candidate prefs)."""
+    if not location:
+        return []
+    loc_cf = location.casefold()
+    found: list[str] = []
+    seen: set[str] = set()
+    for city in sorted(_CANADIAN_CITIES, key=len, reverse=True):
+        if city in ("london",):
+            continue
+        if city == "london, on":
+            if re.search(r"\blondon\b", loc_cf) and (
+                find_any_canadian_province(location) == ["Ontario"]
+                or "ontario" in loc_cf
+                or _CANADA_WORD.search(location)
+            ):
+                if "London" not in seen:
+                    found.append("London")
+                    seen.add("London")
+            continue
+        if re.search(rf"\b{re.escape(city)}\b", loc_cf):
+            label = city.title() if city != "montréal" else "Montreal"
+            if city == "montreal" or city == "montréal":
+                label = "Montreal"
+            if label.casefold() not in seen:
+                found.append(label)
+                seen.add(label.casefold())
+    return found
+
+
+def _candidate_city_set(cities: list[str]) -> set[str]:
+    return {c.casefold().strip() for c in cities if c and str(c).strip()}
+
+
+def _candidate_province_set(provinces: list[str]) -> set[str]:
+    out: set[str] = set()
+    for p in normalize_province_list(provinces):
+        pc = p.casefold().strip()
+        if pc in _PROVINCE_NAMES:
+            out.add(_PROVINCE_NAMES[pc].casefold())
+            continue
+        code = pc.upper() if len(pc) == 2 else pc
+        if code.upper() in _PROVINCE_CODES:
+            out.add(_PROVINCE_CODES[code.upper()].casefold())
+            continue
+        out.add(pc)
+    return out
+
+
+def _province_matches_candidate(job_provinces: list[str], candidate_provinces: set[str]) -> bool:
+    if not candidate_provinces:
+        return True
+    for jp in job_provinces:
+        if jp.casefold() in candidate_provinces:
+            return True
+    return False
+
+
+def _city_matches_candidate(job_cities: list[str], candidate_cities: set[str]) -> bool:
+    if not candidate_cities:
+        return True
+    for jc in job_cities:
+        if jc.casefold() in candidate_cities:
+            return True
+    return False
+
+
+def _nationwide_canada_signal(location: str, description: str, loc_cfg: dict[str, Any]) -> str | None:
+    """Return evidence string when the posting is Canada-wide (not city-bound)."""
+    loc = location or ""
+    for phrase in loc_cfg.get("preferred") or []:
+        p = str(phrase).casefold()
+        if p and p in loc.casefold():
+            return str(phrase)
+    if _CANADA_WORD.search(loc) and _REMOTE.search(loc):
+        m = _CANADA_WORD.search(loc)
+        return m.group(0) if m else "Canada remote"
+    if re.search(r"\bcanada-?remote\b|\bremote\s+in\s+canada\b", loc, re.I):
+        return "Canada-remote"
+    # Bare "Canada" / "Remote, Canada" without a conflicting single-city hybrid
+    if _CANADA_WORD.search(loc) and not find_any_canadian_cities(loc):
+        m = _CANADA_WORD.search(loc)
+        return m.group(0) if m else "Canada"
+    if _CANADA_WORD.search(loc) and _REMOTE.search(loc):
+        m = _CANADA_WORD.search(loc)
+        return m.group(0) if m else "Canada"
+    hire = _CANADA_HIRE.search(description or "")
+    if hire:
+        return hire.group(0)
+    return None
+
+
+def refine_candidate_geography(
+    eligibility: str,
+    location_verdict: str,
+    reasons: list[str],
+    evidence: list[str],
+    job: dict[str, Any],
+    search_cfg: dict[str, Any],
+) -> tuple[str, str, list[str], list[str]]:
+    """Downgrade Canada-level ELIGIBLE when incompatible with the candidate's city/province.
+
+    A Canadian job is not automatically compatible with every Canadian candidate.
+    Hybrid/on-site roles must match the candidate's city (or an explicitly listed
+    multi-city option). Nationwide remote Canada remains ELIGIBLE. Multiple
+    Canadian office cities alone do not imply remote work.
+    """
+    if eligibility != "ELIGIBLE":
+        return eligibility, location_verdict, reasons, evidence
+
+    loc_cfg = search_cfg.get("location") or {}
+    modes = {str(m).casefold() for m in (loc_cfg.get("modes") or ["remote_canada"])}
+    candidate_cities = _candidate_city_set(
+        [str(c) for c in (loc_cfg.get("cities") or []) if c and not isinstance(c, bool)]
+    )
+    candidate_provinces = _candidate_province_set(list(loc_cfg.get("provinces") or []))
+
+    location = str(job.get("location_raw") or "").strip()
+    description = str(job.get("description") or "")
+    job_cities = find_any_canadian_cities(location)
+    job_provinces = find_any_canadian_province(location)
+    loc_remote = bool(_REMOTE.search(location))
+    loc_hybrid = bool(_HYBRID.search(location))
+    loc_onsite = bool(_ONSITE.search(location))
+    desc_remote = bool(_REMOTE.search(description))
+    desc_onsite = bool(_ONSITE.search(description))
+
+    nationwide = _nationwide_canada_signal(location, description, loc_cfg)
+    wfa = _WORLDWIDE_REMOTE.search(description) or _WORLDWIDE_REMOTE.search(location)
+    reasons = list(reasons)
+    evidence = list(evidence)
+
+    arrangement_remote = bool(
+        loc_remote or (desc_remote and not loc_onsite and not loc_hybrid and not job_cities)
+    )
+    # Structured office cities without remote in the location field are local/hybrid
+    # options — description WFA marketing must not override them.
+    structured_office_cities = bool(job_cities and not loc_remote and not _CANADA_WORD.search(location))
+
+    # --- Structured location wins over description WFA ---
+    if job_cities:
+        if _city_matches_candidate(job_cities, candidate_cities):
+            reasons.append(
+                "candidate-compatible: job cities include candidate city "
+                f"({', '.join(job_cities)})"
+            )
+            return "ELIGIBLE", "PASS", reasons, evidence
+
+        if loc_remote and _CANADA_WORD.search(location):
+            reasons.append("candidate-compatible: remote Canada with hub cities")
+            return "ELIGIBLE", "PASS", reasons, evidence
+
+        # Hub-remote "Toronto (Remote)" without Canada-wide token → UNCERTAIN off-city.
+        if loc_remote and not _CANADA_WORD.search(location):
+            reasons.append(
+                f"hub-remote city {job_cities[0]} outside candidate city "
+                "without nationwide Canada evidence"
+            )
+            evidence.extend(job_cities)
+            return "UNCERTAIN", "FLAG", reasons, evidence
+
+        # "Toronto, Canada" without remote is a city office, not nationwide remote.
+        if not loc_remote:
+            reasons.append(
+                f"job city/cities ({', '.join(job_cities)}) incompatible with "
+                f"candidate cities ({', '.join(sorted(candidate_cities)) or 'unset'}); "
+                "city+Canada without remote is not remote-Canada eligibility"
+            )
+            evidence.extend(job_cities)
+            return "INELIGIBLE", "FAIL", reasons, evidence
+
+        if structured_office_cities:
+            reasons.append(
+                f"job city/cities ({', '.join(job_cities)}) incompatible with "
+                f"candidate cities ({', '.join(sorted(candidate_cities)) or 'unset'}); "
+                "structured office locations are not remote Canada "
+                "(description WFA copy ignored)"
+            )
+            evidence.extend(job_cities)
+            return "INELIGIBLE", "FAIL", reasons, evidence
+
+    # Nationwide Canada (preferred phrases, Remote Canada, hire-in-Canada, bare Canada).
+    if nationwide and "canada" in nationwide.casefold():
+        if job_provinces and arrangement_remote and not _CANADA_WORD.search(location) and not job_cities:
+            pass  # fall through to province-restricted remote
+        else:
+            reasons.append("candidate-compatible: nationwide Canada eligibility")
+            return "ELIGIBLE", "PASS", reasons, evidence
+
+    # Explicit "Canada" in the structured location (remote or country-level).
+    if _CANADA_WORD.search(location) and (loc_remote or not job_cities):
+        reasons.append("candidate-compatible: Canada location")
+        return "ELIGIBLE", "PASS", reasons, evidence
+
+    # Worldwide remote only when structured location is not a foreign/other-city office list.
+    if wfa and not structured_office_cities and not job_cities:
+        reasons.append("candidate-compatible: worldwide remote")
+        return "ELIGIBLE", "PASS", reasons, evidence
+
+    # Province-specific remote without Canada-wide token.
+    if (
+        (loc_remote or desc_remote)
+        and job_provinces
+        and not _CANADA_WORD.search(location)
+        and not job_cities
+    ):
+        if _province_matches_candidate(job_provinces, candidate_provinces):
+            reasons.append(f"candidate-compatible: province remote ({job_provinces[0]})")
+            return "ELIGIBLE", "PASS", reasons, evidence
+        reasons.append(
+            f"province-restricted remote ({', '.join(job_provinces)}) "
+            "outside candidate provinces"
+        )
+        evidence.extend(job_provinces)
+        return "INELIGIBLE", "FAIL", reasons, evidence
+
+    if job_provinces and not job_cities:
+        if _province_matches_candidate(job_provinces, candidate_provinces):
+            reasons.append(f"candidate-compatible: province match ({job_provinces[0]})")
+            return "ELIGIBLE", "PASS", reasons, evidence
+        if loc_remote and _CANADA_WORD.search(location):
+            reasons.append("candidate-compatible: remote Canada")
+            return "ELIGIBLE", "PASS", reasons, evidence
+        reasons.append(
+            f"job province ({', '.join(job_provinces)}) incompatible with candidate"
+        )
+        evidence.extend(job_provinces)
+        return "INELIGIBLE", "FAIL", reasons, evidence
+
+    # Unknown arrangement after Canada-level ELIGIBLE with no usable anchors.
+    if not job_cities and not job_provinces and not nationwide and not wfa:
+        reasons.append(
+            "work arrangement / candidate city compatibility not evidenced (unknown)"
+        )
+        return "UNCERTAIN", "FLAG", reasons, evidence
+
+    return eligibility, location_verdict, reasons, evidence
+
+
 def classify_canada_eligibility(
     job: dict[str, Any], search_cfg: dict[str, Any]
 ) -> tuple[str, str, list[str], list[str]]:
@@ -357,7 +617,19 @@ def classify_canada_eligibility(
 
     eligibility: ELIGIBLE | UNCERTAIN | INELIGIBLE
     location_verdict: PASS | FLAG | FAIL
+
+    Canada-level signals are refined by candidate city/province compatibility so
+    a Toronto hybrid role is not ELIGIBLE for a Vancouver candidate who will not
+    relocate.
     """
+    elig, verdict, reasons, evidence = _classify_canada_level(job, search_cfg)
+    return refine_candidate_geography(elig, verdict, reasons, evidence, job, search_cfg)
+
+
+def _classify_canada_level(
+    job: dict[str, Any], search_cfg: dict[str, Any]
+) -> tuple[str, str, list[str], list[str]]:
+    """Canada / overseas classification before candidate-city refinement."""
     loc_cfg = search_cfg.get("location") or {}
     reject_us_only = bool(loc_cfg.get("reject_us_only_remote", True))
     modes = {str(m).casefold() for m in (loc_cfg.get("modes") or ["remote_canada"])}
@@ -395,8 +667,15 @@ def classify_canada_eligibility(
             return "ELIGIBLE", "PASS", [f"matched preferred location phrase: {phrase}"], evidence
 
     loc_canada = bool(_CANADA_WORD.search(location))
-    loc_province = find_province_in_location(location, provinces or None)
-    loc_city = find_city_in_location(location, cities or None)
+    # Detect any Canadian city/province for Canada-level signal (candidate filter applied later).
+    any_cities = find_any_canadian_cities(location)
+    any_provinces = find_any_canadian_province(location)
+    loc_province = find_province_in_location(location, provinces or None) or (
+        any_provinces[0] if any_provinces else None
+    )
+    loc_city = find_city_in_location(location, cities or None) or (
+        any_cities[0] if any_cities else None
+    )
     loc_remote = bool(_REMOTE.search(location))
     loc_hybrid = bool(_HYBRID.search(location))
     loc_onsite = bool(_ONSITE.search(location))
@@ -458,7 +737,7 @@ def classify_canada_eligibility(
             evidence,
         )
 
-    # Multi-location: Canada + foreign → eligible if Canada is an explicit option
+    # Multi-location: Canada + foreign → Canada-level eligible; candidate city refined later.
     if canadian_parts and foreign_parts:
         evidence.append(canadian_parts[0])
         reasons.append("multi-location posting includes explicit Canadian location")
