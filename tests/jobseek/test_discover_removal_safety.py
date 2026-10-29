@@ -58,6 +58,10 @@ class RemovalSafetyTests(unittest.TestCase):
             with (
                 patch("jobseek.discover.load_companies", return_value=companies),
                 patch("jobseek.discover.load_search", return_value=search),
+                patch(
+                    "jobseek.companies.registry.load_community_companies",
+                    return_value=[],
+                ),
                 patch.dict("jobseek.discover.ADAPTERS", {"greenhouse": lambda client=None: inst}),
             ):
                 summary = run_discover(db, detect_unknown=False)

@@ -1,0 +1,319 @@
+# Employers researched in Phase 3 that could not be added as supported boards.
+researched_at: 2026-10-29
+employers:
+  - name: Absolute Software
+    careers_url: "https://www.absolute.com/company/careers/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Accenture
+    careers_url: "https://www.accenture.com/ca-en/careers"
+    status: unsupported
+    reason: Unsupported ATS detected
+  - name: Ada
+    careers_url: "https://www.ada.cx/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Amazon
+    careers_url: "https://www.amazon.jobs/en/locations/toronto-canada"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Apple
+    careers_url: "https://www.apple.com/careers/ca/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: ApplyBoard
+    careers_url: "https://www.applyboard.com/careers"
+    status: unsupported
+    reason: Unsupported ATS detected
+  - name: Atlassian
+    careers_url: "https://www.atlassian.com/company/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Bell
+    careers_url: "https://jobs.bell.ca/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: BMO
+    careers_url: "https://jobs.bmo.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Borrowell Careers
+    careers_url: "https://jobs.lever.co/borrowell"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Buffer
+    careers_url: "https://buffer.com/journey"
+    status: empty
+    reason: Empty board
+  - name: Busbud
+    careers_url: "https://www.busbud.com/en/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Canadian Tire
+    careers_url: "https://careers.canadiantire.ca/"
+    status: unsupported
+    reason: Unsupported ATS detected
+  - name: Capgemini
+    careers_url: "https://www.capgemini.com/careers/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: CGI
+    careers_url: "https://www.cgi.com/en/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: CIBC
+    careers_url: "https://cibc.wd3.myworkdayjobs.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Cisco
+    careers_url: "https://jobs.cisco.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Clio
+    careers_url: "https://www.clio.com/about/careers/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Confluent
+    careers_url: "https://www.confluent.io/careers/"
+    status: empty
+    reason: Empty board
+  - name: Coveo
+    careers_url: "https://www.coveo.com/en/company/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Crowdstrike
+    careers_url: "https://www.crowdstrike.com/careers/"
+    status: unsupported
+    reason: Unsupported ATS detected
+  - name: Dayforce
+    careers_url: "https://www.dayforce.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Definity
+    careers_url: "https://www.definityfinancial.com/Careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Deloitte Canada
+    careers_url: "https://www2.deloitte.com/ca/en/careers.html"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Dialogue
+    careers_url: "https://www.dialogue.co/en/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Dialogue Health
+    careers_url: "https://www.dialogue.co/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: DoorDash
+    careers_url: "https://careers.doordash.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Dummy
+    careers_url: "https://example.com"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Electronic Arts
+    careers_url: "https://www.ea.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: EQ Bank
+    careers_url: "https://www.eqbank.ca/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: FreshBooks
+    careers_url: "https://www.freshbooks.com/jobs"
+    status: unsupported
+    reason: Unsupported ATS detected
+  - name: Google
+    careers_url: "https://careers.google.com/locations/toronto/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Hashi
+    careers_url: "https://www.hashicorp.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: HashiCorp
+    careers_url: "https://www.hashicorp.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: HubSpot
+    careers_url: "https://www.hubspot.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: IBM Canada
+    careers_url: "https://www.ibm.com/careers/ca-en"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Intact
+    careers_url: "https://careers.intactfc.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Intel
+    careers_url: "https://jobs.intel.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Kinaxis
+    careers_url: "https://www.kinaxis.com/en/company/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Layer 6
+    careers_url: "https://layer6.ai/careers"
+    status: unsupported
+    reason: Unsupported ATS detected
+  - name: League
+    careers_url: "https://league.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Loblaw Digital
+    careers_url: "https://www.loblaw.ca/en/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Lululemon
+    careers_url: "https://careers.lululemon.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Manulife
+    careers_url: "https://www.manulife.com/en/about/careers.html"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Meta
+    careers_url: "https://www.metacareers.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Microsoft
+    careers_url: "https://careers.microsoft.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Nuvei
+    careers_url: "https://www.nuvei.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: NVIDIA
+    careers_url: "https://www.nvidia.com/en-us/about-nvidia/careers/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: OpenText
+    careers_url: "https://careers.opentext.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Oracle
+    careers_url: "https://www.oracle.com/careers/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Ratehub
+    careers_url: "https://www.ratehub.ca/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: RBC
+    careers_url: "https://jobs.rbc.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Realtor.ca
+    careers_url: "https://www.realtor.ca"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Rogers
+    careers_url: "https://jobs.rogers.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Salesforce
+    careers_url: "https://www.salesforce.com/company/careers/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: SAP
+    careers_url: "https://jobs.sap.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Scotiabank
+    careers_url: "https://jobs.scotiabank.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: ServiceNow
+    careers_url: "https://www.servicenow.com/careers.html"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Shopify
+    careers_url: "https://www.shopify.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Shopify Engineering
+    careers_url: "https://www.shopify.com/careers/engineering"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Shopify Plus
+    careers_url: "https://www.shopify.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Slalom
+    careers_url: "https://www.slalom.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Snaptravel
+    careers_url: "https://www.snaptravel.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Square
+    careers_url: "https://careers.squareup.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: "SS&C"
+    careers_url: "https://www.ssctech.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: SSENSE
+    careers_url: "https://www.ssense.com/en-ca/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Sun Life
+    careers_url: "https://www.sunlife.com/en/careers/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Tangerine
+    careers_url: "https://www.tangerine.ca/en/about-us/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: TD
+    careers_url: "https://jobs.td.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Telus
+    careers_url: "https://careers.telus.com/"
+    status: unsupported
+    reason: Unsupported ATS detected
+  - name: Toast
+    careers_url: "https://careers.toasttab.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Transit
+    careers_url: "https://transitapp.com/jobs"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Uber
+    careers_url: "https://www.uber.com/careers/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Unity
+    careers_url: "https://careers.unity.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Vercel
+    careers_url: "https://vercel.com/careers"
+    status: empty
+    reason: Empty board
+  - name: Wave
+    careers_url: "https://www.waveapps.com/careers"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Webtoon
+    careers_url: "https://careers.webtoons.com/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)
+  - name: Workday
+    careers_url: "https://www.workday.com/en-us/company/careers.html"
+    status: unsupported
+    reason: Unsupported ATS detected
+  - name: Zoom
+    careers_url: "https://careers.zoom.us/"
+    status: not_found
+    reason: No supported public ATS board found (often Workday/Taleo/custom)

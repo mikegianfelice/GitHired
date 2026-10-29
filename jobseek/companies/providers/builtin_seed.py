@@ -33,6 +33,10 @@ def collect_builtin_candidates(
         )
     if include_community:
         for row in load_community_companies():
+            token = row.get("board_token")
+            status = (row.get("validation_status") or "").lower()
+            # Pre-validated community boards with tokens are safe to enable.
+            enable = bool(token) and status in ("ok", "", "unvalidated")
             out.append(
                 CompanyCandidate(
                     name=str(row.get("name")),
@@ -40,9 +44,15 @@ def collect_builtin_candidates(
                     or canonical_domain(str(row.get("careers_url") or "")),
                     careers_url=row.get("careers_url"),
                     ats=row.get("ats"),
-                    board_token=row.get("board_token"),
+                    board_token=token,
                     discovery_source="community",
                     notes=row.get("notes"),
+                    evidence={
+                        "validation_status": status or "ok",
+                        "enable": enable,
+                        "last_validated_at": row.get("last_validated_at"),
+                        "contributor": row.get("contributor"),
+                    },
                 )
             )
     return out

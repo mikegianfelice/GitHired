@@ -78,6 +78,37 @@ CALGARY = _persona(
 
 
 class CandidateCityGeoTests(unittest.TestCase):
+    def test_vancouver_washington_not_canadian_vancouver(self):
+        """US 'Vancouver, Washington' must not count as Vancouver BC."""
+        elig, verdict, reasons, evidence = classify_canada_eligibility(
+            {
+                "title": "Senior Software Engineer, Data Infrastructure",
+                "location_raw": (
+                    "Bethesda, Maryland, United States; "
+                    "Vancouver, Washington, United States; "
+                    "Waltham, Massachusetts, United States"
+                ),
+                "description": "Build data infrastructure. Offices in the US.",
+            },
+            VANCOUVER,
+        )
+        # Must not be confirmed ELIGIBLE (US Vancouver, WA ≠ Vancouver BC).
+        self.assertNotEqual(elig, "ELIGIBLE")
+        self.assertIn(elig, ("INELIGIBLE", "UNCERTAIN"))
+        self.assertNotIn("Vancouver", evidence)
+
+    def test_vancouver_bc_still_eligible(self):
+        elig, verdict, _, _ = classify_canada_eligibility(
+            {
+                "title": "Software Engineer",
+                "location_raw": "Vancouver, BC",
+                "description": "Hybrid in Vancouver office.",
+            },
+            VANCOUVER,
+        )
+        self.assertEqual(elig, "ELIGIBLE")
+        self.assertEqual(verdict, "PASS")
+
     def test_vancouver_toronto_hybrid_ineligible(self):
         elig, verdict, reasons, evidence = classify_canada_eligibility(
             {

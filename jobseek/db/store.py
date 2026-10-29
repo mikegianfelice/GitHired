@@ -77,9 +77,11 @@ class Database:
         if not isinstance(body, str):
             body = json.dumps(body, ensure_ascii=False)
         with self.transaction():
+            # Same source+key in the same UTC second (batch failures / retries) must not crash.
             self._conn.execute(
                 """
-                INSERT INTO raw_responses (source, request_key, fetched_at, status_code, body)
+                INSERT OR REPLACE INTO raw_responses
+                    (source, request_key, fetched_at, status_code, body)
                 VALUES (?, ?, ?, ?, ?)
                 """,
                 (source, request_key, _utcnow(), status_code, body),

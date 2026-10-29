@@ -14,6 +14,7 @@ from jobseek.adapters.workable import WorkableAdapter
 from jobseek.companies.domain_util import canonical_domain
 from jobseek.companies.providers.builtin_seed import collect_builtin_candidates
 from jobseek.companies.providers.career_page import collect_career_page_candidates
+from jobseek.companies.providers.careers_seed import collect_careers_seed_candidates
 from jobseek.companies.providers.search_index import collect_search_index_candidates
 from jobseek.companies.registry import (
     _company_key,
@@ -103,9 +104,17 @@ def run_companies_discover(
             include_excluded=True,
         )
 
+        # Careers-URL seeds fill gaps when search indexes are blocked (no tokens invented).
+        seed_rows: list[dict[str, Any]] = []
+        if providers.get("careers_seed", True):
+            for c in collect_careers_seed_candidates(merged):
+                d = c.as_company_dict()
+                candidates.append(d)
+                seed_rows.append(d)
+
         if providers.get("career_page", True):
             career_rows, warns = collect_career_page_candidates(
-                merged, client, max_pages=max_pages
+                list(merged) + seed_rows, client, max_pages=max_pages
             )
             summary["warnings"].extend(warns)
             for c in career_rows:
@@ -120,6 +129,12 @@ def run_companies_discover(
                 max_queries=max_queries,
                 use_serpapi=use_serpapi,
             )
+            if warns and not search_rows:
+                summary["warnings"].append(
+                    "search_index returned no new employers (free web search often "
+                    "rate-limits). Builtin + community registries and careers-page "
+                    "detection still expand coverage without paid APIs."
+                )
             summary["warnings"].extend(warns)
             for c in search_rows:
                 candidates.append(c.as_company_dict())
@@ -163,11 +178,17 @@ def run_companies_discover(
             enabled = bool(company.get("enabled", False))
             if existing and existing.get("enabled") and not excluded:
                 enabled = True
-            # Builtin YAML enabled companies stay enabled
+            # Builtin YAML / pre-validated community boards stay enabled
             if company.get("discovery_source") == "builtin" and company.get("evidence", {}).get(
                 "enabled_in_yaml"
             ):
                 enabled = True and not excluded
+            if company.get("discovery_source") == "community" and company.get("evidence", {}).get(
+                "enable"
+            ):
+                enabled = True and not excluded
+            if company.get("enabled") and not excluded:
+                enabled = True
 
             db.upsert_company(
                 name=name,

@@ -294,11 +294,13 @@ def find_city_in_location(location: str, cities: list[str] | None = None) -> str
             ):
                 return "London"
             continue
-        if re.search(rf"\b{re.escape(city)}\b", loc_cf):
+        if _has_canadian_city_mention(city, location, loc_cf):
             # Return original casing from config when possible
             for raw in cities or []:
                 if raw.casefold() == city:
                     return raw
+            if city in ("montreal", "montréal"):
+                return "Montreal"
             return city.title()
     # London, ON specifically
     if re.search(r"\blondon\b", loc_cf) and (
@@ -371,6 +373,38 @@ def find_any_canadian_province(location: str) -> list[str]:
     return found
 
 
+# US (or other non-CA) qualifiers that share names with Canadian cities.
+# A bare "Vancouver" remains Canadian; "Vancouver, Washington" does not.
+_US_HOMONYM_CITY = {
+    "vancouver": re.compile(
+        r"\bvancouver\s*,\s*(?:washington|wa)\b"
+        r"|\bvancouver\s*,\s*united\s+states\b"
+        r"|\bvancouver\s*\(\s*(?:washington|wa|usa|us)\s*\)",
+        re.I,
+    ),
+}
+
+
+def _has_canadian_city_mention(city: str, location: str, loc_cf: str) -> bool:
+    """True when ``city`` appears as a Canadian location, not a US homonym."""
+    if city == "vancouver":
+        # Count Vancouver only when at least one mention is not WA/US-qualified.
+        us_spans = [m.span() for m in _US_HOMONYM_CITY["vancouver"].finditer(loc_cf)]
+        for m in re.finditer(r"\bvancouver\b", loc_cf):
+            if any(start <= m.start() < end for start, end in us_spans):
+                continue
+            # Also skip when the immediate ", State/Country" suffix is US-only.
+            after = loc_cf[m.end() : m.end() + 48]
+            if re.match(
+                r"\s*,\s*(?:washington|wa|united\s+states|usa|us)\b",
+                after,
+            ):
+                continue
+            return True
+        return False
+    return bool(re.search(rf"\b{re.escape(city)}\b", loc_cf))
+
+
 def find_any_canadian_cities(location: str) -> list[str]:
     """All known Canadian cities mentioned in a location string (ignores candidate prefs)."""
     if not location:
@@ -391,7 +425,7 @@ def find_any_canadian_cities(location: str) -> list[str]:
                     found.append("London")
                     seen.add("London")
             continue
-        if re.search(rf"\b{re.escape(city)}\b", loc_cf):
+        if _has_canadian_city_mention(city, location, loc_cf):
             label = city.title() if city != "montréal" else "Montreal"
             if city == "montreal" or city == "montréal":
                 label = "Montreal"

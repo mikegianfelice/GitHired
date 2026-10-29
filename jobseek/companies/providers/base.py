@@ -18,6 +18,11 @@ class CompanyCandidate:
     notes: str | None = None
 
     def as_company_dict(self) -> dict[str, Any]:
+        enable = bool(
+            self.evidence.get("enabled_in_yaml")
+            or self.evidence.get("enable")
+            or self.evidence.get("validation_status") == "ok"
+        )
         return {
             "name": self.name or self.domain or self.board_token or "unknown",
             "domain": self.domain,
@@ -26,7 +31,7 @@ class CompanyCandidate:
             "board_token": self.board_token,
             "discovery_source": self.discovery_source,
             "source": self.discovery_source,
-            "enabled": False,
+            "enabled": enable,
             "notes": self.notes,
             "evidence": self.evidence,
         }
