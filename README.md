@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="assets/mascot/pip_flight_loop.gif" alt="GitHired courier bird" width="120" />
-</p>
-
 <h1 align="center">GitHired</h1>
 
 <p align="center">
