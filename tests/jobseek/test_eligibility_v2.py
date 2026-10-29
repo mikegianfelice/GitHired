@@ -128,6 +128,16 @@ class UatFalsePositiveTests(unittest.TestCase):
         self.assertEqual(elig, "ELIGIBLE")
         self.assertEqual(verdict, "PASS")
 
+    def test_us_location_not_eligible_via_wfa_copy(self):
+        job = {
+            "title": "Data Platform Engineer",
+            "location_raw": "San Francisco, CA • New York, NY • United States",
+            "description": "Hire from anywhere in the world. Build data platforms.",
+        }
+        elig, verdict, _, _ = classify_canada_eligibility(job, SEARCH)
+        self.assertNotEqual(elig, "ELIGIBLE")
+        self.assertEqual(verdict, "FLAG")
+
     def test_us_only_stripe_style(self):
         job = {
             "title": "Staff Data Engineer",

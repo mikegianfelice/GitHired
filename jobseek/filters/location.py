@@ -517,9 +517,20 @@ def classify_canada_eligibility(
         return "ELIGIBLE", "PASS", reasons, evidence
 
     # Genuine worldwide remote (not offices worldwide).
+    # Structured US/overseas location fields win over marketing WFA copy.
     if desc_wfa and not us_only_hit:
-        if offices_ww and not desc_wfa:
-            pass
+        if (loc_us or (foreign_parts and not canadian_parts)) and not loc_canada:
+            evidence.append(desc_wfa.group(0))
+            evidence.append(location or (foreign_parts[0] if foreign_parts else "non-Canada location"))
+            return (
+                "UNCERTAIN",
+                "FLAG",
+                [
+                    "work-from-anywhere language present but structured location "
+                    "is US/overseas without Canada"
+                ],
+                evidence,
+            )
         evidence.append(desc_wfa.group(0))
         reasons.append("genuine worldwide / work-from-anywhere remote")
         return "ELIGIBLE", "PASS", reasons, evidence

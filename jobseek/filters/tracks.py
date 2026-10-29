@@ -229,14 +229,21 @@ class TrackMatch:
 
 
 def _phrase_to_pattern(phrase: str) -> re.Pattern[str]:
-    """Build a contiguous title matcher with optional seniority prefix."""
+    """Build a contiguous title matcher (word-bounded, not a token bag).
+
+    Matches the role phrase anywhere in the title so
+    ``Staff Software Engineer, Risk Data Engineering`` matches ``Data Engineering``.
+    Seniority words may appear before the phrase but are not required.
+    """
     tokens = [re.escape(t) for t in re.split(r"\s+", phrase.strip()) if t]
     if not tokens:
         return re.compile(r"(?!)")  # never matches
     body = r"[\s\-_/]+".join(tokens)
-    # Allow trailing specialty after an optional comma/dash clause, but the
-    # core phrase must appear as a contiguous unit.
-    pattern = rf"(?i)(?:^|[^a-z0-9])(?:{_SENIORITY_PREFIX}[\s,/\-]*)*{body}\b"
+    # Word-boundary contiguous match; optional seniority immediately before.
+    pattern = (
+        rf"(?i)(?:(?<![a-z0-9])(?:{_SENIORITY_PREFIX})[\s,/\-]*)*"
+        rf"(?<![a-z0-9]){body}(?![a-z0-9])"
+    )
     return re.compile(pattern)
 
 

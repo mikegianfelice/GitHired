@@ -77,9 +77,9 @@ class TruePositiveTitleTests(unittest.TestCase):
     def test_data_engineer(self):
         self.assertTrue(match_track("Senior Data Engineer", SEARCH_DE).matched)
         self.assertTrue(match_track("Staff Data Engineer", SEARCH_DE).matched)
-        self.assertTrue(
-            match_track("Staff Software Engineer, Risk Data Engineering", SEARCH_DE).matched
-        )
+        risk = match_track("Staff Software Engineer, Risk Data Engineering", SEARCH_DE)
+        self.assertTrue(risk.matched, risk.reasons)
+        self.assertIn("data_engineering", risk.tracks)
 
     def test_analytics_engineer(self):
         self.assertTrue(match_track("Analytics Engineer", SEARCH_DE).matched)
