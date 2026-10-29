@@ -6,14 +6,32 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from jobseek.showcase.svg_dashboard import SVG_REL_PATH, write_dashboard_svg
-from jobseek.showcase.top_paying import COMPARISON_RULE, ShowcaseJob
+from jobseek.showcase.top_paying import (
+    COMPARISON_RULE,
+    ShowcaseJob,
+    is_job_specific_apply_url,
+    is_valid_apply_url,
+)
 
 START_MARKER = "<!-- TOP-PAYING-JOBS:START -->"
 END_MARKER = "<!-- TOP-PAYING-JOBS:END -->"
 
 
-def _escape_md(text: str) -> str:
-    return text.replace("|", "\\|").replace("\n", " ").replace("[", "\\[").replace("]", "\\]").strip()
+def _escape_md_label(text: str) -> str:
+    return text.replace("[", "\\[").replace("]", "\\]").replace("\n", " ").strip()
+
+
+def render_apply_links_line(jobs: list[ShowcaseJob]) -> str:
+    """Compact Markdown apply row, order-matched to SVG cards (1..N)."""
+    bits: list[str] = []
+    for i, job in enumerate(jobs, start=1):
+        if not is_valid_apply_url(job.apply_url):
+            raise ValueError(f"showcase job {i} missing job-specific apply URL: {job.apply_url!r}")
+        if not is_job_specific_apply_url(job.apply_url):
+            raise ValueError(f"showcase job {i} apply URL is not job-specific: {job.apply_url!r}")
+        label = f"{i}. {_escape_md_label(job.company)} ↗"
+        bits.append(f"[{label}]({job.apply_url})")
+    return "**Apply directly:** " + " · ".join(bits)
 
 
 def render_section(
@@ -27,6 +45,7 @@ def render_section(
     """Return Markdown between (and including) the START/END markers."""
     generated_at = generated_at or datetime.now(timezone.utc)
     today = today or generated_at
+    _ = today
     stamp = generated_at.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     lines: list[str] = [
@@ -73,19 +92,7 @@ def render_section(
         [
             f'<p align="center"><img src="{svg_rel_path}" alt="Top 5 high-paying Canada-eligible engineering jobs discovered by GitHired" width="880" /></p>',
             "",
-            "<p align=\"center\">",
-        ]
-    )
-
-    # Clickable Apply links (SVG buttons are visual-only on GitHub <img>)
-    apply_bits: list[str] = []
-    for i, job in enumerate(jobs, start=1):
-        label = f"{i}. {_escape_md(job.company)} — Apply →"
-        apply_bits.append(f'<a href="{job.apply_url}"><strong>{label}</strong></a>')
-    lines.append(" &nbsp;·&nbsp; ".join(apply_bits))
-    lines.extend(
-        [
-            "</p>",
+            render_apply_links_line(jobs),
             "",
             '<p align="center"><strong>Discovered and verified by GitHired · Open Source</strong></p>',
             "",
@@ -98,6 +105,8 @@ def render_section(
             "",
             f"- Snapshot refreshed: **{stamp}** (preserved on failure — never backdated).",
             "- Blue ✓ marks listings confirmed against a direct employer career / ATS URL.",
+            "- SVG cards are visual only on GitHub; use **Apply directly** links below the image "
+            "(order matches card numbers 1–N).",
             "- **Discovered Today** is shown only when the job’s `first_seen` date is today; "
             "otherwise the card shows the last verified date.",
             "- Advertised annual base only (CAD / USD); no estimates for undisclosed pay.",

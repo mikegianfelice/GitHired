@@ -35,9 +35,7 @@
 
 <p align="center"><img src="assets/showcase/top-paying-jobs.svg" alt="Top 5 high-paying Canada-eligible engineering jobs discovered by GitHired" width="880" /></p>
 
-<p align="center">
-<a href="https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply"><strong>1. Wattpad — Apply →</strong></a> &nbsp;·&nbsp; <a href="https://jobs.lever.co/pointclickcare/ccdecc93-aef2-4b2b-a981-6843f3c16221/apply"><strong>2. PointClickCare — Apply →</strong></a> &nbsp;·&nbsp; <a href="https://jobs.lever.co/pointclickcare/150b07cd-04e9-46c4-9015-114498f3798c/apply"><strong>3. PointClickCare — Apply →</strong></a> &nbsp;·&nbsp; <a href="https://jobs.lever.co/pointclickcare/d27ec0dd-570d-4626-9962-2db3fc56b991/apply"><strong>4. PointClickCare — Apply →</strong></a> &nbsp;·&nbsp; <a href="https://jobs.lever.co/wattpad/da811487-88c8-440b-b6c2-5da90eb80ca1/apply"><strong>5. Wattpad — Apply →</strong></a>
-</p>
+**Apply directly:** [1. Wattpad ↗](https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply) · [2. PointClickCare ↗](https://jobs.lever.co/pointclickcare/ccdecc93-aef2-4b2b-a981-6843f3c16221/apply) · [3. PointClickCare ↗](https://jobs.lever.co/pointclickcare/150b07cd-04e9-46c4-9015-114498f3798c/apply) · [4. PointClickCare ↗](https://jobs.lever.co/pointclickcare/d27ec0dd-570d-4626-9962-2db3fc56b991/apply) · [5. Wattpad ↗](https://jobs.lever.co/wattpad/da811487-88c8-440b-b6c2-5da90eb80ca1/apply)
 
 <p align="center"><strong>Discovered and verified by GitHired · Open Source</strong></p>
 
@@ -50,6 +48,7 @@ Rank by advertised annual base salary high end, converted to CAD for sorting onl
 
 - Snapshot refreshed: **2026-10-29 18:00 UTC** (preserved on failure — never backdated).
 - Blue ✓ marks listings confirmed against a direct employer career / ATS URL.
+- SVG cards are visual only on GitHub; use **Apply directly** links below the image (order matches card numbers 1–N).
 - **Discovered Today** is shown only when the job’s `first_seen` date is today; otherwise the card shows the last verified date.
 - Advertised annual base only (CAD / USD); no estimates for undisclosed pay.
 - Fewer than five cards means fewer than five qualified.

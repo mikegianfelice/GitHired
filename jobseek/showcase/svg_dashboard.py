@@ -66,12 +66,12 @@ def _verified_badge(cx: float, cy: float) -> str:
     )
 
 
-def _apply_button(x: float, y: float, w: float = 96, h: float = 34) -> str:
+def _apply_hint(x: float, y: float) -> str:
+    """Non-interactive cue — GitHub README <img> SVGs cannot host clickable regions."""
     return (
-        f'<rect x="{x:.1f}" y="{y:.1f}" width="{w}" height="{h}" rx="17" fill="{ACCENT}"/>'
-        f'<text x="{x + w / 2:.1f}" y="{y + 22:.1f}" text-anchor="middle" '
-        f'font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" font-weight="700" '
-        f'fill="#FFFFFF">Apply →</text>'
+        f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="end" '
+        f'font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="11" '
+        f'font-weight="600" fill="{ACCENT}">Apply below ↓</text>'
     )
 
 
@@ -186,17 +186,17 @@ def render_dashboard_svg(
             t2, _w2 = _tag_pill(tag_x + w1 + 8, tag_y, mode_tag)
             parts.append(t2)
 
-            # Salary (right side)
+            # Salary + date (right side); links live in Markdown under the image
+            salary_x = WIDTH - 36
             parts.append(
-                f'<text x="{WIDTH - 140}" y="{card_y + 40}" text-anchor="end" '
+                f'<text x="{salary_x}" y="{card_y + 40}" text-anchor="end" '
                 f'font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="18" '
                 f'font-weight="800" fill="{GREEN}">{_esc(salary)}</text>'
-                f'<text x="{WIDTH - 140}" y="{card_y + 60}" text-anchor="end" '
+                f'<text x="{salary_x}" y="{card_y + 60}" text-anchor="end" '
                 f'font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="11" '
                 f'fill="{MUTED}">{_esc(date_label)}</text>'
             )
-            # Apply button visual (real links live in Markdown under the image)
-            parts.append(_apply_button(WIDTH - 132, card_y + 70, 96, 28))
+            parts.append(_apply_hint(salary_x, card_y + 86))
 
     footer_y = y + (n * CARD_H + max(0, n - 1) * CARD_GAP if n else 88) + 18
     parts.append(

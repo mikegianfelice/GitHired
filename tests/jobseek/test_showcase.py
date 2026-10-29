@@ -10,6 +10,7 @@ import pytest
 from jobseek.showcase.readme import (
     END_MARKER,
     START_MARKER,
+    render_apply_links_line,
     render_section,
     replace_section,
     update_readme_file,
@@ -22,6 +23,7 @@ from jobseek.showcase.top_paying import (
     discovery_date_label,
     format_salary_range,
     is_career_page_verified,
+    is_job_specific_apply_url,
     is_valid_apply_url,
     select_top_paying_jobs,
     verified_date_label,
@@ -95,9 +97,18 @@ class TestSalaryNormalization:
 
 class TestLinkValidation:
     def test_accepts_direct_ats(self):
-        assert is_valid_apply_url("https://jobs.lever.co/wattpad/abc/apply")
+        assert is_valid_apply_url(
+            "https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply"
+        )
         assert is_valid_apply_url("https://boards.greenhouse.io/x/jobs/1")
-        assert is_career_page_verified("https://jobs.lever.co/wattpad/abc/apply")
+        assert is_career_page_verified(
+            "https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply"
+        )
+
+    def test_rejects_generic_careers_hub(self):
+        assert not is_job_specific_apply_url("https://jobs.lever.co/wattpad")
+        assert not is_job_specific_apply_url("https://boards.greenhouse.io/acme/jobs")
+        assert not is_valid_apply_url("https://example.com/careers")
 
     def test_rejects_affiliate(self):
         assert not is_valid_apply_url("https://www.whatjobs.com/jobs/foo")
@@ -108,6 +119,21 @@ class TestLinkValidation:
         assert not is_valid_apply_url("")
         assert not is_valid_apply_url("ftp://example.com/x")
         assert not is_valid_apply_url("not-a-url")
+
+    def test_apply_links_match_card_order(self):
+        jobs = [
+            _showcase(company="Wattpad", apply_url="https://jobs.lever.co/wattpad/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/apply"),
+            _showcase(
+                company="PointClickCare",
+                apply_url="https://jobs.lever.co/pointclickcare/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/apply",
+            ),
+        ]
+        line = render_apply_links_line(jobs)
+        assert line.startswith("**Apply directly:**")
+        assert "[1. Wattpad ↗](https://jobs.lever.co/wattpad/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/apply)" in line
+        assert "[2. PointClickCare ↗](https://jobs.lever.co/pointclickcare/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/apply)" in line
+        # Order: Wattpad before PointClickCare
+        assert line.index("1. Wattpad") < line.index("2. PointClickCare")
 
 
 class TestDateLabeling:
@@ -130,7 +156,7 @@ class TestDateLabeling:
             _showcase(
                 company="NewCo",
                 title="Staff Software Engineer",
-                apply_url="https://jobs.lever.co/newco/1",
+                apply_url="https://jobs.lever.co/newco/cccccccc-cccc-cccc-cccc-cccccccccccc/apply",
                 discovered_today=True,
                 verified_at="2026-10-29",
                 first_seen="2026-10-29",
@@ -244,7 +270,8 @@ class TestSvgAndReadme:
         assert "Top 5 High-Paying Jobs Discovered Today" in svg
         assert "CAD 240,000" in svg
         assert "#34D399" in svg  # green salary
-        assert "Apply →" in svg
+        assert "Apply →" not in svg
+        assert "Apply below ↓" in svg
         assert "Discovered and verified by GitHired" in svg
         assert "Wattpad" in svg
 
@@ -277,7 +304,10 @@ class TestSvgAndReadme:
         assert svg.is_file()
         text = readme.read_text(encoding="utf-8")
         assert "Acme" in text and "## Tail" in text
-        assert "Apply →" in text
+        assert "**Apply directly:**" in text
+        assert "[1. Acme ↗](https://boards.greenhouse.io/acme/jobs/1)" in text
+        assert "Apply →" not in svg.read_text(encoding="utf-8")
+        assert "Apply below ↓" in svg.read_text(encoding="utf-8")
         assert "| # | Role |" not in text
         assert "CAD 150,000–180,000" in svg.read_text(encoding="utf-8")
 

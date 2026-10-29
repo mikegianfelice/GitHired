@@ -238,6 +238,66 @@ def is_career_page_verified(url: str | None) -> bool:
     return verdict.kind == "direct" and verdict.actionable
 
 
+def is_job_specific_apply_url(url: str | None) -> bool:
+    """Reject generic careers listing hubs; require a posting-specific path.
+
+    Accepts common ATS job-detail patterns (Greenhouse ``/jobs/<id>``, Lever
+    posting UUIDs, Ashby job paths, Workday ``/job/…``, Workable ``/j/…``).
+    """
+    if not url or not str(url).strip():
+        return False
+    text = str(url).strip()
+    try:
+        parsed = urlparse(text)
+    except Exception:  # noqa: BLE001
+        return False
+    path = (parsed.path or "").rstrip("/")
+    if not path:
+        return False
+    host = (parsed.hostname or "").lower()
+    lower_path = path.casefold()
+    parts = [p for p in path.split("/") if p]
+
+    # Board roots / generic hubs (no posting id)
+    if lower_path in {
+        "/careers",
+        "/career",
+        "/jobs",
+        "/job",
+        "/openings",
+        "/positions",
+        "/opportunities",
+    }:
+        return False
+    if len(parts) == 1 and parts[0].casefold() in {
+        "careers",
+        "career",
+        "jobs",
+        "job",
+        "openings",
+        "positions",
+        "opportunities",
+    }:
+        return False
+
+    if "greenhouse.io" in host:
+        return "/jobs/" in lower_path and bool(path.split("/jobs/")[-1])
+    if "lever.co" in host:
+        # /company/<posting-id>[/apply] — posting id required (not board root)
+        return len(parts) >= 2 and parts[1].casefold() not in {"jobs", "careers", "job"}
+    if "ashbyhq.com" in host:
+        return len(parts) >= 2
+    if "myworkdayjobs.com" in host or host.endswith("workday.com"):
+        return "/job/" in lower_path
+    if "workable.com" in host:
+        return "/j/" in lower_path or "/jobs/" in lower_path
+    if "rippling.com" in host:
+        return len(parts) >= 2
+
+    # Other direct hosts: need depth beyond a single “careers” segment
+    return len(parts) >= 2
+
+
 def annualize_for_rank(
     *,
     salary_min: float | None,
@@ -270,7 +330,7 @@ def format_salary_range(salary_min: float, salary_max: float, currency: str) -> 
 
 
 def is_valid_apply_url(url: str | None) -> bool:
-    """Showcase apply links must be direct employer career / ATS URLs."""
+    """Showcase apply links must be direct, posting-specific employer ATS URLs."""
     if not url or not str(url).strip():
         return False
     text = str(url).strip()
@@ -280,7 +340,7 @@ def is_valid_apply_url(url: str | None) -> bool:
         return False
     if parsed.scheme not in ("http", "https") or not parsed.netloc:
         return False
-    return is_career_page_verified(text)
+    return is_career_page_verified(text) and is_job_specific_apply_url(text)
 
 
 def eligibility_label(location_raw: str | None, eligibility: str) -> str:
