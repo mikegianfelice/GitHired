@@ -10,18 +10,18 @@ from jobseek.showcase.top_paying import ShowcaseJob, discovery_date_label, forma
 
 SVG_REL_PATH = "assets/showcase/top-paying-jobs.svg"
 
-# Visual tokens
-BG = "#0B1220"
-PANEL = "#111827"
-CARD = "#151C2C"
-CARD_BORDER = "#1E293B"
-ACCENT = "#3B82F6"
-ACCENT_SOFT = "#1D4ED8"
-GREEN = "#34D399"
-MUTED = "#94A3B8"
+# Visual tokens — aligned with assets/banner.jpg (navy + electric cyan + gold)
+BG = "#07111F"
+PANEL = "#0B1829"
+CARD = "#0F2136"
+CARD_BORDER = "#16324A"
+ACCENT = "#22D3EE"  # courier cyan
+ACCENT_SOFT = "#0891B2"
+SALARY = "#F5C518"  # banner lightning gold
+MUTED = "#8BA3B8"
 TEXT = "#F8FAFC"
-TAG_BG = "#1E293B"
-TAG_TEXT = "#CBD5E1"
+TAG_BG = "#132A40"
+TAG_TEXT = "#B6CBD9"
 WIDTH = 880
 PAD_X = 28
 HEADER_H = 108
@@ -95,12 +95,13 @@ def render_dashboard_svg(
         f"<title>Top 5 High-Paying Jobs Discovered Today</title>"
         f"<defs>"
         f'<linearGradient id="ghBg" x1="0" y1="0" x2="1" y2="1">'
-        f'<stop offset="0%" stop-color="#0B1220"/>'
-        f'<stop offset="100%" stop-color="#0F172A"/>'
+        f'<stop offset="0%" stop-color="{BG}"/>'
+        f'<stop offset="100%" stop-color="#0A1A2E"/>'
         f"</linearGradient>"
         f'<linearGradient id="ghHeader" x1="0" y1="0" x2="1" y2="0">'
-        f'<stop offset="0%" stop-color="#1D4ED8" stop-opacity="0.35"/>'
-        f'<stop offset="100%" stop-color="#0B1220" stop-opacity="0"/>'
+        f'<stop offset="0%" stop-color="{ACCENT}" stop-opacity="0.28"/>'
+        f'<stop offset="55%" stop-color="{ACCENT_SOFT}" stop-opacity="0.08"/>'
+        f'<stop offset="100%" stop-color="{BG}" stop-opacity="0"/>'
         f"</linearGradient>"
         f'<filter id="ghShadow" x="-2%" y="-2%" width="104%" height="110%">'
         f'<feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.35"/>'
@@ -108,7 +109,7 @@ def render_dashboard_svg(
         f"</defs>"
         f'<rect width="{WIDTH}" height="{height}" rx="24" fill="url(#ghBg)"/>'
         f'<rect x="1" y="1" width="{WIDTH - 2}" height="{height - 2}" rx="23" '
-        f'fill="none" stroke="#1E293B" stroke-width="1"/>'
+        f'fill="none" stroke="{CARD_BORDER}" stroke-width="1"/>'
         # Header panel
         f'<rect x="16" y="16" width="{WIDTH - 32}" height="{HEADER_H}" rx="18" fill="{PANEL}"/>'
         f'<rect x="16" y="16" width="{WIDTH - 32}" height="{HEADER_H}" rx="18" fill="url(#ghHeader)"/>'
@@ -119,7 +120,7 @@ def render_dashboard_svg(
         f"Real opportunities. Direct from company career pages. Powered by GitHired."
         f"</text>"
         f'<text x="{PAD_X + 4}" y="104" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" '
-        f'font-size="11" fill="#64748B">Advertised annual base · CAD &amp; USD labeled · '
+        f'font-size="11" fill="#6B8499">Advertised annual base · CAD &amp; USD labeled · '
         f'No estimates · Snapshot {generated_at.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")}</text>',
     ]
 
@@ -155,7 +156,7 @@ def render_dashboard_svg(
                 f'fill="{CARD}" stroke="{CARD_BORDER}"/>'
                 f"</g>"
                 # Rank chip
-                f'<rect x="32" y="{card_y + 18}" width="28" height="28" rx="8" fill="#0F172A" '
+                f'<rect x="32" y="{card_y + 18}" width="28" height="28" rx="8" fill="{BG}" '
                 f'stroke="{ACCENT_SOFT}"/>'
                 f'<text x="46" y="{card_y + 37}" text-anchor="middle" '
                 f'font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" '
@@ -191,7 +192,7 @@ def render_dashboard_svg(
             parts.append(
                 f'<text x="{salary_x}" y="{card_y + 40}" text-anchor="end" '
                 f'font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="18" '
-                f'font-weight="800" fill="{GREEN}">{_esc(salary)}</text>'
+                f'font-weight="800" fill="{SALARY}">{_esc(salary)}</text>'
                 f'<text x="{salary_x}" y="{card_y + 60}" text-anchor="end" '
                 f'font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="11" '
                 f'fill="{MUTED}">{_esc(date_label)}</text>'

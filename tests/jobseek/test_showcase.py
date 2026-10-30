@@ -266,10 +266,11 @@ class TestSvgAndReadme:
             )
         ]
         svg = render_dashboard_svg(jobs, today=NOW, generated_at=NOW)
-        assert 'fill="#0B1220"' in svg or "ghBg" in svg
+        assert 'fill="#07111F"' in svg or "ghBg" in svg
         assert "Top 5 High-Paying Jobs Discovered Today" in svg
         assert "CAD 240,000" in svg
-        assert "#34D399" in svg  # green salary
+        assert "#F5C518" in svg  # banner gold salary
+        assert "#22D3EE" in svg  # banner cyan accent
         assert "Apply →" not in svg
         assert "Apply below ↓" in svg
         assert "Discovered and verified by GitHired" in svg
