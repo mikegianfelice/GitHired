@@ -71,7 +71,7 @@ def _apply_hint(x: float, y: float) -> str:
     return (
         f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="end" '
         f'font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="11" '
-        f'font-weight="600" fill="{SALARY}">Apply below ↓</text>'
+        f'font-weight="600" fill="{ACCENT}">Apply below ↓</text>'
     )
 
 
