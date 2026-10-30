@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="GitHired — Find Your Next Opportunity" width="800" />
+  <img src="assets/banner.jpg" alt="GitHired — Find Your Next Opportunity" width="900" />
 </p>
 
 <h1 align="center">GitHired</h1>

@@ -55,6 +55,7 @@ config/companies.local.yaml
 *.png
 !cover_letters/OpenFonts/fonts/**
 !assets/banner.png
+!assets/banner.jpg
 !assets/showcase/**
 
 # OS files
