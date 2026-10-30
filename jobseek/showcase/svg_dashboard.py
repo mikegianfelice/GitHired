@@ -17,7 +17,7 @@ CARD = "#0F2136"
 CARD_BORDER = "#16324A"
 ACCENT = "#22D3EE"  # courier cyan
 ACCENT_SOFT = "#0891B2"
-SALARY = "#F5C518"  # banner lightning gold
+SALARY = "#34D399"  # salary + apply hint
 MUTED = "#8BA3B8"
 TEXT = "#F8FAFC"
 TAG_BG = "#132A40"
@@ -71,7 +71,7 @@ def _apply_hint(x: float, y: float) -> str:
     return (
         f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="end" '
         f'font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="11" '
-        f'font-weight="600" fill="{ACCENT}">Apply below ↓</text>'
+        f'font-weight="600" fill="{SALARY}">Apply below ↓</text>'
     )
 
 

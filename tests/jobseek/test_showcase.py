@@ -269,7 +269,7 @@ class TestSvgAndReadme:
         assert 'fill="#07111F"' in svg or "ghBg" in svg
         assert "Top 5 High-Paying Jobs Discovered Today" in svg
         assert "CAD 240,000" in svg
-        assert "#F5C518" in svg  # banner gold salary
+        assert "#34D399" in svg  # green salary / apply hint
         assert "#22D3EE" in svg  # banner cyan accent
         assert "Apply →" not in svg
         assert "Apply below ↓" in svg
