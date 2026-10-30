@@ -113,9 +113,14 @@ jobs:
           end = "<!-- TOP-PAYING-JOBS:END -->"
           assert start in text and end in text, "missing markers"
           assert text.index(start) < text.index(end)
-          section = text[text.index(start): text.index(end)]
-          assert "discovered today" not in section.casefold()
-          assert "Top" in section and "Paying" in section
+          section = text[text.index(start) : text.index(end) + len(end)]
+          assert "Top 5 High-Paying Jobs Discovered Today" in section
+          assert "assets/showcase/top-paying-jobs.svg" in section
+          # Title may say Discovered Today; card freshness lives in the SVG.
+          # Markdown must not claim a same-day discovery stamp in prose.
+          prose = section.casefold()
+          assert "discovered today:" not in prose
+          assert "last refreshed today" not in prose
           print("README section OK; length", len(section))
           PY
 
