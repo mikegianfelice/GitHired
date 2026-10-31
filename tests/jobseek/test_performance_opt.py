@@ -282,7 +282,44 @@ class FingerprintTests(unittest.TestCase):
             db.close()
 
 
+class ConcurrentUpsertTests(unittest.TestCase):
+    def test_parallel_upsert_same_canonical_key(self):
+        """Concurrent workers must not raise UNIQUE on jobs.canonical_key."""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        with TemporaryDirectory() as tmp:
+            db = Database(Path(tmp) / "race.db")
+
+            def _one(i: int) -> tuple[int, bool]:
+                job = RawJob(
+                    company="RaceCo",
+                    title="Software Engineer",
+                    url="https://boards.greenhouse.io/raceco/jobs/99",
+                    source="greenhouse",
+                    ats_provider="greenhouse",
+                    ats_job_id="99",
+                    description=f"body from worker {i}",
+                    description_complete=True,
+                )
+                return db.upsert_job(job)
+
+            results: list[tuple[int, bool]] = []
+            with ThreadPoolExecutor(max_workers=8) as pool:
+                futs = [pool.submit(_one, i) for i in range(24)]
+                for fut in as_completed(futs):
+                    results.append(fut.result())
+
+            ids = {jid for jid, _ in results}
+            self.assertEqual(len(ids), 1, msg=f"expected one job row, got {ids}")
+            news = sum(1 for _, is_new in results if is_new)
+            self.assertEqual(news, 1)
+            rows = db._conn.execute("SELECT COUNT(*) AS n FROM jobs").fetchone()
+            self.assertEqual(int(rows["n"]), 1)
+            db.close()
+
+
 class NormalizeCompleteFlagTests(unittest.TestCase):
+
     def test_detail_sets_complete(self):
         listing = _listings(1)[0]
         detail = _details(1)[

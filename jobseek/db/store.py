@@ -158,6 +158,10 @@ class Database:
         """Insert or update a job. Returns (job_id, is_new).
 
         Never replaces a complete description with an incomplete listing stub.
+
+        Lookup and write happen inside the same write-locked transaction so
+        concurrent discover workers cannot both insert the same canonical_key.
+        IntegrityError on UNIQUE is treated as a lost race and converted to UPDATE.
         """
         identity = JobIdentity.from_fields(
             company=job.company,
@@ -171,17 +175,22 @@ class Database:
         incoming_desc = job.description if job.description not in (None, "") else None
         # Ranking requires a non-null description; title is a last-resort stub only.
         stub_desc = incoming_desc or job.title
-        existing_id = self.find_existing_job_id(identity)
+
         with self.transaction():
+            # Lookup + write under the same write lock so concurrent discover
+            # workers cannot both decide "missing" and race on INSERT.
+            existing_id = self.find_existing_job_id(identity)
             if existing_id is None:
                 desc = stub_desc
                 desc_hash = _hash_text(desc)
                 fetched_at = (
                     job.description_fetched_at or now if incoming_complete else None
                 )
+                # INSERT OR IGNORE: if another worker won the race on
+                # canonical_key, rowcount==0 and we fall through to UPDATE.
                 cur = self._conn.execute(
                     """
-                    INSERT INTO jobs (
+                    INSERT OR IGNORE INTO jobs (
                         canonical_key, ats_provider, ats_job_id, company, title,
                         location_raw, url, apply_url, description, description_hash,
                         salary_raw, salary_min, salary_max, salary_currency,
@@ -214,91 +223,126 @@ class Database:
                         fetched_at,
                     ),
                 )
-                return int(cur.lastrowid), True
+                if cur.rowcount == 1:
+                    return int(cur.lastrowid), True
+                existing_id = self.find_existing_job_id(identity)
+                if existing_id is None:
+                    row = self._conn.execute(
+                        "SELECT id FROM jobs WHERE canonical_key = ? LIMIT 1",
+                        (identity.canonical_key,),
+                    ).fetchone()
+                    if row is None:
+                        raise RuntimeError(
+                            f"upsert_job: INSERT OR IGNORE conflict for "
+                            f"{identity.canonical_key!r} but row not found"
+                        )
+                    existing_id = int(row["id"])
 
-            existing = self._conn.execute(
-                "SELECT description, description_hash, description_complete, "
-                "description_fetched_at, location_raw FROM jobs WHERE id = ?",
-                (existing_id,),
-            ).fetchone()
-            old_complete = bool(existing["description_complete"]) if existing else False
-            old_desc = (existing["description"] if existing else None) or ""
-            old_hash = existing["description_hash"] if existing else None
-            old_fetched = existing["description_fetched_at"] if existing else None
+            return self._update_existing_job(
+                existing_id,
+                job=job,
+                identity=identity,
+                now=now,
+                incoming_complete=incoming_complete,
+                incoming_desc=incoming_desc,
+                stub_desc=stub_desc,
+            ), False
 
-            if old_complete and not incoming_complete:
-                # Preserve complete cached description; listing stub must not win.
-                desc = old_desc
-                desc_hash = old_hash
-                complete_flag = 1
-                fetched_at = old_fetched
-            elif incoming_complete:
-                desc = incoming_desc or stub_desc
-                desc_hash = _hash_text(desc)
-                complete_flag = 1
-                fetched_at = job.description_fetched_at or now
-            elif incoming_desc and (not old_desc or len(incoming_desc) > len(old_desc)):
-                desc = incoming_desc
-                desc_hash = _hash_text(desc)
-                complete_flag = 0
-                fetched_at = old_fetched
-            else:
-                desc = old_desc or stub_desc
-                desc_hash = old_hash or _hash_text(desc)
-                complete_flag = 1 if old_complete else 0
-                fetched_at = old_fetched
+    def _update_existing_job(
+        self,
+        existing_id: int,
+        *,
+        job: RawJob,
+        identity: JobIdentity,
+        now: str,
+        incoming_complete: bool,
+        incoming_desc: str | None,
+        stub_desc: str,
+    ) -> int:
+        """Apply update rules for an existing job row. Caller holds the write lock."""
+        existing = self._conn.execute(
+            "SELECT description, description_hash, description_complete, "
+            "description_fetched_at, location_raw FROM jobs WHERE id = ?",
+            (existing_id,),
+        ).fetchone()
+        old_complete = bool(existing["description_complete"]) if existing else False
+        old_desc = (existing["description"] if existing else None) or ""
+        old_hash = existing["description_hash"] if existing else None
+        old_fetched = existing["description_fetched_at"] if existing else None
 
-            # Prefer richer location when listing was a multi-location stub.
-            location = job.location_raw
-            if (
-                location
-                and existing
-                and existing["location_raw"]
-                and len(str(location)) < len(str(existing["location_raw"]))
-                and old_complete
-            ):
-                location = existing["location_raw"]
+        if old_complete and not incoming_complete:
+            # Preserve complete cached description; listing stub must not win.
+            desc = old_desc
+            desc_hash = old_hash
+            complete_flag = 1
+            fetched_at = old_fetched
+        elif incoming_complete:
+            desc = incoming_desc or stub_desc
+            desc_hash = _hash_text(desc)
+            complete_flag = 1
+            fetched_at = job.description_fetched_at or now
+        elif incoming_desc and (not old_desc or len(incoming_desc) > len(old_desc)):
+            desc = incoming_desc
+            desc_hash = _hash_text(desc)
+            complete_flag = 0
+            fetched_at = old_fetched
+        else:
+            desc = old_desc or stub_desc
+            desc_hash = old_hash or _hash_text(desc)
+            complete_flag = 1 if old_complete else 0
+            fetched_at = old_fetched
 
-            self._conn.execute(
-                """
-                UPDATE jobs SET
-                    last_seen = ?,
-                    removed_at = NULL,
-                    location_raw = COALESCE(?, location_raw),
-                    apply_url = COALESCE(?, apply_url),
-                    description = ?,
-                    description_hash = ?,
-                    description_complete = ?,
-                    description_fetched_at = ?,
-                    salary_raw = COALESCE(?, salary_raw),
-                    salary_min = COALESCE(?, salary_min),
-                    salary_max = COALESCE(?, salary_max),
-                    salary_currency = COALESCE(?, salary_currency),
-                    posted_date = COALESCE(?, posted_date),
-                    ats_provider = COALESCE(?, ats_provider),
-                    ats_job_id = COALESCE(?, ats_job_id),
-                    status = CASE WHEN status = 'removed' THEN 'new' ELSE status END
-                WHERE id = ?
-                """,
-                (
-                    now,
-                    location,
-                    job.apply_url,
-                    desc,
-                    desc_hash,
-                    complete_flag,
-                    fetched_at,
-                    job.salary_raw,
-                    job.salary_min,
-                    job.salary_max,
-                    job.salary_currency,
-                    job.posted_date,
-                    identity.ats_provider,
-                    identity.ats_job_id,
-                    existing_id,
-                ),
-            )
-            return existing_id, False
+        # Prefer richer location when listing was a multi-location stub.
+        location = job.location_raw
+        if (
+            location
+            and existing
+            and existing["location_raw"]
+            and len(str(location)) < len(str(existing["location_raw"]))
+            and old_complete
+        ):
+            location = existing["location_raw"]
+
+        self._conn.execute(
+            """
+            UPDATE jobs SET
+                last_seen = ?,
+                removed_at = NULL,
+                location_raw = COALESCE(?, location_raw),
+                apply_url = COALESCE(?, apply_url),
+                description = ?,
+                description_hash = ?,
+                description_complete = ?,
+                description_fetched_at = ?,
+                salary_raw = COALESCE(?, salary_raw),
+                salary_min = COALESCE(?, salary_min),
+                salary_max = COALESCE(?, salary_max),
+                salary_currency = COALESCE(?, salary_currency),
+                posted_date = COALESCE(?, posted_date),
+                ats_provider = COALESCE(?, ats_provider),
+                ats_job_id = COALESCE(?, ats_job_id),
+                status = CASE WHEN status = 'removed' THEN 'new' ELSE status END
+            WHERE id = ?
+            """,
+            (
+                now,
+                location,
+                job.apply_url,
+                desc,
+                desc_hash,
+                complete_flag,
+                fetched_at,
+                job.salary_raw,
+                job.salary_min,
+                job.salary_max,
+                job.salary_currency,
+                job.posted_date,
+                identity.ats_provider,
+                identity.ats_job_id,
+                existing_id,
+            ),
+        )
+        return existing_id
 
     def mark_missing_removed(
         self,
