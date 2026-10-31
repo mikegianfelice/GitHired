@@ -1,8 +1,18 @@
 # Setup Guide
 
-Step-by-step instructions for getting the AI Job Search framework running.
+**GitHired — Jobs Without the Noise.** Step-by-step onboarding for Canada-first job discovery.
 
-This fork supports **Cursor** as the primary agent runtime (thin pointers in `.cursor/`) while keeping `.claude/` as the canonical workflow source of truth. The **`jobseek`** Python CLI adds headless Canada-remote discovery, ranking, and digests. See [docs/discovery.md](docs/discovery.md).
+Cursor is the primary agent runtime (thin pointers in `.cursor/`); `.claude/` remains the canonical workflow source of truth. The **`githired`** CLI (`jobseek` alias) runs headless Canada-remote discovery, ranking, and digests with **no API key required** for core ATS + Workday guest boards and deterministic ranking. See [docs/discovery.md](docs/discovery.md).
+
+Install (same as README):
+
+```bash
+python3 -m pip install -e ".[dev]"   # Python 3.10+
+githired setup
+githired doctor
+```
+
+Workday detail hydration is slower than Greenhouse/Lever/Ashby — expect progress logs and optional per-company budgets in `config/search.yaml`.
 
 ## 1. Prerequisites
 
@@ -209,12 +219,12 @@ If a command still uses `pdftotext -layout`, it must pass `-enc UTF-8` as well. 
 ## 2. Fork and clone
 
 ```bash
-gh repo fork ai-job-search-dev/ai-job-search --clone
-cd ai-job-search
-gh repo set-default <your-github-username>/ai-job-search
+gh repo fork mikegianfelice/GitHired --clone
+cd GitHired
+gh repo set-default <your-github-username>/GitHired
 ```
 
-Or manually: fork on GitHub, then clone your fork.
+Or manually: fork on GitHub, then clone your fork. For a private job-search copy without forking, see section 8.
 
 > **The `set-default` line is not optional.** `gh repo fork --clone` sets the
 > **upstream** repo as gh's default repository ("The `upstream` remote will be set as
@@ -225,7 +235,7 @@ Or manually: fork on GitHub, then clone your fork.
 > under your GitHub identity, on a repo where you cannot delete it (#389).
 
 > **Before you go further: forks are public.** GitHub cannot make a fork of a public
-> repository private, and `/setup` (section 6) writes your personal data into **tracked**
+> repository private, and `/setup` / `githired setup` writes your personal data into **tracked**
 > files — pushing those commits to a fork publishes them. If this copy is for your own
 > job search rather than for contributing, prefer a **private repository** with this repo
 > as `upstream`: see section 8, step 1 for the exact commands and why committing your
@@ -350,10 +360,10 @@ Upstream keeps improving the methodology files your fork has personalized, so pl
 
 **Prefer releases over raw `master`.** Tagged [releases](../../releases) are vetted checkpoints, each described in [CHANGELOG.md](CHANGELOG.md). Updating to a tag pulls a stable, documented state instead of whatever `master` happens to be mid-review. Fetch tags with `git fetch upstream --tags` and merge a release (for example `git merge v1.0.0`) when you want stability; pull `master` directly only when you specifically want the latest unreleased changes. The steps below apply either way - substitute the release tag for `upstream/master` where you see it.
 
-1. **Commit your personalization - but know where those commits land.** `/setup` edits CLAUDE.md and the profile skill files in place; those edits are *yours*, and committing them is what lets updates merge cleanly. But a GitHub **fork of this repo is public** - forks of public repositories cannot be made private - so anything you commit *and push to a fork* is visible to anyone. If you want your profile in a remote at all, don't push it to a fork: create a **private** repository, push there, and add this repo as the `upstream` remote (`git remote add upstream https://github.com/ai-job-search-dev/ai-job-search.git`) to keep receiving updates. Committing locally without pushing is also fine. The genuinely sensitive files (tracker, salary data, `documents/`, application archives) are gitignored and never enter git either way. An uncommitted working tree is the most common reason `git pull` refuses to merge at all (`Your local changes ... would be overwritten`).
+1. **Commit your personalization - but know where those commits land.** `/setup` edits CLAUDE.md and the profile skill files in place; those edits are *yours*, and committing them is what lets updates merge cleanly. But a GitHub **fork of this repo is public** - forks of public repositories cannot be made private - so anything you commit *and push to a fork* is visible to anyone. If you want your profile in a remote at all, don't push it to a fork: create a **private** repository, push there, and add this repo as the `upstream` remote (`git remote add upstream https://github.com/mikegianfelice/GitHired.git`) to keep receiving updates. Committing locally without pushing is also fine. The genuinely sensitive files (tracker, salary data, `documents/`, application archives) are gitignored and never enter git either way. An uncommitted working tree is the most common reason `git pull` refuses to merge at all (`Your local changes ... would be overwritten`).
 2. **Preview what changed before pulling:**
    ```bash
-   git remote add upstream https://github.com/ai-job-search-dev/ai-job-search.git   # first time only, if you cloned your own fork
+   git remote add upstream https://github.com/mikegianfelice/GitHired.git   # first time only, if you cloned your own fork
    git fetch upstream    # or origin, if you cloned the template directly
    python3 tools/check_upstream_updates.py
    ```

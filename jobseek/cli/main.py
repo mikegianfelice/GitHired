@@ -683,9 +683,41 @@ def cmd_jobs(args: argparse.Namespace) -> int:
         for row in rows:
             score = row.get("overall")
             score_s = f"{score:.0f}" if score is not None else "-"
+            sal_note = ""
+            hf = row.get("hard_filter_json")
+            try:
+                import json as _json
+
+                hf_d = _json.loads(hf) if isinstance(hf, str) else (hf or {})
+            except Exception:
+                hf_d = {}
+            reasons = list((hf_d or {}).get("reasons") or [])
+            for r in reasons:
+                if "salary" in r.casefold() or "cad" in r.casefold() or "usd" in r.casefold():
+                    sal_note = f" | {r}"
+                    break
+            if not sal_note:
+                sal_note = " | Salary undisclosed / unverified"
+            uncertain_why = ""
+            if elig_norm == "UNCERTAIN":
+                for r in reasons:
+                    low = r.casefold()
+                    if "uncertain" in low or "not evidenced" in low or "ambiguous" in low:
+                        uncertain_why = f"\n       Why uncertain: {r}"
+                        break
+                if not uncertain_why:
+                    uncertain_why = "\n       Why uncertain: Canada eligibility not clearly evidenced"
             print(
                 f"[{row['id']}] {score_s:>3}  {row['company']} — {row['title']}\n"
-                f"       {row.get('location_raw') or '?'} | {row.get('url')}"
+                f"       {row.get('location_raw') or '?'}{sal_note} | {row.get('url')}"
+                f"{uncertain_why}"
+            )
+        if elig_norm == "ELIGIBLE":
+            print(f"\nNext: {_prog_name()} prepare <id>  (briefing only; no auto-apply)")
+        elif elig_norm == "UNCERTAIN":
+            print(
+                f"\nNext: review URLs manually, or {_prog_name()} jobs --eligibility eligible "
+                "for confirmed matches only."
             )
         return 0
     finally:

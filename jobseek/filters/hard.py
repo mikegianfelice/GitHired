@@ -18,41 +18,23 @@ __all__ = [
 
 
 def _salary_verdict(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[str, list[str]]:
+    """Salary floor gate. Undisclosed pay stays PASS by default (not a disqualifier)."""
+    from jobseek.filters.salary import salary_label_for_job
+
     salary_cfg = search_cfg.get("salary") or {}
     floors = salary_cfg.get("floors") or {}
     reject_missing = bool(salary_cfg.get("reject_missing"))
-    currency = (job.get("salary_currency") or "").upper() or None
-    amin = job.get("salary_min")
-    amax = job.get("salary_max")
-    value = amax or amin
-    if value is None:
+    info = salary_label_for_job(job, floors=floors)
+
+    if info.confidence in ("undisclosed", "unverified") or info.salary_max is None:
         if reject_missing:
-            return "FAIL", ["salary missing and reject_missing=true"]
-        return "PASS", ["salary missing — not auto-rejected"]
-    # Validate floor types
-    raw = (job.get("salary_raw") or "").upper()
-    if not currency:
-        if "CAD" in raw or "C$" in raw:
-            currency = "CAD"
-        elif "USD" in raw or "$" in raw:
-            currency = "USD"
-    floor = None
-    if currency and currency in floors:
-        try:
-            floor = float(floors[currency])
-        except (TypeError, ValueError):
-            return "FLAG", [f"salary floor for {currency} is not a number"]
-    elif "CAD" in floors and currency is None:
-        return "FLAG", [f"salary {value} with unknown currency"]
-    if floor is None:
-        return "PASS", [f"no floor configured for {currency or 'unknown'}"]
-    try:
-        numeric = float(value)
-    except (TypeError, ValueError):
-        return "FLAG", [f"salary value {value!r} is not numeric"]
-    if numeric < floor:
-        return "FAIL", [f"salary {value} {currency} below floor {floor}"]
-    return "PASS", [f"salary {value} {currency} meets floor {floor}"]
+            return "FAIL", ["salary missing and reject_missing=true", info.label]
+        return "PASS", ["salary missing — not auto-rejected", info.label]
+
+    if info.confidence == "below_floor":
+        return "FAIL", [info.label, *info.reasons]
+
+    return "PASS", [info.label, *info.reasons]
 
 
 def evaluate_location(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[str, list[str], list[str]]:
@@ -116,6 +98,10 @@ def apply_hard_filters(
     reasons.extend(loc_reasons)
     evidence.extend(loc_evidence)
 
+    # Enrich from structured fields / description before floor check (never invent).
+    from jobseek.filters.salary import enrich_job_salary
+
+    job = enrich_job_salary(job)
     sal_verdict, sal_reasons = _salary_verdict(job, search_cfg)
     reasons.extend(sal_reasons)
 

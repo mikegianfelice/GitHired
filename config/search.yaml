@@ -159,6 +159,11 @@ sources:
   rss: true
   rippling: true
   workday: true
+  # Soft per-company detail-hydration budget (seconds). List pagination always
+  # finishes; remaining jobs are kept from the list payload if the budget hits.
+  # Set workday_complete: true for full description hydration (slower).
+  workday_company_budget_s: 120
+  workday_complete: false
   gem: false
   career_pages: true
   linkedin_search_index: true
@@ -210,3 +215,5 @@ linkedin_search_queries:
 digest:
   top_n: 10
   min_score: 60
+  # Secondary shortlist of UNCERTAIN roles (never promoted to confirmed)
+  uncertain_top_n: 15

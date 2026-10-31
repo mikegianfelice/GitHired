@@ -164,6 +164,19 @@ _EXCLUDE_CANADA = re.compile(
 _REMOTE = re.compile(r"\bremote\b|\bwfh\b|work\s+from\s+home", re.I)
 _HYBRID = re.compile(r"\bhybrid\b", re.I)
 _ONSITE = re.compile(r"\b(?:on[\s-]?site|in[\s-]?office|office[\s-]?based)\b", re.I)
+# Strong full-time office signals (description) — not weak "our office is in…"
+_FULL_TIME_OFFICE = re.compile(
+    r"""
+    \bmust\s+work\s+in\s+(?:the\s+)?office\b |
+    \bwork\s+(?:from|in)\s+(?:the\s+)?office\s+(?:full[\s-]?time|(?:5|five)\s+days?)\b |
+    \b(?:5|five)\s+days?\s+(?:a|per)\s+week\b.{0,40}\b(?:office|in[\s-]?office|on[\s-]?site)\b |
+    \b(?:office|in[\s-]?office|on[\s-]?site)\b.{0,40}\b(?:5|five)\s+days?\s+(?:a|per)\s+week\b |
+    \bin[\s-]?person\s+(?:only|full[\s-]?time)\b |
+    \bno\s+remote\b |
+    \bnot\s+a\s+remote\s+(?:role|position|job)\b
+    """,
+    re.I | re.X,
+)
 _NORTH_AMERICA = re.compile(r"\bnorth\s+america\b|\bnamer\b", re.I)
 
 # Clear non-Canada geographic anchors in the location field.
@@ -497,6 +510,101 @@ def _nationwide_canada_signal(location: str, description: str, loc_cfg: dict[str
     return None
 
 
+def infer_work_arrangement(location: str, description: str = "") -> str:
+    """Infer work arrangement independently of geographic eligibility.
+
+    Returns one of: ``remote``, ``hybrid``, ``onsite``, ``unknown``.
+    Structured ``location_raw`` tokens win over description marketing copy.
+    Never invents an arrangement when evidence is missing or contradictory.
+    """
+    loc = (location or "").strip()
+    desc = description or ""
+    loc_remote = bool(_REMOTE.search(loc))
+    loc_hybrid = bool(_HYBRID.search(loc))
+    loc_onsite = bool(_ONSITE.search(loc))
+    desc_remote = bool(_REMOTE.search(desc))
+    desc_hybrid = bool(_HYBRID.search(desc))
+    desc_onsite = bool(_ONSITE.search(desc) or _FULL_TIME_OFFICE.search(desc))
+
+    # Explicit location-field arrangement (highest trust).
+    loc_flags = sum([loc_remote, loc_hybrid, loc_onsite])
+    if loc_flags == 1:
+        if loc_onsite:
+            return "onsite"
+        if loc_hybrid:
+            return "hybrid"
+        return "remote"
+    if loc_flags > 1:
+        # e.g. "Hybrid/Remote" or "Remote or On-site" — do not invent a single mode.
+        if loc_onsite and not loc_remote and not loc_hybrid:
+            return "onsite"
+        if loc_hybrid and loc_remote and not loc_onsite:
+            # Hybrid+remote often means hybrid with remote days — treat as hybrid.
+            return "hybrid"
+        return "unknown"
+
+    # Description-only signals when location has no arrangement token.
+    if desc_onsite and not desc_remote and not desc_hybrid:
+        return "onsite"
+    if desc_hybrid and not desc_onsite:
+        return "hybrid"
+    if desc_remote and not desc_onsite and not desc_hybrid:
+        return "remote"
+    if desc_onsite and (desc_remote or desc_hybrid):
+        return "unknown"
+    return "unknown"
+
+
+def work_arrangement_compatible(arrangement: str, modes: set[str]) -> str:
+    """Return PASS / FAIL / FLAG for work-arrangement vs candidate location modes.
+
+    Geography is evaluated separately — this only answers whether the arrangement
+    is allowed by configured modes.
+    """
+    modes_cf = {str(m).casefold() for m in modes}
+    arr = (arrangement or "unknown").casefold()
+    if arr == "onsite":
+        return "PASS" if "onsite" in modes_cf else "FAIL"
+    if arr == "hybrid":
+        return "PASS" if "hybrid" in modes_cf else "FAIL"
+    if arr == "remote":
+        if "remote_canada" in modes_cf or "remote_province" in modes_cf:
+            return "PASS"
+        return "FAIL"
+    # unknown — never invent ELIGIBLE from arrangement alone
+    return "FLAG"
+
+
+def _apply_arrangement_gate(
+    eligibility: str,
+    location_verdict: str,
+    reasons: list[str],
+    evidence: list[str],
+    *,
+    arrangement: str,
+    modes: set[str],
+) -> tuple[str, str, list[str], list[str]]:
+    """Require work-arrangement compatibility before confirming ELIGIBLE."""
+    if eligibility != "ELIGIBLE":
+        return eligibility, location_verdict, reasons, evidence
+    verdict = work_arrangement_compatible(arrangement, modes)
+    reasons = list(reasons)
+    if verdict == "PASS":
+        reasons.append(f"work arrangement compatible: {arrangement}")
+        return "ELIGIBLE", "PASS", reasons, evidence
+    if verdict == "FAIL":
+        reasons.append(
+            f"work arrangement incompatible: job is {arrangement} but candidate "
+            f"modes are {sorted(modes) or ['(none)']}"
+        )
+        return "INELIGIBLE", "FAIL", reasons, evidence
+    reasons.append(
+        f"work arrangement not evidenced (unknown); cannot confirm against modes "
+        f"{sorted(modes) or ['(none)']}"
+    )
+    return "UNCERTAIN", "FLAG", reasons, evidence
+
+
 def refine_candidate_geography(
     eligibility: str,
     location_verdict: str,
@@ -507,10 +615,13 @@ def refine_candidate_geography(
 ) -> tuple[str, str, list[str], list[str]]:
     """Downgrade Canada-level ELIGIBLE when incompatible with the candidate's city/province.
 
-    A Canadian job is not automatically compatible with every Canadian candidate.
+    Geography and work arrangement are separate gates — both must pass for
+    ELIGIBLE. A matching city never overrides an incompatible arrangement
+    (e.g. Toronto on-site for a remote/hybrid-only candidate).
+
     Hybrid/on-site roles must match the candidate's city (or an explicitly listed
-    multi-city option). Nationwide remote Canada remains ELIGIBLE. Multiple
-    Canadian office cities alone do not imply remote work.
+    multi-city option). Nationwide remote Canada remains ELIGIBLE when remote
+    modes are allowed. Multiple Canadian office cities alone do not imply remote.
     """
     if eligibility != "ELIGIBLE":
         return eligibility, location_verdict, reasons, evidence
@@ -524,25 +635,29 @@ def refine_candidate_geography(
 
     location = str(job.get("location_raw") or "").strip()
     description = str(job.get("description") or "")
+    arrangement = infer_work_arrangement(location, description)
     job_cities = find_any_canadian_cities(location)
     job_provinces = find_any_canadian_province(location)
     loc_remote = bool(_REMOTE.search(location))
     loc_hybrid = bool(_HYBRID.search(location))
     loc_onsite = bool(_ONSITE.search(location))
     desc_remote = bool(_REMOTE.search(description))
-    desc_onsite = bool(_ONSITE.search(description))
 
     nationwide = _nationwide_canada_signal(location, description, loc_cfg)
     wfa = _WORLDWIDE_REMOTE.search(description) or _WORLDWIDE_REMOTE.search(location)
     reasons = list(reasons)
     evidence = list(evidence)
 
-    arrangement_remote = bool(
-        loc_remote or (desc_remote and not loc_onsite and not loc_hybrid and not job_cities)
-    )
     # Structured office cities without remote in the location field are local/hybrid
     # options — description WFA marketing must not override them.
     structured_office_cities = bool(job_cities and not loc_remote and not _CANADA_WORD.search(location))
+
+    def _done(
+        elig: str, verdict: str, rsn: list[str], ev: list[str]
+    ) -> tuple[str, str, list[str], list[str]]:
+        return _apply_arrangement_gate(
+            elig, verdict, rsn, ev, arrangement=arrangement, modes=modes
+        )
 
     # --- Structured location wins over description WFA ---
     if job_cities:
@@ -551,11 +666,11 @@ def refine_candidate_geography(
                 "candidate-compatible: job cities include candidate city "
                 f"({', '.join(job_cities)})"
             )
-            return "ELIGIBLE", "PASS", reasons, evidence
+            return _done("ELIGIBLE", "PASS", reasons, evidence)
 
         if loc_remote and _CANADA_WORD.search(location):
             reasons.append("candidate-compatible: remote Canada with hub cities")
-            return "ELIGIBLE", "PASS", reasons, evidence
+            return _done("ELIGIBLE", "PASS", reasons, evidence)
 
         # Hub-remote "Toronto (Remote)" without Canada-wide token → UNCERTAIN off-city.
         if loc_remote and not _CANADA_WORD.search(location):
@@ -594,7 +709,7 @@ def refine_candidate_geography(
             reasons.append(
                 f"candidate-compatible: province hybrid/on-site ({job_provinces[0]})"
             )
-            return "ELIGIBLE", "PASS", reasons, evidence
+            return _done("ELIGIBLE", "PASS", reasons, evidence)
         reasons.append(
             f"province-restricted hybrid/on-site ({', '.join(job_provinces)}) "
             "outside candidate provinces"
@@ -606,10 +721,12 @@ def refine_candidate_geography(
     # "Remote, Ontario" and "Remote Ontario only" stay INELIGIBLE off-province.
     # "Remote Canada" with an additional named province that excludes the
     # candidate is UNCERTAIN (Canada-wide remote vs province-only is ambiguous).
-    if job_provinces and not job_cities and (loc_remote or (desc_remote and not loc_hybrid and not loc_onsite)):
+    if job_provinces and not job_cities and (
+        loc_remote or (desc_remote and not loc_hybrid and not loc_onsite)
+    ):
         if _province_matches_candidate(job_provinces, candidate_provinces):
             reasons.append(f"candidate-compatible: province remote ({job_provinces[0]})")
-            return "ELIGIBLE", "PASS", reasons, evidence
+            return _done("ELIGIBLE", "PASS", reasons, evidence)
         if _CANADA_WORD.search(location) and loc_remote:
             reasons.append(
                 f"remote Canada listing also names province(s) "
@@ -627,26 +744,43 @@ def refine_candidate_geography(
     # Nationwide Canada (preferred phrases, Remote Canada, hire-in-Canada, bare Canada)
     # only when no province restriction remains unresolved above.
     if nationwide and "canada" in nationwide.casefold():
+        # Prefer remote arrangement when nationwide Canada remote phrases match.
+        if arrangement == "unknown" and (
+            loc_remote or _REMOTE.search(nationwide or "") or "remote" in (nationwide or "").casefold()
+        ):
+            arrangement = "remote"
         reasons.append("candidate-compatible: nationwide Canada eligibility")
-        return "ELIGIBLE", "PASS", reasons, evidence
+        return _apply_arrangement_gate(
+            "ELIGIBLE", "PASS", reasons, evidence, arrangement=arrangement, modes=modes
+        )
 
     # Explicit remote Canada / country-level Canada without province restriction.
     if _CANADA_WORD.search(location) and loc_remote and not job_provinces:
         reasons.append("candidate-compatible: Canada location")
-        return "ELIGIBLE", "PASS", reasons, evidence
-    if _CANADA_WORD.search(location) and not job_cities and not job_provinces and not loc_hybrid and not loc_onsite:
+        return _done("ELIGIBLE", "PASS", reasons, evidence)
+    if (
+        _CANADA_WORD.search(location)
+        and not job_cities
+        and not job_provinces
+        and not loc_hybrid
+        and not loc_onsite
+    ):
         reasons.append("candidate-compatible: Canada location")
-        return "ELIGIBLE", "PASS", reasons, evidence
+        return _done("ELIGIBLE", "PASS", reasons, evidence)
 
     # Worldwide remote only when structured location is not a foreign/other-city office list.
     if wfa and not structured_office_cities and not job_cities:
+        if arrangement == "unknown":
+            arrangement = "remote"
         reasons.append("candidate-compatible: worldwide remote")
-        return "ELIGIBLE", "PASS", reasons, evidence
+        return _apply_arrangement_gate(
+            "ELIGIBLE", "PASS", reasons, evidence, arrangement=arrangement, modes=modes
+        )
 
     if job_provinces and not job_cities:
         if _province_matches_candidate(job_provinces, candidate_provinces):
             reasons.append(f"candidate-compatible: province match ({job_provinces[0]})")
-            return "ELIGIBLE", "PASS", reasons, evidence
+            return _done("ELIGIBLE", "PASS", reasons, evidence)
         reasons.append(
             f"job province ({', '.join(job_provinces)}) incompatible with candidate"
         )
@@ -660,7 +794,7 @@ def refine_candidate_geography(
         )
         return "UNCERTAIN", "FLAG", reasons, evidence
 
-    return eligibility, location_verdict, reasons, evidence
+    return _done(eligibility, location_verdict, reasons, evidence)
 
 
 def classify_canada_eligibility(

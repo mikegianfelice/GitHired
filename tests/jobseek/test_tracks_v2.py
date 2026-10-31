@@ -97,8 +97,8 @@ class RankingRelevanceTests(unittest.TestCase):
         toronto = score_deterministic(
             {
                 "title": "Staff Software Engineer, Risk Data Engineering",
-                "location_raw": "Toronto",
-                "description": "Airflow Spark Kafka SQL data pipelines. Toronto office.",
+                "location_raw": "Toronto, Ontario (Hybrid)",
+                "description": "Airflow Spark Kafka SQL data pipelines. Hybrid in Toronto.",
                 "first_seen": "2026-10-01T00:00:00Z",
             },
             search_cfg=SEARCH_MIXED,
@@ -137,8 +137,8 @@ class RankingRelevanceTests(unittest.TestCase):
         eligible = score_deterministic(
             {
                 "title": "Senior Data Engineer",
-                "location_raw": "Toronto, ON",
-                "description": "Python SQL Airflow.",
+                "location_raw": "Toronto, ON (Hybrid)",
+                "description": "Python SQL Airflow. Hybrid role based in Toronto.",
                 "first_seen": "2026-10-01T00:00:00Z",
             },
             search_cfg=SEARCH_DE,

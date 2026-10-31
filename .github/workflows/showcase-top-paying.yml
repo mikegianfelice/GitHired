@@ -31,8 +31,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Need write token for bot commit; default GITHUB_TOKEN is fine with contents: write
-          persist-credentials: true
+          # Do not leave the job token in .git/config for later steps (artipacked).
+          # The commit step sets a one-shot remote URL with GITHUB_TOKEN instead.
+          persist-credentials: false
           fetch-depth: 1
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -125,6 +126,8 @@ jobs:
           PY
 
       - name: Commit if changed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -140,4 +143,5 @@ jobs:
           from discovered listings with employer-advertised salaries.
           EOF
           )"
-          git push
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin HEAD:"${GITHUB_REF_NAME}"

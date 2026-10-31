@@ -14,7 +14,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(python t
 
 ## Canada ATS discovery (preferred)
 
-For Canada-remote engineering roles from public Greenhouse / Lever / Ashby boards, prefer the SQLite-backed CLI (do not write `seen_jobs.json`):
+For Canada-remote engineering roles from public Greenhouse / Lever / Ashby boards, prefer the SQLite-backed CLI (do not write `job_scraper/seen_jobs.json`):
 
 ```bash
 githired discover

@@ -271,7 +271,8 @@ class CandidateCityGeoTests(unittest.TestCase):
         self.assertTrue(any("not remote" in r.casefold() or "incompatible" in r.casefold() for r in reasons))
 
     def test_province_list_includes_candidate(self):
-        elig, _, _, _ = classify_canada_eligibility(
+        """Province match alone without work-arrangement evidence stays UNCERTAIN."""
+        elig, verdict, _, _ = classify_canada_eligibility(
             {
                 "title": "Senior Software Engineer",
                 "location_raw": "British Columbia; Ontario",
@@ -279,7 +280,20 @@ class CandidateCityGeoTests(unittest.TestCase):
             },
             VANCOUVER,
         )
+        self.assertEqual(elig, "UNCERTAIN")
+        self.assertEqual(verdict, "FLAG")
+
+    def test_province_list_hybrid_includes_candidate(self):
+        elig, verdict, _, _ = classify_canada_eligibility(
+            {
+                "title": "Senior Software Engineer",
+                "location_raw": "Hybrid - British Columbia; Ontario",
+                "description": "Hybrid across Canadian engineering hubs.",
+            },
+            VANCOUVER,
+        )
         self.assertEqual(elig, "ELIGIBLE")
+        self.assertEqual(verdict, "PASS")
 
     def test_hub_remote_other_city_uncertain(self):
         elig, verdict, _, _ = classify_canada_eligibility(

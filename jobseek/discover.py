@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
 from typing import Any
 
 from jobseek.adapters.ashby import AshbyAdapter
@@ -22,6 +24,7 @@ from jobseek.db.store import Database
 from jobseek.http_client import RateLimitedClient
 from jobseek.logging_util import log_extra, setup_logging
 
+logger = logging.getLogger("jobseek.discover")
 
 ADAPTERS = {
     "greenhouse": GreenhouseAdapter,
@@ -203,11 +206,40 @@ def run_discover(
                 except Exception as exc:  # noqa: BLE001
                     summary["warnings"].append(f"detect {company.get('name')}: {exc}")
 
-        adapter_instances = {
-            name: cls(client)
-            for name, cls in ADAPTERS.items()
-            if sources.get(name, name != "gem")
-        }
+        workday_complete = bool(sources.get("workday_complete", False))
+        workday_budget = sources.get("workday_company_budget_s", 120)
+        try:
+            workday_budget_f = float(workday_budget) if workday_budget is not None else 120.0
+        except (TypeError, ValueError):
+            workday_budget_f = 120.0
+
+        adapter_instances: dict[str, Any] = {}
+        for name, cls in ADAPTERS.items():
+            if not sources.get(name, name != "gem"):
+                continue
+            if name == "workday":
+                adapter_instances[name] = cls(
+                    client,
+                    company_budget_s=None if workday_complete else workday_budget_f,
+                    complete=workday_complete,
+                )
+            else:
+                adapter_instances[name] = cls(client)
+
+        total_boards = len(
+            [
+                c
+                for c in companies
+                if (c.get("ats") or "").lower() in adapter_instances
+            ]
+        )
+        discover_t0 = time.monotonic()
+        logger.info(
+            "discover fetch start boards=%s workday_complete=%s workday_budget_s=%s",
+            total_boards,
+            workday_complete,
+            "complete" if workday_complete else workday_budget_f,
+        )
 
         for company in companies:
             ats = (company.get("ats") or "").lower()
@@ -219,8 +251,33 @@ def run_discover(
                 )
                 continue
             boards_attempted += 1
-            result = adapter.fetch_company(company)
             company_name = company.get("name") or ""
+            logger.info(
+                "discover board %s/%s company=%s ats=%s fetched_so_far=%s elapsed_s=%.1f",
+                boards_attempted,
+                total_boards,
+                company_name,
+                ats,
+                summary["fetched"],
+                time.monotonic() - discover_t0,
+            )
+            try:
+                result = adapter.fetch_company(company)
+            except Exception as exc:  # noqa: BLE001 — never let one board abort the run
+                summary["warnings"].append(f"{ats} {company_name}: unhandled {exc}")
+                db.add_run_event(
+                    run_id,
+                    "warning",
+                    f"{ats} {company_name}: {exc}",
+                    {"company": company_name, "ats": ats},
+                )
+                logger.warning(
+                    "discover board failed company=%s ats=%s err=%s",
+                    company_name,
+                    ats,
+                    exc,
+                )
+                continue
             if result.raw_status is not None:
                 db.store_raw(
                     source=ats,

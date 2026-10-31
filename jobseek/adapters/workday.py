@@ -17,7 +17,9 @@ Company config (verified boards only; never invent endpoints)::
 
 from __future__ import annotations
 
+import logging
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
@@ -27,8 +29,12 @@ from jobseek.models import RawJob
 
 _PAGE_SIZE = 20
 _DEFAULT_DETAIL_CONCURRENCY = 4
+# Soft per-company wall clock for detail hydration (list pagination always finishes).
+# Complete mode (company_budget_s=None / 0) hydrates every posting.
+_DEFAULT_COMPANY_BUDGET_S = 120.0
 _LOCATION_COUNT = re.compile(r"^\s*\d+\s+locations?\s*$", re.I)
 _POSTED_AGO = re.compile(r"Posted\s+(\d+)\s+Days?\s+Ago", re.I)
+log = logging.getLogger("jobseek.workday")
 
 
 def list_location_needs_detail(locations_text: str | None) -> bool:
@@ -226,6 +232,8 @@ class WorkdayAdapter:
         fetch_details: bool = True,
         max_jobs: int | None = None,
         detail_concurrency: int = _DEFAULT_DETAIL_CONCURRENCY,
+        company_budget_s: float | None = _DEFAULT_COMPANY_BUDGET_S,
+        complete: bool = False,
     ) -> None:
         # Shared keep-alive client; slightly tighter spacing is safe with the
         # global throttle lock and bounded detail concurrency below.
@@ -234,6 +242,11 @@ class WorkdayAdapter:
         self.fetch_details = fetch_details
         self.max_jobs = max_jobs
         self.detail_concurrency = max(1, min(int(detail_concurrency), 8))
+        # complete=True disables the per-company wall clock (full hydration).
+        if complete or company_budget_s is None or float(company_budget_s) <= 0:
+            self.company_budget_s: float | None = None
+        else:
+            self.company_budget_s = float(company_budget_s)
 
     def fetch_company(self, company: dict) -> AdapterResult:
         parsed = parse_workday_board(company)
@@ -246,8 +259,16 @@ class WorkdayAdapter:
         request_key = f"workday:{host}/{tenant}/{site}"
         result = AdapterResult(request_key=request_key)
         company_name = str(company.get("name") or site)
+        t0 = time.monotonic()
 
         try:
+            log.info(
+                "workday start company=%s host=%s site=%s budget_s=%s",
+                company_name,
+                host,
+                site,
+                self.company_budget_s if self.company_budget_s is not None else "complete",
+            )
             listings, list_status, list_errors = self._paginate_listings(list_url)
             result.raw_status = list_status
             result.errors.extend(list_errors)
@@ -257,8 +278,18 @@ class WorkdayAdapter:
             if self.max_jobs is not None:
                 listings = listings[: self.max_jobs]
 
-            details_by_path = self._hydrate_details(host, tenant, site, listings)
+            log.info(
+                "workday listed company=%s jobs=%s elapsed_s=%.1f",
+                company_name,
+                len(listings),
+                time.monotonic() - t0,
+            )
+
+            details_by_path, budget_hit = self._hydrate_details(
+                host, tenant, site, listings, company_name=company_name, started_at=t0
+            )
             detail_failures = sum(1 for _path, (detail, err) in details_by_path.items() if err)
+            detail_ok = sum(1 for _path, (detail, err) in details_by_path.items() if detail and not err)
 
             for listing in listings:
                 if not isinstance(listing, dict):
@@ -287,9 +318,32 @@ class WorkdayAdapter:
                     f"workday {company_name}: {detail_failures} detail fetch(es) failed; "
                     "list-level fields used where possible"
                 )
+            if budget_hit:
+                result.errors.append(
+                    f"workday {company_name}: company detail budget "
+                    f"({self.company_budget_s:.0f}s) reached after {detail_ok} detail(s); "
+                    "remaining postings kept from list payload — re-run with "
+                    "sources.workday_complete: true for full hydration"
+                )
+            log.info(
+                "workday done company=%s jobs=%s details_ok=%s failures=%s "
+                "budget_hit=%s elapsed_s=%.1f",
+                company_name,
+                len(result.jobs),
+                detail_ok,
+                detail_failures,
+                budget_hit,
+                time.monotonic() - t0,
+            )
             return result
         except Exception as exc:  # noqa: BLE001
             result.errors.append(f"workday {company_name}: {exc}")
+            log.warning(
+                "workday exception company=%s elapsed_s=%.1f err=%s",
+                company_name,
+                time.monotonic() - t0,
+                exc,
+            )
             if result.raw_status is None:
                 result.raw_status = None
             return result
@@ -300,47 +354,97 @@ class WorkdayAdapter:
         tenant: str,
         site: str,
         listings: list[dict[str, Any]],
-    ) -> dict[str, tuple[dict[str, Any] | None, str | None]]:
-        """Fetch job details with bounded concurrency; never skip required fields."""
+        *,
+        company_name: str = "",
+        started_at: float | None = None,
+    ) -> tuple[dict[str, tuple[dict[str, Any] | None, str | None]], bool]:
+        """Fetch job details with bounded concurrency and optional time budget.
+
+        Returns ``(details_by_path_id, budget_exhausted)``. List-level jobs are
+        always preserved when the budget stops further detail calls.
+        """
         out: dict[str, tuple[dict[str, Any] | None, str | None]] = {}
+        budget_hit = False
         if not self.fetch_details:
-            return out
+            return out, False
 
         path_ids: list[str] = []
         seen: set[str] = set()
+        # Prefer hydrating multi-location stubs first (geography), then the rest.
+        prioritized: list[str] = []
+        deferred: list[str] = []
         for listing in listings:
             if not isinstance(listing, dict):
                 continue
-            # List payloads omit descriptions; always hydrate for completeness.
-            # Multi-location stubs also need detail for usable geography
-            # (see list_location_needs_detail / detail_required_for_listing).
             path_id = _job_path_id(str(listing.get("externalPath") or ""))
             if not path_id or path_id in seen:
                 continue
             seen.add(path_id)
-            path_ids.append(path_id)
+            if list_location_needs_detail(str(listing.get("locationsText") or "")):
+                prioritized.append(path_id)
+            else:
+                deferred.append(path_id)
+        path_ids = prioritized + deferred
 
         if not path_ids:
-            return out
+            return out, False
+
+        t0 = started_at if started_at is not None else time.monotonic()
+        budget = self.company_budget_s
+
+        def _over_budget() -> bool:
+            return budget is not None and (time.monotonic() - t0) >= budget
 
         workers = min(self.detail_concurrency, len(path_ids))
         if workers == 1:
-            for path_id in path_ids:
+            for i, path_id in enumerate(path_ids):
+                if _over_budget():
+                    budget_hit = True
+                    log.info(
+                        "workday budget stop company=%s after=%s/%s details",
+                        company_name,
+                        i,
+                        len(path_ids),
+                    )
+                    break
                 out[path_id] = self._fetch_detail(host, tenant, site, path_id)
-            return out
+            return out, budget_hit
 
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = {
-                pool.submit(self._fetch_detail, host, tenant, site, path_id): path_id
-                for path_id in path_ids
-            }
-            for fut in as_completed(futures):
-                path_id = futures[fut]
-                try:
-                    out[path_id] = fut.result()
-                except Exception as exc:  # noqa: BLE001
-                    out[path_id] = (None, str(exc))
-        return out
+        # Submit in waves so a budget cut does not leave a huge in-flight pool.
+        wave = max(workers * 2, workers)
+        idx = 0
+        while idx < len(path_ids):
+            if _over_budget():
+                budget_hit = True
+                log.info(
+                    "workday budget stop company=%s after=%s/%s details",
+                    company_name,
+                    len(out),
+                    len(path_ids),
+                )
+                break
+            chunk = path_ids[idx : idx + wave]
+            idx += len(chunk)
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                futures = {
+                    pool.submit(self._fetch_detail, host, tenant, site, path_id): path_id
+                    for path_id in chunk
+                }
+                for fut in as_completed(futures):
+                    path_id = futures[fut]
+                    try:
+                        out[path_id] = fut.result()
+                    except Exception as exc:  # noqa: BLE001
+                        out[path_id] = (None, str(exc))
+            if (idx // wave) % 5 == 0 or idx >= len(path_ids):
+                log.info(
+                    "workday details progress company=%s done=%s/%s elapsed_s=%.1f",
+                    company_name,
+                    len(out),
+                    len(path_ids),
+                    time.monotonic() - t0,
+                )
+        return out, budget_hit
 
     def _paginate_listings(
         self, list_url: str

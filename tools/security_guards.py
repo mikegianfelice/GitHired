@@ -206,6 +206,10 @@ ALLOWED_IGNORE_NEGATIONS = {
     "!documents/**/.gitkeep",
     "!.env.example",
     "!config/companies.local.yaml.example",
+    # Public README marketing assets (not personal data); re-include under *.png/*.jpg
+    "!assets/banner.png",
+    "!assets/banner.jpg",
+    "!assets/showcase/**",
 }
 
 # Hook commands the template legitimately ships, as "<Event>:<command>" strings.

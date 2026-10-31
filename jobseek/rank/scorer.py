@@ -24,7 +24,8 @@ _JSON_BLOCK = re.compile(r"\{[\s\S]*\}")
 
 # Bump when deterministic scoring / eligibility logic changes so stale rows re-rank.
 # v8: province-restricted hybrid (e.g. Canada Hybrid (Ontario)) is not nationwide CA.
-SCORER_VERSION = "v8"
+# v9: geography and work arrangement are separate gates (city match ≠ on-site OK).
+SCORER_VERSION = "v9"
 DETERMINISTIC_MODEL = f"deterministic/{SCORER_VERSION}"
 HARD_FILTER_MODEL = f"hard_filter/{SCORER_VERSION}"
 # A job is "current" for Stage-1 ranking if it has either model from this run.
@@ -107,12 +108,16 @@ def _weighted_overall(scores: dict[str, float]) -> float:
 def _skill_tokens(profile: dict[str, Any]) -> list[str]:
     skills = profile.get("skills") or {}
     tokens: list[str] = []
-    for key in ("primary", "secondary", "domain"):
-        val = skills.get(key) or []
-        if isinstance(val, str):
-            tokens.append(val)
-        elif isinstance(val, list):
-            tokens.extend(str(x) for x in val)
+    # Accept either {primary/secondary/domain: [...]} or a flat skill list.
+    if isinstance(skills, list):
+        tokens.extend(str(x) for x in skills)
+    elif isinstance(skills, dict):
+        for key in ("primary", "secondary", "domain"):
+            val = skills.get(key) or []
+            if isinstance(val, str):
+                tokens.append(val)
+            elif isinstance(val, list):
+                tokens.extend(str(x) for x in val)
     exp = profile.get("experience") or {}
     for key in ("strong_domains", "adjacent_domains"):
         val = exp.get(key) or []
@@ -233,11 +238,13 @@ def score_deterministic(
 
     location_score = canada
     # Missing salary must not look like a strong positive signal.
+    # Fit score ≠ salary confidence — undisclosed pay stays neutral.
     if hard.salary_verdict == "PASS" and any(
-        "salary missing" in r.casefold() for r in hard.reasons
+        "salary missing" in r.casefold() or "undisclosed" in r.casefold()
+        for r in hard.reasons
     ):
         salary_score = 50.0
-        sal_note = "salary not disclosed — neutral"
+        sal_note = "salary not disclosed — neutral (fit score ≠ pay match)"
     else:
         sal_map = {"PASS": 90.0, "FLAG": 55.0, "FAIL": 15.0}
         salary_score = sal_map.get(hard.salary_verdict, 50.0)
@@ -262,6 +269,10 @@ def score_deterministic(
         "salary": 0.06,
         "freshness": 0.08,
     }
+    # Role-fit subtotal excludes salary so a high overall cannot be read as pay match.
+    fit_weights = {k: v for k, v in weights.items() if k != "salary"}
+    fit_norm = sum(fit_weights.values()) or 1.0
+    role_fit = round(sum(components[k] * (fit_weights[k] / fit_norm) for k in fit_weights))
     overall = round(sum(components[k] * weights[k] for k in weights))
     # Confirmed Canada ranks above uncertain when otherwise comparable.
     if elig == "ELIGIBLE":
@@ -288,15 +299,26 @@ def score_deterministic(
             gaps.append("profile incomplete for skill matching")
             break
 
-    evidence = list(hard.evidence)[:8] + [track_note, skills_note, sen_note, sal_note, fresh_note]
+    evidence = list(hard.evidence)[:8] + [
+        track_note,
+        skills_note,
+        sen_note,
+        sal_note,
+        fresh_note,
+        f"role_fit={role_fit}/100 (excludes salary component)",
+        f"overall={overall}/100 (includes neutral/low salary component when undisclosed)",
+    ]
     if elig == "UNCERTAIN":
         evidence.append("eligibility=UNCERTAIN — ranking penalty applied; not auto-rejected")
+        for r in hard.reasons:
+            if "uncertain" in r.casefold() or "not evidenced" in r.casefold() or "ambiguous" in r.casefold():
+                evidence.append(f"uncertain_reason: {r}")
     elif elig == "ELIGIBLE":
         evidence.append("eligibility=ELIGIBLE — ranking boost applied")
 
     return ScoreResult(
         overall=float(overall),
-        scores=components,
+        scores={**components, "role_fit": float(role_fit)},
         strengths=strengths[:5],
         gaps=gaps[:5],
         salary_alignment="; ".join(

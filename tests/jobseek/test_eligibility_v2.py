@@ -65,9 +65,21 @@ class ProvinceCodeTests(unittest.TestCase):
             },
             SEARCH,
         )
-        self.assertEqual(elig, "ELIGIBLE")
-        self.assertEqual(verdict, "PASS")
+        # City/province match without arrangement evidence → UNCERTAIN (not invented on-site).
+        self.assertEqual(elig, "UNCERTAIN")
+        self.assertEqual(verdict, "FLAG")
         self.assertTrue(any("Ontario" in e or "Toronto" in e for e in evidence))
+
+        elig2, verdict2, _, _ = classify_canada_eligibility(
+            {
+                "title": "Senior Data Engineer",
+                "location_raw": "Hybrid - Toronto, ON",
+                "description": "Build pipelines.",
+            },
+            SEARCH,
+        )
+        self.assertEqual(elig2, "ELIGIBLE")
+        self.assertEqual(verdict2, "PASS")
 
     def test_yaml_on_boolean_footgun_normalized(self):
         # Simulate PyYAML parsing unquoted ON → True
@@ -157,11 +169,12 @@ class UatFalsePositiveTests(unittest.TestCase):
                 "Office locations: Toronto, Seattle, South San Francisco HQ."
             ),
         }
-        # Title must match data engineering track
+        # Title must match data engineering track; bare Toronto office without
+        # hybrid/remote evidence is UNCERTAIN for remote/hybrid-only profiles.
         result = apply_hard_filters(job, SEARCH)
         self.assertTrue(result.title_match)
-        self.assertEqual(result.eligibility, "ELIGIBLE")
-        self.assertIn(result.verdict, ("PASS", "FLAG"))
+        self.assertEqual(result.eligibility, "UNCERTAIN")
+        self.assertEqual(result.verdict, "FLAG")
 
     def test_cohere_toronto_data_engineer(self):
         job = {

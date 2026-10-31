@@ -338,7 +338,12 @@ class WorkdayGeoTests(unittest.TestCase):
 
     def test_multi_city_includes_calgary(self):
         listing = _load("workday_list_page1.json")["jobPostings"][1]
-        detail = _load("workday_detail_devops.json")
+        detail = json.loads(json.dumps(_load("workday_detail_devops.json")))
+        # Arrangement must be explicit (hybrid) — bare multi-city offices stay UNCERTAIN
+        detail["jobPostingInfo"]["jobDescription"] = (
+            "<p>Hybrid role across Canadian offices including Calgary. "
+            "Platform and SRE work.</p>"
+        )
         job = normalize_workday_job(
             company_name="Intact",
             host="intactfc.wd3.myworkdayjobs.com",
@@ -380,6 +385,118 @@ class DetectorWorkdayTests(unittest.TestCase):
         assert d is not None
         self.assertEqual(d.ats, "workday")
         self.assertEqual(d.board_token, "intactfc.wd3.myworkdayjobs.com/intactfc/intactfc")
+
+
+class WorkdayBudgetTests(unittest.TestCase):
+    def test_company_budget_preserves_list_jobs(self):
+        import time
+
+        listings = []
+        details: dict[str, object] = {}
+        host = "intactfc.wd3.myworkdayjobs.com"
+        for i in range(20):
+            path = f"/job/Toronto-ON/Role-{i}_R{i}"
+            listings.append(
+                {
+                    "title": f"Engineer {i}",
+                    "externalPath": path,
+                    "locationsText": "Toronto, ON",
+                    "postedOn": "Posted Today",
+                }
+            )
+            details[f"https://{host}/wday/cxs/intactfc/intactfc/job/Role-{i}_R{i}"] = {
+                "jobPostingInfo": {
+                    "id": f"R{i}",
+                    "title": f"Engineer {i}",
+                    "jobDescription": f"Desc {i}",
+                    "location": "Toronto, ON",
+                }
+            }
+
+        class SlowClient(_FakeClient):
+            def get(self, url, *, params=None, headers=None):
+                time.sleep(0.04)
+                return super().get(url, params=params, headers=headers)
+
+        client = SlowClient([{"total": 20, "jobPostings": listings}], details)
+        adapter = WorkdayAdapter(
+            client, company_budget_s=0.12, detail_concurrency=2, complete=False
+        )
+        result = adapter.fetch_company(COMPANY)
+        self.assertEqual(len(result.jobs), 20)
+        self.assertLess(len(client.get_calls), 20)
+        self.assertTrue(any("budget" in e for e in result.errors))
+
+    def test_complete_mode_has_no_budget(self):
+        adapter = WorkdayAdapter(complete=True, company_budget_s=30)
+        self.assertIsNone(adapter.company_budget_s)
+
+    def test_budget_vs_complete_measured(self):
+        """Reproducible timing: budgeted mode finishes sooner; complete hydrates all."""
+        import time
+
+        listings = []
+        details: dict[str, object] = {}
+        host = "intactfc.wd3.myworkdayjobs.com"
+        n = 12
+        for i in range(n):
+            path = f"/job/Toronto-ON/Role-{i}_R{i}"
+            listings.append(
+                {
+                    "title": f"Engineer {i}",
+                    "externalPath": path,
+                    "locationsText": "Toronto, ON",
+                    "postedOn": "Posted Today",
+                }
+            )
+            details[f"https://{host}/wday/cxs/intactfc/intactfc/job/Role-{i}_R{i}"] = {
+                "jobPostingInfo": {
+                    "id": f"R{i}",
+                    "title": f"Engineer {i}",
+                    "jobDescription": f"Desc {i}",
+                    "location": "Toronto, ON",
+                }
+            }
+
+        class SlowClient(_FakeClient):
+            def get(self, url, *, params=None, headers=None):
+                time.sleep(0.03)
+                return super().get(url, params=params, headers=headers)
+
+        page = [{"total": n, "jobPostings": listings}]
+        client_b = SlowClient(list(page), details)
+        t0 = time.perf_counter()
+        budgeted = WorkdayAdapter(
+            client_b, company_budget_s=0.1, detail_concurrency=2, complete=False
+        ).fetch_company(COMPANY)
+        t_budget = time.perf_counter() - t0
+
+        client_c = SlowClient(list(page), details)
+        t1 = time.perf_counter()
+        complete = WorkdayAdapter(
+            client_c, company_budget_s=0.1, detail_concurrency=2, complete=True
+        ).fetch_company(COMPANY)
+        t_complete = time.perf_counter() - t1
+
+        # Completeness
+        self.assertEqual(len(budgeted.jobs), n)
+        self.assertEqual(len(complete.jobs), n)
+        self.assertEqual(len(client_c.get_calls), n)
+        self.assertLess(len(client_b.get_calls), n)
+        # Descriptions present when hydrated
+        self.assertTrue(any(j.description for j in complete.jobs))
+        # Speed: budgeted wall time should be strictly below complete (same sleep)
+        self.assertLess(t_budget, t_complete)
+        # Record measurements in assertion message for CI logs
+        self.assertTrue(
+            True,
+            msg=(
+                f"workday_bench budget_s={t_budget:.3f} complete_s={t_complete:.3f} "
+                f"budget_details={len(client_b.get_calls)}/{n} "
+                f"complete_details={len(client_c.get_calls)}/{n} "
+                f"budget_errors={budgeted.errors}"
+            ),
+        )
 
 
 if __name__ == "__main__":

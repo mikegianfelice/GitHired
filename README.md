@@ -5,7 +5,8 @@
 <h1 align="center">GitHired</h1>
 
 <p align="center">
-  <strong>Canada-first job discovery for software, AI, data &amp; cloud engineers.</strong><br />
+  <strong>Jobs Without the Noise.</strong><br />
+  Canada-first discovery for software, AI, data &amp; cloud engineers.<br />
   Public ATS boards → hard Canada filters → ranked shortlist — no API key required.
 </p>
 
@@ -95,6 +96,22 @@ githired digest
 
 ## Quick start
 
+### 1. Fork and clone
+
+```bash
+gh repo fork mikegianfelice/GitHired --clone
+cd GitHired
+gh repo set-default <your-github-username>/GitHired
+```
+
+Or clone without forking: `git clone https://github.com/mikegianfelice/GitHired.git`
+
+> **Before you go further: forks are public.** GitHub cannot make a fork of a public
+> repository private, and setup writes your **personal data** into tracked files
+> (`CLAUDE.md`, profile YAMLs). Pushing those commits to a public fork publishes them.
+> Prefer a **private** repository with this repo as `upstream` — see [SETUP.md](SETUP.md)
+> section 8 for the private-remote recipe.
+
 ### Prerequisites
 
 | | |
@@ -107,15 +124,18 @@ githired digest
 ### Install
 
 ```bash
-git clone https://github.com/mikegianfelice/GitHired.git
+# From your private clone or fork (see §1)
 cd GitHired
 # macOS tip: system python3 is often 3.9 — use Homebrew 3.11+
 python3 -m pip install -e ".[dev]"
-githired setup
-githired doctor
+githired setup          # interactive: province, city, tracks, salary
+githired doctor         # what works without API keys
 ```
 
-Keep personal profile data in a **private** clone if you write into tracked files (`CLAUDE.md`). See [SETUP.md](SETUP.md).
+**Works without API keys:** `discover` (public ATS + Workday guest boards), deterministic `rank`, `jobs`, `digest`.  
+**Optional:** Anthropic/OpenAI for stage-2 ranking; SMTP/Resend for email digests; SerpAPI for LinkedIn index; Bun for portal CLIs; LaTeX for `/apply` PDFs.
+
+Workday boards hydrate posting details and can take **20–45+ minutes** on a full run — progress logs show company, boards completed, jobs fetched, and elapsed time. Use `config/search.yaml` `workday_company_budget_s` to bound per-company time (complete mode remains available).
 
 Non-interactive / CI:
 
