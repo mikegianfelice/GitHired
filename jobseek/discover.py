@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 from jobseek.adapters.ashby import AshbyAdapter
+from jobseek.adapters.base import AdapterResult
 from jobseek.adapters.detector import detect_careers_page
 from jobseek.adapters.gem import GemAdapter
 from jobseek.adapters.greenhouse import GreenhouseAdapter
@@ -108,11 +111,28 @@ def run_discover(
     *,
     settings: Settings | None = None,
     detect_unknown: bool = True,
+    mode: str = "standard",
+    force_refresh_descriptions: bool = False,
 ) -> dict[str, Any]:
+    """Run ATS discovery.
+
+    Modes:
+      - ``quick``: reuse Workday description cache aggressively; shorter detail
+        budgets; bounded company concurrency; best for daily incremental runs.
+      - ``standard``: default compatible behaviour with separate list/detail budgets
+        and description TTL cache (warm runs skip unchanged Workday details).
+      - ``deep``: complete Workday hydration (no detail budget) and force stale
+        description refresh; use for weekly completeness.
+    """
     settings = settings or Settings.from_env()
     logger = setup_logging(settings.log_level)
     search = load_search()
     sources = search.get("sources") or {}
+    mode_norm = (mode or "standard").strip().lower()
+    if mode_norm not in ("quick", "standard", "deep", "full"):
+        mode_norm = "standard"
+    if mode_norm == "full":
+        mode_norm = "deep"
     yaml_companies = load_companies()
     db.seed_companies_from_yaml(yaml_companies)
     merged = load_merged_companies(
@@ -206,12 +226,28 @@ def run_discover(
                 except Exception as exc:  # noqa: BLE001
                     summary["warnings"].append(f"detect {company.get('name')}: {exc}")
 
-        workday_complete = bool(sources.get("workday_complete", False))
-        workday_budget = sources.get("workday_company_budget_s", 120)
-        try:
-            workday_budget_f = float(workday_budget) if workday_budget is not None else 120.0
-        except (TypeError, ValueError):
-            workday_budget_f = 120.0
+        workday_complete = bool(sources.get("workday_complete", False)) or mode_norm == "deep"
+        force_refresh = bool(force_refresh_descriptions) or mode_norm == "deep"
+
+        def _f(key: str, default: float) -> float:
+            raw = sources.get(key, default)
+            try:
+                return float(raw) if raw is not None else float(default)
+            except (TypeError, ValueError):
+                return float(default)
+
+        list_budget = _f("workday_list_budget_s", 90.0 if mode_norm == "quick" else 180.0)
+        detail_budget = _f(
+            "workday_detail_budget_s",
+            sources.get("workday_company_budget_s", 60.0 if mode_norm == "quick" else 120.0),
+        )
+        desc_ttl = _f("workday_description_ttl_s", 7 * 24 * 3600)
+        company_concurrency = int(sources.get("company_concurrency") or (6 if mode_norm == "quick" else 4))
+        company_concurrency = max(1, min(company_concurrency, 8))
+        workday_company_concurrency = int(
+            sources.get("workday_company_concurrency") or (1 if mode_norm == "quick" else 2)
+        )
+        workday_company_concurrency = max(1, min(workday_company_concurrency, 3))
 
         adapter_instances: dict[str, Any] = {}
         for name, cls in ADAPTERS.items():
@@ -220,76 +256,104 @@ def run_discover(
             if name == "workday":
                 adapter_instances[name] = cls(
                     client,
-                    company_budget_s=None if workday_complete else workday_budget_f,
+                    list_budget_s=None if workday_complete else list_budget,
+                    detail_budget_s=None if workday_complete else detail_budget,
+                    company_budget_s=None if workday_complete else detail_budget,
+                    description_ttl_s=desc_ttl,
+                    force_refresh=force_refresh,
                     complete=workday_complete,
                 )
             else:
                 adapter_instances[name] = cls(client)
 
-        total_boards = len(
-            [
-                c
-                for c in companies
-                if (c.get("ats") or "").lower() in adapter_instances
-            ]
-        )
+        fetchable = [
+            c
+            for c in companies
+            if (c.get("ats") or "").lower() in adapter_instances
+        ]
+        total_boards = len(fetchable)
         discover_t0 = time.monotonic()
+        summary["mode"] = mode_norm
+        summary["timing"] = {}
+        summary["http"] = {
+            "workday_details_cached": 0,
+            "workday_details_fetched": 0,
+            "workday_details_requested": 0,
+        }
+        summary["incomplete_boards"] = []
         logger.info(
-            "discover fetch start boards=%s workday_complete=%s workday_budget_s=%s",
+            "discover fetch start mode=%s boards=%s concurrency=%s "
+            "workday_complete=%s list_budget_s=%s detail_budget_s=%s",
+            mode_norm,
             total_boards,
+            company_concurrency,
             workday_complete,
-            "complete" if workday_complete else workday_budget_f,
+            "complete" if workday_complete else list_budget,
+            "complete" if workday_complete else detail_budget,
         )
 
-        for company in companies:
+        progress_lock = threading.Lock()
+        boards_done = 0
+
+        def _process_company(company: dict[str, Any]) -> dict[str, Any]:
+            """Fetch one company board. Safe for worker threads (DB writes locked)."""
             ats = (company.get("ats") or "").lower()
             adapter = adapter_instances.get(ats)
+            company_name = str(company.get("name") or "")
+            local: dict[str, Any] = {
+                "company": company_name,
+                "ats": ats,
+                "ok": False,
+                "listing_complete": False,
+                "jobs_new": 0,
+                "jobs_updated": 0,
+                "job_ids": [],
+                "errors": [],
+                "warnings": [],
+                "details_cached": 0,
+                "details_fetched": 0,
+                "details_requested": 0,
+            }
             if not adapter:
-                summary["warnings"].append(
-                    f"{company.get('name')}: ats={ats} has no fetch adapter "
-                    "(registry entry retained; enable when adapter exists)"
+                local["warnings"].append(
+                    f"{company_name}: ats={ats} has no fetch adapter"
                 )
-                continue
-            boards_attempted += 1
-            company_name = company.get("name") or ""
-            logger.info(
-                "discover board %s/%s company=%s ats=%s fetched_so_far=%s elapsed_s=%.1f",
-                boards_attempted,
-                total_boards,
-                company_name,
-                ats,
-                summary["fetched"],
-                time.monotonic() - discover_t0,
-            )
+                return local
             try:
-                result = adapter.fetch_company(company)
-            except Exception as exc:  # noqa: BLE001 — never let one board abort the run
-                summary["warnings"].append(f"{ats} {company_name}: unhandled {exc}")
-                db.add_run_event(
-                    run_id,
-                    "warning",
-                    f"{ats} {company_name}: {exc}",
-                    {"company": company_name, "ats": ats},
-                )
-                logger.warning(
-                    "discover board failed company=%s ats=%s err=%s",
+                if ats == "workday" and hasattr(adapter, "set_description_cache"):
+                    cache = db.workday_description_cache(company=company_name)
+                    adapter.set_description_cache(cache)
+                result: AdapterResult = adapter.fetch_company(company)
+            except Exception as exc:  # noqa: BLE001
+                local["errors"].append(str(exc))
+                local["warnings"].append(f"{ats} {company_name}: unhandled {exc}")
+                db.mark_company_fetch(
                     company_name,
-                    ats,
-                    exc,
+                    ok=False,
+                    ats=ats,
+                    board_token=company.get("board_token") or company.get("site_slug"),
+                    error=str(exc),
                 )
-                continue
+                return local
+
+            local["listing_complete"] = bool(getattr(result, "listing_complete", True))
+            local["details_cached"] = int(getattr(result, "details_cached", 0) or 0)
+            local["details_fetched"] = int(getattr(result, "details_fetched", 0) or 0)
+            local["details_requested"] = int(getattr(result, "details_requested", 0) or 0)
             if result.raw_status is not None:
                 db.store_raw(
                     source=ats,
                     request_key=result.request_key,
                     status_code=result.raw_status,
-                    body=json.dumps([j.to_dict() for j in result.jobs], ensure_ascii=False)[:500000],
+                    body=json.dumps(
+                        [j.to_dict() for j in result.jobs], ensure_ascii=False
+                    )[:500000],
                 )
-            if result.raw_status == 200 and not result.errors:
-                boards_ok += 1
-                summary["boards_ok"].append(company_name)
-                if ats in fetched_companies and company_name:
-                    fetched_companies[ats].add(company_name)
+
+            soft_ok = result.raw_status == 200 and bool(result.jobs)
+            hard_ok = result.raw_status == 200 and not result.errors
+            if hard_ok or soft_ok:
+                local["ok"] = True
                 db.mark_company_fetch(
                     company_name,
                     ok=True,
@@ -297,53 +361,99 @@ def run_discover(
                     board_token=company.get("board_token") or company.get("site_slug"),
                     empty=not result.jobs,
                 )
-                # Empty successful board is not a failure
                 if not result.jobs:
-                    summary["warnings"].append(
+                    local["warnings"].append(
                         f"{company_name}: board OK but returned 0 jobs (empty board)"
                     )
-            elif result.raw_status == 200 and result.jobs:
-                # Structure warnings but jobs parsed — treat as success
-                boards_ok += 1
-                summary["boards_ok"].append(company_name)
-                if ats in fetched_companies and company_name:
-                    fetched_companies[ats].add(company_name)
-                db.mark_company_fetch(
-                    company_name,
-                    ok=True,
-                    ats=ats,
-                    board_token=company.get("board_token") or company.get("site_slug"),
-                )
+                if result.errors:
+                    local["warnings"].extend(result.errors)
             else:
                 detail = "; ".join(result.errors) or f"HTTP {result.raw_status}"
-                failure = {
-                    "company": company_name,
-                    "ats": ats,
-                    "board_token": company.get("board_token") or company.get("site_slug"),
-                    "status_code": result.raw_status,
-                    "detail": detail,
-                }
-                summary["board_failures"].append(failure)
-                summary["warnings"].append(f"{ats} {company_name}: {detail}")
-                db.add_run_event(run_id, "warning", detail, failure)
-                log_extra(logger, 30, detail, company=company_name, ats=ats)
-                if company_name:
-                    db.mark_company_fetch(
-                        company_name,
-                        ok=False,
-                        ats=ats,
-                        board_token=company.get("board_token") or company.get("site_slug"),
-                        error=detail,
-                    )
+                local["errors"].append(detail)
+                local["warnings"].append(f"{ats} {company_name}: {detail}")
+                db.mark_company_fetch(
+                    company_name,
+                    ok=False,
+                    ats=ats,
+                    board_token=company.get("board_token") or company.get("site_slug"),
+                    error=detail,
+                )
+
             for job in result.jobs:
-                summary["fetched"] += 1
                 job_id, is_new = db.upsert_job(job)
-                if ats in seen_by_source:
-                    seen_by_source[ats].add(job_id)
+                local["job_ids"].append(job_id)
                 if is_new:
-                    summary["new"] += 1
+                    local["jobs_new"] += 1
                 else:
-                    summary["updated"] += 1
+                    local["jobs_updated"] += 1
+            return local
+
+        # Prefer finishing fast ATS boards first so jobs land early (progressive).
+        non_wd = [c for c in fetchable if (c.get("ats") or "").lower() != "workday"]
+        wd_only = [c for c in fetchable if (c.get("ats") or "").lower() == "workday"]
+
+        def _run_pool(batch: list[dict[str, Any]], workers: int) -> None:
+            nonlocal boards_attempted, boards_ok, boards_done
+            if not batch:
+                return
+            with ThreadPoolExecutor(max_workers=max(1, min(workers, len(batch)))) as pool:
+                futures = {pool.submit(_process_company, c): c for c in batch}
+                for fut in as_completed(futures):
+                    local = fut.result()
+                    with progress_lock:
+                        boards_attempted += 1
+                        boards_done += 1
+                        ats = local["ats"]
+                        company_name = local["company"]
+                        summary["fetched"] += local["jobs_new"] + local["jobs_updated"]
+                        summary["new"] += local["jobs_new"]
+                        summary["updated"] += local["jobs_updated"]
+                        summary["http"]["workday_details_cached"] += local["details_cached"]
+                        summary["http"]["workday_details_fetched"] += local["details_fetched"]
+                        summary["http"]["workday_details_requested"] += local[
+                            "details_requested"
+                        ]
+                        for w in local["warnings"]:
+                            summary["warnings"].append(w)
+                        if local["ok"]:
+                            boards_ok += 1
+                            summary["boards_ok"].append(company_name)
+                            # Only mark removals when listing pagination completed.
+                            if local["listing_complete"] and ats in fetched_companies:
+                                fetched_companies[ats].add(company_name)
+                            elif not local["listing_complete"]:
+                                summary["incomplete_boards"].append(company_name)
+                            if ats in seen_by_source:
+                                seen_by_source[ats].update(local["job_ids"])
+                        else:
+                            failure = {
+                                "company": company_name,
+                                "ats": ats,
+                                "detail": "; ".join(local["errors"]) or "failed",
+                            }
+                            summary["board_failures"].append(failure)
+                            db.add_run_event(
+                                run_id, "warning", failure["detail"], failure
+                            )
+                        logger.info(
+                            "discover board %s/%s company=%s ats=%s ok=%s "
+                            "new=%s updated=%s list_complete=%s elapsed_s=%.1f",
+                            boards_done,
+                            total_boards,
+                            company_name,
+                            ats,
+                            local["ok"],
+                            local["jobs_new"],
+                            local["jobs_updated"],
+                            local["listing_complete"],
+                            time.monotonic() - discover_t0,
+                        )
+
+        _run_pool(non_wd, company_concurrency)
+        summary["timing"]["non_workday_s"] = round(time.monotonic() - discover_t0, 1)
+        wd_t0 = time.monotonic()
+        _run_pool(wd_only, workday_company_concurrency)
+        summary["timing"]["workday_s"] = round(time.monotonic() - wd_t0, 1)
 
         # LinkedIn search-index (compliant) — warnings must not fail the run
         if sources.get("linkedin_search_index", True):
@@ -413,12 +523,18 @@ def run_discover(
 
         summary["boards_attempted"] = boards_attempted
         summary["boards_succeeded"] = boards_ok
+        summary["timing"]["total_s"] = round(time.monotonic() - discover_t0, 1)
         # Partial board failures are warnings. Fatal only when every attempted
         # board failed AND nothing was fetched (empty successful search is OK).
         all_boards_failed = boards_attempted > 0 and boards_ok == 0
         if all_boards_failed and summary["fetched"] == 0:
             summary["errors"].append(
                 "all enabled ATS boards failed and no jobs were fetched"
+            )
+        if summary.get("incomplete_boards"):
+            summary["warnings"].append(
+                f"{len(summary['incomplete_boards'])} board(s) had incomplete listing "
+                "pagination — missing jobs were NOT marked removed"
             )
         ok = len(summary["errors"]) == 0
         summary["ok"] = ok

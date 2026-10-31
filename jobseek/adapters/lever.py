@@ -98,6 +98,7 @@ class LeverAdapter:
                         salary_currency=scur,
                         posted_date=None,
                         raw_payload=item,
+                        description_complete=bool(description and str(description).strip()),
                     )
                 )
         except Exception as exc:  # noqa: BLE001

@@ -123,6 +123,7 @@ class AshbyAdapter:
                         posted_date=(item.get("publishedAt") or item.get("updatedAt") or "")[:10]
                         or None,
                         raw_payload=item,
+                        description_complete=bool(description and str(description).strip()),
                     )
                 )
         except Exception as exc:  # noqa: BLE001

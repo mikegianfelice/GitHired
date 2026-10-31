@@ -25,6 +25,9 @@ class RawJob:
     salary_currency: str | None = None
     posted_date: str | None = None
     raw_payload: Any = None
+    # Provenance: True when description came from a detail/API body, not a list stub.
+    description_complete: bool = False
+    description_fetched_at: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

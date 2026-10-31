@@ -54,16 +54,30 @@ def cmd_discover(args: argparse.Namespace) -> int:
             n = db.import_tracker_csv(tracker_path())
             if args.import_tracker:
                 print(json.dumps({"imported_tracker_rows": n}))
-        summary = run_discover(db, settings=settings, detect_unknown=not args.no_detect)
+        mode = getattr(args, "mode", None) or "standard"
+        summary = run_discover(
+            db,
+            settings=settings,
+            detect_unknown=not args.no_detect,
+            mode=mode,
+            force_refresh_descriptions=bool(getattr(args, "force_refresh_descriptions", False)),
+        )
         summary["next"] = [
             f"{_prog_name()} rank",
             f"{_prog_name()} jobs",
             f"{_prog_name()} digest",
         ]
-        summary["hint"] = (
-            f"Next: run `{_prog_name()} rank` to score new jobs, then "
-            f"`{_prog_name()} jobs` for confirmed Canada-compatible matches."
-        )
+        if mode == "quick":
+            summary["hint"] = (
+                f"Quick discover finished (mode={mode}). Next: `{_prog_name()} rank` then "
+                f"`{_prog_name()} jobs`. Run `{_prog_name()} discover --mode deep` weekly "
+                "to refresh stale Workday descriptions."
+            )
+        else:
+            summary["hint"] = (
+                f"Next: run `{_prog_name()} rank` to score new jobs, then "
+                f"`{_prog_name()} jobs` for confirmed Canada-compatible matches."
+            )
         # Human-readable source warnings (LinkedIn free index / empty boards).
         friendly: list[str] = []
         for w in summary.get("warnings") or []:
@@ -121,6 +135,9 @@ def cmd_rank(args: argparse.Namespace) -> int:
         def _title_priority(job: dict[str, Any]) -> int:
             return 2 if title_matches_selected_tracks(job.get("title") or "", search) else 0
 
+        from jobseek.rank.fingerprint import scoring_fingerprint
+
+        fp = None if use_llm else scoring_fingerprint(search, profile)
         results: list[dict[str, Any]] = []
         persisted = 0
         while True:
@@ -133,6 +150,7 @@ def cmd_rank(args: argparse.Namespace) -> int:
                 re_rank=args.re_rank and persisted == 0,
                 score_kind=score_kind,
                 current_model=current_model,
+                config_fingerprint=fp,
                 title_priority=_title_priority,
                 pool_size=max(fetch_n * 40, 500),
             )
@@ -163,6 +181,7 @@ def cmd_rank(args: argparse.Namespace) -> int:
                     model=scored.model,
                     description_hash=job.get("description_hash") or "",
                     score_kind=scored.score_kind,
+                    config_fingerprint=fp,
                 )
                 persisted += 1
                 batch_persisted += 1
@@ -192,6 +211,7 @@ def cmd_rank(args: argparse.Namespace) -> int:
             {
                 "scored": persisted,
                 "reported": len(results),
+                "config_fingerprint": fp,
                 "score_kind": score_kind,
                 "model": (
                     list(current_model) if current_model is not None else score_kind
@@ -1013,6 +1033,21 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     d = sub.add_parser("discover", help="Run ATS + compliant LinkedIn discovery")
     d.add_argument("--no-detect", action="store_true", help="Skip ATS auto-detect")
     d.add_argument("--import-tracker", action="store_true", help="Print tracker import count")
+    d.add_argument(
+        "--mode",
+        choices=("quick", "standard", "deep"),
+        default="standard",
+        help=(
+            "quick: incremental daily (reuse Workday description cache); "
+            "standard: default separate list/detail budgets + TTL cache; "
+            "deep: full Workday hydration / force refresh (weekly)"
+        ),
+    )
+    d.add_argument(
+        "--force-refresh-descriptions",
+        action="store_true",
+        help="Ignore Workday description TTL and re-fetch details",
+    )
     d.set_defaults(func=cmd_discover)
 
     r = sub.add_parser("rank", help="Deterministic score (optional --llm)")

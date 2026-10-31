@@ -159,11 +159,19 @@ sources:
   rss: true
   rippling: true
   workday: true
-  # Soft per-company detail-hydration budget (seconds). List pagination always
-  # finishes; remaining jobs are kept from the list payload if the budget hits.
-  # Set workday_complete: true for full description hydration (slower).
+  # Separate Workday budgets (monotonic seconds). List pagination can no longer
+  # consume the detail budget (RBC-style boards previously exhausted both).
+  # Legacy workday_company_budget_s still maps to the detail budget.
+  workday_list_budget_s: 180
+  workday_detail_budget_s: 120
   workday_company_budget_s: 120
+  # Reuse complete SQLite descriptions younger than this TTL (seconds).
+  workday_description_ttl_s: 604800
+  # Set workday_complete: true (or `githired discover --mode deep`) for full hydration.
   workday_complete: false
+  # Bounded concurrent company fetches (non-Workday / Workday pools).
+  company_concurrency: 4
+  workday_company_concurrency: 2
   gem: false
   career_pages: true
   linkedin_search_index: true

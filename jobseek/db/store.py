@@ -10,7 +10,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 
-from jobseek.db.schema import COMPANY_COLUMN_MIGRATIONS, SCHEMA_SQL
+from jobseek.db.schema import (
+    COMPANY_COLUMN_MIGRATIONS,
+    JOB_COLUMN_MIGRATIONS,
+    SCORE_COLUMN_MIGRATIONS,
+    SCHEMA_SQL,
+)
 from jobseek.identity import JobIdentity, normalize_text
 from jobseek.models import RawJob
 
@@ -27,12 +32,19 @@ class Database:
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._conn = sqlite3.connect(str(self.path))
+        # check_same_thread=False allows bounded concurrent discover workers to
+        # share this handle under self._write_lock (writes only).
+        self._conn = sqlite3.connect(str(self.path), check_same_thread=False, timeout=60.0)
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA foreign_keys = ON")
+        self._conn.execute("PRAGMA journal_mode = WAL")
+        self._conn.execute("PRAGMA synchronous = NORMAL")
         self._conn.executescript(SCHEMA_SQL)
         self._migrate()
         self._conn.commit()
+        import threading
+
+        self._write_lock = threading.RLock()
 
     def _migrate(self) -> None:
         cols = {
@@ -43,6 +55,16 @@ class Database:
             self._conn.execute(
                 "ALTER TABLE job_scores ADD COLUMN score_kind TEXT NOT NULL DEFAULT 'deterministic'"
             )
+        for col_name, sql in SCORE_COLUMN_MIGRATIONS:
+            if col_name not in cols:
+                self._conn.execute(sql)
+        job_cols = {
+            row["name"]
+            for row in self._conn.execute("PRAGMA table_info(jobs)").fetchall()
+        }
+        for col_name, sql in JOB_COLUMN_MIGRATIONS:
+            if col_name not in job_cols:
+                self._conn.execute(sql)
         company_cols = {
             row["name"]
             for row in self._conn.execute("PRAGMA table_info(companies)").fetchall()
@@ -53,18 +75,28 @@ class Database:
         self._conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_companies_domain ON companies(domain)"
         )
+        self._conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_jobs_source_company ON jobs(source, company)"
+        )
+        self._conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_jobs_last_seen ON jobs(last_seen)"
+        )
+        self._conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_job_scores_fingerprint ON job_scores(config_fingerprint)"
+        )
 
     def close(self) -> None:
         self._conn.close()
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
-        try:
-            yield self._conn
-            self._conn.commit()
-        except Exception:
-            self._conn.rollback()
-            raise
+        with self._write_lock:
+            try:
+                yield self._conn
+                self._conn.commit()
+            except Exception:
+                self._conn.rollback()
+                raise
 
     def store_raw(
         self,
@@ -123,7 +155,10 @@ class Database:
         return int(row["id"]) if row else None
 
     def upsert_job(self, job: RawJob, *, seen_at: str | None = None) -> tuple[int, bool]:
-        """Insert or update a job. Returns (job_id, is_new)."""
+        """Insert or update a job. Returns (job_id, is_new).
+
+        Never replaces a complete description with an incomplete listing stub.
+        """
         identity = JobIdentity.from_fields(
             company=job.company,
             title=job.title,
@@ -132,12 +167,18 @@ class Database:
             ats_job_id=job.ats_job_id,
         )
         now = seen_at or _utcnow()
-        # Ensure description is never NULL so ranking can pick the job up
-        description = job.description if job.description not in (None, "") else job.title
-        desc_hash = _hash_text(description)
+        incoming_complete = bool(job.description_complete and job.description)
+        incoming_desc = job.description if job.description not in (None, "") else None
+        # Ranking requires a non-null description; title is a last-resort stub only.
+        stub_desc = incoming_desc or job.title
         existing_id = self.find_existing_job_id(identity)
         with self.transaction():
             if existing_id is None:
+                desc = stub_desc
+                desc_hash = _hash_text(desc)
+                fetched_at = (
+                    job.description_fetched_at or now if incoming_complete else None
+                )
                 cur = self._conn.execute(
                     """
                     INSERT INTO jobs (
@@ -145,8 +186,8 @@ class Database:
                         location_raw, url, apply_url, description, description_hash,
                         salary_raw, salary_min, salary_max, salary_currency,
                         source, posted_date, first_seen, last_seen, removed_at, status,
-                        company_norm, title_norm
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 'new', ?, ?)
+                        company_norm, title_norm, description_complete, description_fetched_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 'new', ?, ?, ?, ?)
                     """,
                     (
                         identity.canonical_key,
@@ -157,7 +198,7 @@ class Database:
                         job.location_raw,
                         identity.url,
                         job.apply_url,
-                        description,
+                        desc,
                         desc_hash,
                         job.salary_raw,
                         job.salary_min,
@@ -169,9 +210,54 @@ class Database:
                         now,
                         identity.company_norm,
                         identity.title_norm,
+                        1 if incoming_complete else 0,
+                        fetched_at,
                     ),
                 )
                 return int(cur.lastrowid), True
+
+            existing = self._conn.execute(
+                "SELECT description, description_hash, description_complete, "
+                "description_fetched_at, location_raw FROM jobs WHERE id = ?",
+                (existing_id,),
+            ).fetchone()
+            old_complete = bool(existing["description_complete"]) if existing else False
+            old_desc = (existing["description"] if existing else None) or ""
+            old_hash = existing["description_hash"] if existing else None
+            old_fetched = existing["description_fetched_at"] if existing else None
+
+            if old_complete and not incoming_complete:
+                # Preserve complete cached description; listing stub must not win.
+                desc = old_desc
+                desc_hash = old_hash
+                complete_flag = 1
+                fetched_at = old_fetched
+            elif incoming_complete:
+                desc = incoming_desc or stub_desc
+                desc_hash = _hash_text(desc)
+                complete_flag = 1
+                fetched_at = job.description_fetched_at or now
+            elif incoming_desc and (not old_desc or len(incoming_desc) > len(old_desc)):
+                desc = incoming_desc
+                desc_hash = _hash_text(desc)
+                complete_flag = 0
+                fetched_at = old_fetched
+            else:
+                desc = old_desc or stub_desc
+                desc_hash = old_hash or _hash_text(desc)
+                complete_flag = 1 if old_complete else 0
+                fetched_at = old_fetched
+
+            # Prefer richer location when listing was a multi-location stub.
+            location = job.location_raw
+            if (
+                location
+                and existing
+                and existing["location_raw"]
+                and len(str(location)) < len(str(existing["location_raw"]))
+                and old_complete
+            ):
+                location = existing["location_raw"]
 
             self._conn.execute(
                 """
@@ -180,8 +266,10 @@ class Database:
                     removed_at = NULL,
                     location_raw = COALESCE(?, location_raw),
                     apply_url = COALESCE(?, apply_url),
-                    description = COALESCE(?, description),
-                    description_hash = COALESCE(?, description_hash),
+                    description = ?,
+                    description_hash = ?,
+                    description_complete = ?,
+                    description_fetched_at = ?,
                     salary_raw = COALESCE(?, salary_raw),
                     salary_min = COALESCE(?, salary_min),
                     salary_max = COALESCE(?, salary_max),
@@ -194,10 +282,12 @@ class Database:
                 """,
                 (
                     now,
-                    job.location_raw,
+                    location,
                     job.apply_url,
-                    description,
+                    desc,
                     desc_hash,
+                    complete_flag,
+                    fetched_at,
                     job.salary_raw,
                     job.salary_min,
                     job.salary_max,
@@ -218,7 +308,10 @@ class Database:
         companies: set[str] | None = None,
         now: str | None = None,
     ) -> int:
-        """Mark jobs not seen in this run as removed. Returns count updated."""
+        """Mark jobs not seen in this run as removed. Returns count updated.
+
+        Callers must only pass companies whose listing fetch completed fully.
+        """
         stamp = now or _utcnow()
         if not seen_ids:
             return 0
@@ -240,6 +333,46 @@ class Database:
         with self.transaction():
             cur = self._conn.execute(sql, params)
             return cur.rowcount
+
+    def workday_description_cache(
+        self,
+        *,
+        company: str,
+        ats_job_ids: list[str] | None = None,
+    ) -> dict[str, dict[str, Any]]:
+        """Return cached Workday descriptions keyed by ats_job_id for hydration reuse."""
+        clauses = [
+            "ats_provider = 'workday'",
+            "company = ?",
+            "removed_at IS NULL",
+            "ats_job_id IS NOT NULL",
+        ]
+        params: list[Any] = [company]
+        if ats_job_ids:
+            # Chunk large IN lists
+            out: dict[str, dict[str, Any]] = {}
+            for i in range(0, len(ats_job_ids), 400):
+                chunk = ats_job_ids[i : i + 400]
+                ph = ",".join("?" for _ in chunk)
+                sql = f"""
+                    SELECT ats_job_id, description, description_complete,
+                           description_fetched_at, location_raw, description_hash
+                    FROM jobs
+                    WHERE ats_provider = 'workday' AND company = ?
+                      AND removed_at IS NULL AND ats_job_id IN ({ph})
+                """
+                rows = self._conn.execute(sql, [company, *chunk]).fetchall()
+                for row in rows:
+                    out[str(row["ats_job_id"])] = dict(row)
+            return out
+        sql = f"""
+            SELECT ats_job_id, description, description_complete,
+                   description_fetched_at, location_raw, description_hash
+            FROM jobs
+            WHERE {' AND '.join(clauses)}
+        """
+        rows = self._conn.execute(sql, params).fetchall()
+        return {str(row["ats_job_id"]): dict(row) for row in rows}
 
     def get_job(self, job_id: int) -> dict[str, Any] | None:
         row = self._conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
@@ -375,6 +508,7 @@ class Database:
         pool_size: int | None = None,
         current_model: str | None = None,
         title_priority: Any = None,
+        config_fingerprint: str | None = None,
     ) -> list[dict[str, Any]]:
         from jobseek.rank.selection import select_jobs_fairly
 
@@ -396,6 +530,7 @@ class Database:
                 else [current_model]
             )
             placeholders = ",".join("?" for _ in models)
+            # Valid prior score: matching model + description_hash + fingerprint.
             sql = f"""
                 SELECT j.* FROM jobs j
                 WHERE j.removed_at IS NULL
@@ -406,11 +541,16 @@ class Database:
                     WHERE s.job_id = j.id
                       AND s.description_hash = j.description_hash
                       AND s.model IN ({placeholders})
+                      AND (
+                        ? IS NULL
+                        OR (s.config_fingerprint IS NOT NULL AND s.config_fingerprint = ?)
+                      )
                   )
                 ORDER BY j.first_seen DESC
                 LIMIT ?
             """
-            rows = self._conn.execute(sql, (*models, pool)).fetchall()
+            fp = config_fingerprint
+            rows = self._conn.execute(sql, (*models, fp, fp, pool)).fetchall()
         else:
             sql = """
                 SELECT j.* FROM jobs j
@@ -418,6 +558,7 @@ class Database:
                   ON s.job_id = j.id
                  AND s.description_hash = j.description_hash
                  AND s.score_kind = ?
+                 AND (? IS NULL OR s.config_fingerprint = ?)
                 WHERE j.removed_at IS NULL
                   AND j.status != 'removed'
                   AND j.description IS NOT NULL
@@ -425,7 +566,8 @@ class Database:
                 ORDER BY j.first_seen DESC
                 LIMIT ?
             """
-            rows = self._conn.execute(sql, (score_kind, pool)).fetchall()
+            fp = config_fingerprint
+            rows = self._conn.execute(sql, (score_kind, fp, fp, pool)).fetchall()
         candidates = [dict(r) for r in rows]
         return select_jobs_fairly(
             candidates, limit=limit, title_priority=title_priority
@@ -446,6 +588,7 @@ class Database:
         model: str,
         description_hash: str,
         score_kind: str = "deterministic",
+        config_fingerprint: str | None = None,
     ) -> None:
         with self.transaction():
             # Prefer upsert by (job_id, description_hash, score_kind); fall back
@@ -470,6 +613,7 @@ class Database:
                 model,
                 score_kind,
                 description_hash,
+                config_fingerprint,
                 _utcnow(),
             )
             if existing:
@@ -479,7 +623,7 @@ class Database:
                         overall = ?, scores_json = ?, hard_filter_json = ?,
                         strengths_json = ?, gaps_json = ?, salary_alignment = ?,
                         rejection_reasons_json = ?, evidence_json = ?, model = ?,
-                        scored_at = ?
+                        config_fingerprint = ?, scored_at = ?
                     WHERE id = ?
                     """,
                     (
@@ -492,6 +636,7 @@ class Database:
                         json.dumps(rejection_reasons),
                         json.dumps(evidence),
                         model,
+                        config_fingerprint,
                         _utcnow(),
                         int(existing["id"]),
                     ),
@@ -502,8 +647,8 @@ class Database:
                     INSERT INTO job_scores (
                         job_id, overall, scores_json, hard_filter_json, strengths_json,
                         gaps_json, salary_alignment, rejection_reasons_json, evidence_json,
-                        model, score_kind, description_hash, scored_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        model, score_kind, description_hash, config_fingerprint, scored_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     payload,
                 )

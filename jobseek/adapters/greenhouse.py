@@ -103,6 +103,7 @@ class GreenhouseAdapter:
                         salary_currency=scur,
                         posted_date=(item.get("updated_at") or item.get("created_at") or "")[:10] or None,
                         raw_payload=item,
+                        description_complete=bool(description and str(description).strip()),
                     )
                 )
         except Exception as exc:  # noqa: BLE001 — surface adapter failures

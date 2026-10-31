@@ -30,8 +30,12 @@ githired companies list
 githired companies stats
 githired companies export --validated --out /tmp/companies.v1.yaml
 githired companies import registry/community/companies.v1.yaml
-githired discover                  # fetch jobs from enabled boards
-githired rank --limit 25           # deterministic
+githired discover                  # standard (TTL cache + separate Workday budgets)
+githired discover --mode quick     # daily incremental (reuse descriptions; shorter budgets)
+githired discover --mode deep      # weekly completeness (force Workday detail refresh)
+githired rank                      # incremental deterministic (skips unchanged fingerprints)
+githired rank --limit 25           # cap batch size
+githired rank --re-rank            # force full rescore
 githired rank --limit 25 --llm     # optional AI stage
 githired jobs --min-score 60
 githired digest --save
@@ -78,6 +82,20 @@ Missing SerpAPI is a **warning**, not a discover failure. `githired sources` sho
 ## Workday
 
 Verified Canadian employers with public Workday guest CXS boards are fetched automatically when `sources.workday` is enabled (default). Discovery paginates list endpoints and hydrates job details with bounded concurrency and connection reuse. No paid API is required.
+
+**Performance (important):**
+
+| Setting | Role |
+| --- | --- |
+| `workday_list_budget_s` | Cap listing pagination only (default 180s) |
+| `workday_detail_budget_s` | Cap description hydration only (default 120s) |
+| `workday_description_ttl_s` | Reuse complete SQLite descriptions within TTL (default 7d) |
+| `company_concurrency` | Parallel non-Workday boards (default 4) |
+| `workday_company_concurrency` | Parallel Workday companies (default 2) |
+
+Incomplete listing pagination **never** marks missing jobs removed. Warm daily runs should use `--mode quick`; schedule `--mode deep` weekly for full hydration.
+
+Recommended cadence: `githired discover --mode quick && githired rank` daily; `githired discover --mode deep` weekly.
 
 ## Optional Freehire aggregator
 

@@ -42,6 +42,8 @@ CREATE INDEX IF NOT EXISTS idx_jobs_url ON jobs(url);
 CREATE INDEX IF NOT EXISTS idx_jobs_company_title ON jobs(company_norm, title_norm);
 CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
 CREATE INDEX IF NOT EXISTS idx_jobs_removed ON jobs(removed_at);
+CREATE INDEX IF NOT EXISTS idx_jobs_source_company ON jobs(source, company);
+CREATE INDEX IF NOT EXISTS idx_jobs_last_seen ON jobs(last_seen);
 
 CREATE TABLE IF NOT EXISTS job_scores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,6 +60,7 @@ CREATE TABLE IF NOT EXISTS job_scores (
     score_kind TEXT NOT NULL DEFAULT 'deterministic',
     description_hash TEXT,
     scored_at TEXT NOT NULL,
+    config_fingerprint TEXT,
     UNIQUE(job_id, description_hash, score_kind)
 );
 
@@ -127,6 +130,15 @@ CREATE TABLE IF NOT EXISTS digests (
 # Migrations for DBs created before score_kind / companies Phase-2 columns existed.
 MIGRATIONS = [
     "ALTER TABLE job_scores ADD COLUMN score_kind TEXT NOT NULL DEFAULT 'deterministic'",
+]
+
+JOB_COLUMN_MIGRATIONS = [
+    ("description_complete", "ALTER TABLE jobs ADD COLUMN description_complete INTEGER NOT NULL DEFAULT 0"),
+    ("description_fetched_at", "ALTER TABLE jobs ADD COLUMN description_fetched_at TEXT"),
+]
+
+SCORE_COLUMN_MIGRATIONS = [
+    ("config_fingerprint", "ALTER TABLE job_scores ADD COLUMN config_fingerprint TEXT"),
 ]
 
 COMPANY_COLUMN_MIGRATIONS = [
