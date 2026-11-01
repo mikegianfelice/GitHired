@@ -114,15 +114,16 @@ def run_discover(
     mode: str = "standard",
     force_refresh_descriptions: bool = False,
 ) -> dict[str, Any]:
-    """Run ATS discovery.
+    """Run ATS listing discovery (list-only; details via ``githired enrich``).
 
-    Modes:
-      - ``quick``: reuse Workday description cache aggressively; shorter detail
-        budgets; bounded company concurrency; best for daily incremental runs.
-      - ``standard``: default compatible behaviour with separate list/detail budgets
-        and description TTL cache (warm runs skip unchanged Workday details).
-      - ``deep``: complete Workday hydration (no detail budget) and force stale
-        description refresh; use for weekly completeness.
+    Modes (listing pace / budgets):
+      - ``quick``: shorter list budgets; bounded concurrency; daily incremental.
+      - ``standard``: default list budgets; Workday description cache applied from
+        SQLite without detail HTTP (complete bodies restored when present).
+      - ``deep``: no list budget; still list-only — run ``githired enrich --mode deep``
+        for full description refresh.
+
+    Detail hydration was removed from discover so first results appear quickly.
     """
     settings = settings or Settings.from_env()
     logger = setup_logging(settings.log_level)
@@ -261,13 +262,16 @@ def run_discover(
             if not sources.get(name, name != "gem"):
                 continue
             if name == "workday":
+                # List-only: fetch_details=False. Enrich pipeline hydrates details.
+                # SQLite description_cache still restores complete bodies on upsert.
                 workday_template = cls(
                     client,
+                    fetch_details=False,
                     list_budget_s=None if workday_complete else list_budget,
-                    detail_budget_s=None if workday_complete else detail_budget,
-                    company_budget_s=None if workday_complete else detail_budget,
+                    detail_budget_s=None,
+                    company_budget_s=None,
                     description_ttl_s=desc_ttl,
-                    force_refresh=force_refresh,
+                    force_refresh=False,
                     complete=workday_complete,
                 )
                 adapter_instances[name] = workday_template
@@ -293,14 +297,14 @@ def run_discover(
         summary["incomplete_boards"] = []
         logger.info(
             "discover fetch start mode=%s boards=%s concurrency=%s "
-            "workday_complete=%s list_budget_s=%s detail_budget_s=%s",
+            "list_only=True list_budget_s=%s (details via enrich)",
             mode_norm,
             total_boards,
             company_concurrency,
-            workday_complete,
             "complete" if workday_complete else list_budget,
-            "complete" if workday_complete else detail_budget,
         )
+        summary["pipeline"] = "list_only"
+        summary["enrich_hint"] = "githired enrich"
 
         progress_lock = threading.Lock()
         boards_done = 0

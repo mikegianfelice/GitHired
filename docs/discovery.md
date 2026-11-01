@@ -4,19 +4,35 @@ Production-oriented discovery and ranking for engineering roles that accept cand
 
 ## Architecture
 
+Progressive local-first pipeline (discover ≠ enrich ≠ rank):
+
+| Stage | Command | What you get |
+|-------|---------|----------------|
+| **Discovered** | `githired discover` | Titles, companies, URLs, list locations — **no** Workday detail HTTP |
+| **Enriched** | `githired enrich` | Full descriptions + resolved geo (Workday CXS details); resumable queue/leases |
+| **Provisionally ranked** | `githired rank --provisional` | Fit signal from listing metadata only — **never** confirmed Canada ELIGIBLE |
+| **Confirmed eligible** | `githired rank` then `jobs` | Complete description + hard filters; default shortlist |
+
+Orchestration: `githired refresh` (discover → enrich → rank) or `githired run-daily` (same + digest).
+
 1. **Three-layer company registry** — builtin [`config/companies.yaml`](../config/companies.yaml) → community [`registry/community/`](../registry/community/) → SQLite discoveries → user [`config/companies.local.yaml`](../config/companies.local.yaml.example) (overrides win; auto-discovery never writes overrides)
 2. **Company discovery** — `githired companies discover` validates public ATS boards (Greenhouse, Lever, Ashby, Workable, RSS/XML, Rippling, Workday guest CXS; Gem adapter present but opt-in)
-3. **Job discover** — `githired discover` fetches enabled boards (Workday included when `sources.workday: true`, the default) + LinkedIn search-index / SerpAPI / alert import + optional Freehire (`sources.freehire`, default **off**)
-4. **SQLite** — `data/jobseek.db` stores raw responses, normalized jobs (`first_seen` / `last_seen` / `removed_at`), scores, applications, companies, runs
-5. **Hard filters** — engineering tracks, Canada eligibility modes, salary floors (no LLM)
-6. **Stage-1 rank** — transparent deterministic scores (default; no API key)
-7. **Stage-2 rank** — optional LLM evidence scores (`--llm` or `GITHIRED_RANK_LLM=1`)
-8. **Digest** — top 10 high-score jobs; SMTP or Resend email
-9. **README showcase** — optional public Top Paying Jobs block refreshed from SQLite salaries only ([`docs/showcase/ARCHITECTURE.md`](showcase/ARCHITECTURE.md); `githired showcase-readme`)
+3. **Job discover (list-only)** — `githired discover` fetches enabled boards + LinkedIn search-index / SerpAPI / alert import + optional Freehire. Workday listings persist immediately with `enrichment_status=pending` (or `complete` when a TTL-fresh SQLite description is reused).
+4. **Enrich** — `githired enrich` claims pending/stale/failed Workday jobs with leases, hydrates details under rate limits, preserves prior complete bodies on failure
+5. **SQLite** — `data/jobseek.db` stores jobs (`enrichment_status`, description provenance), scores (`deterministic` vs `provisional`), applications, companies, runs
+6. **Hard filters** — engineering tracks, Canada eligibility modes, salary floors (no LLM)
+7. **Stage-1 rank** — confirmed deterministic scores on **complete** descriptions (default)
+8. **Stage-2 rank** — optional LLM evidence scores (`--llm` or `GITHIRED_RANK_LLM=1`)
+9. **Digest** — top 10 **confirmed** high-score jobs only; SMTP or Resend email
+10. **README showcase** — optional public Top Paying Jobs block ([`docs/showcase/ARCHITECTURE.md`](showcase/ARCHITECTURE.md); `githired showcase-readme`)
 
 Resume drafting and application submission stay behind explicit approval (`githired prepare` → `/apply`).
 
 **Fresh install:** you do **not** need to hand-maintain a company list. Builtin boards + `companies discover` expand the registry automatically. Core path needs no paid APIs or LLM keys.
+
+### Enrichment status values
+
+`pending` → `processing` (leased) → `complete` | `failed` | `stale` (TTL expired; re-queued by enrich). Incomplete jobs are never shown as confirmed matches.
 
 ## CLI
 
@@ -30,19 +46,23 @@ githired companies list
 githired companies stats
 githired companies export --validated --out /tmp/companies.v1.yaml
 githired companies import registry/community/companies.v1.yaml
-githired discover                  # standard (TTL cache + separate Workday budgets)
-githired discover --mode quick     # daily incremental (reuse descriptions; shorter budgets)
-githired discover --mode deep      # weekly completeness (force Workday detail refresh)
-githired rank                      # incremental deterministic (skips unchanged fingerprints)
+githired discover                  # list-only (fast); Workday details via enrich
+githired discover --mode quick     # shorter list budgets
+githired enrich                    # hydrate queued Workday descriptions (resumable)
+githired enrich --mode deep        # refresh stale / larger batch
+githired refresh                   # discover → enrich → rank
+githired rank                      # confirmed scores (complete descriptions only)
+githired rank --provisional        # list-only scores (never confirmed ELIGIBLE)
 githired rank --limit 25           # cap batch size
 githired rank --re-rank            # force full rescore
 githired rank --limit 25 --llm     # optional AI stage
-githired jobs --min-score 60
+githired jobs --min-score 60       # confirmed shortlist
+githired jobs --include-incomplete # browse before enrichment finishes
 githired digest --save
 githired sources
 githired email-digest
-githired run-daily                 # jobs only
-githired run-daily --companies     # company discover then jobs
+githired run-daily                 # discover → enrich → rank → digest
+githired run-daily --companies     # company discover then jobs pipeline
 githired showcase-readme           # refresh README Top Paying section from DB
 githired showcase-readme --from-snapshot
 githired prepare 42

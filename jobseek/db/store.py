@@ -28,6 +28,29 @@ def _hash_text(text: str | None) -> str:
     return hashlib.sha256((text or "").encode("utf-8")).hexdigest()[:16]
 
 
+# Sources whose list APIs omit full descriptions — need the enrich stage.
+_ENRICH_REQUIRED_ATS = frozenset({"workday"})
+
+
+def enrichment_status_for_job(
+    *,
+    ats_provider: str | None,
+    description_complete: bool,
+    previous_status: str | None = None,
+) -> str:
+    """Derive enrichment_status for an upserted job."""
+    if description_complete:
+        return "complete"
+    ats = (ats_provider or "").strip().lower()
+    if ats in _ENRICH_REQUIRED_ATS:
+        prev = (previous_status or "").strip().lower()
+        if prev in ("processing", "failed", "stale"):
+            return prev
+        return "pending"
+    # List APIs that already ship full bodies (Greenhouse/Lever/Ashby/…).
+    return "complete" if description_complete else "pending"
+
+
 class Database:
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
@@ -84,6 +107,30 @@ class Database:
         self._conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_job_scores_fingerprint ON job_scores(config_fingerprint)"
         )
+        self._conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_jobs_enrichment "
+            "ON jobs(enrichment_status, ats_provider, enrich_lease_until)"
+        )
+        # Backfill enrichment_status from description_complete for upgraded DBs.
+        if "enrichment_status" in {
+            row["name"]
+            for row in self._conn.execute("PRAGMA table_info(jobs)").fetchall()
+        }:
+            self._conn.execute(
+                """
+                UPDATE jobs SET enrichment_status = 'complete'
+                WHERE description_complete = 1
+                  AND (enrichment_status IS NULL OR enrichment_status = 'pending')
+                """
+            )
+            self._conn.execute(
+                """
+                UPDATE jobs SET enrichment_status = 'complete'
+                WHERE ats_provider IS NOT NULL
+                  AND LOWER(ats_provider) != 'workday'
+                  AND description_complete = 1
+                """
+            )
 
     def close(self) -> None:
         self._conn.close()
@@ -171,8 +218,16 @@ class Database:
             ats_job_id=job.ats_job_id,
         )
         now = seen_at or _utcnow()
-        incoming_complete = bool(job.description_complete and job.description)
         incoming_desc = job.description if job.description not in (None, "") else None
+        incoming_complete = bool(job.description_complete and incoming_desc)
+        # Greenhouse/Lever/Ashby/… list APIs embed the full JD; Workday lists do not.
+        ats_for_complete = (identity.ats_provider or job.source or "").strip().lower()
+        if (
+            not incoming_complete
+            and incoming_desc
+            and ats_for_complete not in _ENRICH_REQUIRED_ATS
+        ):
+            incoming_complete = True
         # Ranking requires a non-null description; title is a last-resort stub only.
         stub_desc = incoming_desc or job.title
 
@@ -188,6 +243,10 @@ class Database:
                 )
                 # INSERT OR IGNORE: if another worker won the race on
                 # canonical_key, rowcount==0 and we fall through to UPDATE.
+                enrich_status = enrichment_status_for_job(
+                    ats_provider=identity.ats_provider,
+                    description_complete=incoming_complete,
+                )
                 cur = self._conn.execute(
                     """
                     INSERT OR IGNORE INTO jobs (
@@ -195,8 +254,9 @@ class Database:
                         location_raw, url, apply_url, description, description_hash,
                         salary_raw, salary_min, salary_max, salary_currency,
                         source, posted_date, first_seen, last_seen, removed_at, status,
-                        company_norm, title_norm, description_complete, description_fetched_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 'new', ?, ?, ?, ?)
+                        company_norm, title_norm, description_complete, description_fetched_at,
+                        enrichment_status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 'new', ?, ?, ?, ?, ?)
                     """,
                     (
                         identity.canonical_key,
@@ -221,6 +281,7 @@ class Database:
                         identity.title_norm,
                         1 if incoming_complete else 0,
                         fetched_at,
+                        enrich_status,
                     ),
                 )
                 if cur.rowcount == 1:
@@ -262,13 +323,14 @@ class Database:
         """Apply update rules for an existing job row. Caller holds the write lock."""
         existing = self._conn.execute(
             "SELECT description, description_hash, description_complete, "
-            "description_fetched_at, location_raw FROM jobs WHERE id = ?",
+            "description_fetched_at, location_raw, enrichment_status FROM jobs WHERE id = ?",
             (existing_id,),
         ).fetchone()
         old_complete = bool(existing["description_complete"]) if existing else False
         old_desc = (existing["description"] if existing else None) or ""
         old_hash = existing["description_hash"] if existing else None
         old_fetched = existing["description_fetched_at"] if existing else None
+        old_enrich = (existing["enrichment_status"] if existing else None) or "pending"
 
         if old_complete and not incoming_complete:
             # Preserve complete cached description; listing stub must not win.
@@ -292,6 +354,14 @@ class Database:
             complete_flag = 1 if old_complete else 0
             fetched_at = old_fetched
 
+        enrich_status = enrichment_status_for_job(
+            ats_provider=identity.ats_provider or job.ats_provider,
+            description_complete=bool(complete_flag),
+            previous_status=old_enrich,
+        )
+        # Listing refresh of an already-complete Workday job keeps complete;
+        # if TTL caller marks stale separately via mark_enrichment_stale.
+
         # Prefer richer location when listing was a multi-location stub.
         location = job.location_raw
         if (
@@ -314,6 +384,7 @@ class Database:
                 description_hash = ?,
                 description_complete = ?,
                 description_fetched_at = ?,
+                enrichment_status = ?,
                 salary_raw = COALESCE(?, salary_raw),
                 salary_min = COALESCE(?, salary_min),
                 salary_max = COALESCE(?, salary_max),
@@ -332,6 +403,7 @@ class Database:
                 desc_hash,
                 complete_flag,
                 fetched_at,
+                enrich_status,
                 job.salary_raw,
                 job.salary_min,
                 job.salary_max,
@@ -441,6 +513,158 @@ class Database:
         row = self._conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
         return dict(row) if row else None
 
+    def count_enrichment_by_status(self) -> dict[str, int]:
+        rows = self._conn.execute(
+            """
+            SELECT COALESCE(enrichment_status, 'pending') AS st, COUNT(*) AS n
+            FROM jobs
+            WHERE removed_at IS NULL
+            GROUP BY COALESCE(enrichment_status, 'pending')
+            """
+        ).fetchall()
+        return {str(r["st"]): int(r["n"]) for r in rows}
+
+    def mark_enrichment_stale(self, *, ttl_s: float, ats_provider: str = "workday") -> int:
+        """Mark complete descriptions older than TTL as stale (eligible for re-enrich)."""
+        from datetime import timedelta
+
+        cutoff = (
+            datetime.now(timezone.utc) - timedelta(seconds=max(0.0, float(ttl_s)))
+        ).strftime("%Y-%m-%dT%H:%M:%SZ")
+        with self.transaction():
+            cur = self._conn.execute(
+                """
+                UPDATE jobs SET enrichment_status = 'stale'
+                WHERE removed_at IS NULL
+                  AND LOWER(COALESCE(ats_provider, '')) = LOWER(?)
+                  AND description_complete = 1
+                  AND enrichment_status = 'complete'
+                  AND description_fetched_at IS NOT NULL
+                  AND description_fetched_at < ?
+                """,
+                (ats_provider, cutoff),
+            )
+            return int(cur.rowcount or 0)
+
+    def set_enrich_priorities(self, job_ids: list[int], priority: int) -> None:
+        if not job_ids:
+            return
+        with self.transaction():
+            for jid in job_ids:
+                self._conn.execute(
+                    "UPDATE jobs SET enrich_priority = ? WHERE id = ?",
+                    (int(priority), int(jid)),
+                )
+
+    def claim_enrichment_jobs(
+        self,
+        *,
+        limit: int = 50,
+        worker_id: str,
+        lease_s: float = 120.0,
+        ats_providers: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Atomically claim pending/stale/failed jobs for enrichment (lease).
+
+        Recovers expired ``processing`` leases so interrupted runs resume.
+        """
+        from datetime import timedelta
+
+        now = datetime.now(timezone.utc)
+        now_s = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        until = (now + timedelta(seconds=max(30.0, float(lease_s)))).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
+        providers = [p.lower() for p in (ats_providers or list(_ENRICH_REQUIRED_ATS))]
+        ph = ",".join("?" for _ in providers)
+        claimed: list[dict[str, Any]] = []
+        with self.transaction():
+            # Release expired leases back to pending/stale.
+            self._conn.execute(
+                """
+                UPDATE jobs SET
+                    enrichment_status = CASE
+                        WHEN description_complete = 1 THEN 'stale'
+                        ELSE 'pending'
+                    END,
+                    enrich_lease_owner = NULL,
+                    enrich_lease_until = NULL
+                WHERE enrichment_status = 'processing'
+                  AND enrich_lease_until IS NOT NULL
+                  AND enrich_lease_until < ?
+                """,
+                (now_s,),
+            )
+            rows = self._conn.execute(
+                f"""
+                SELECT id FROM jobs
+                WHERE removed_at IS NULL
+                  AND LOWER(COALESCE(ats_provider, '')) IN ({ph})
+                  AND enrichment_status IN ('pending', 'stale', 'failed')
+                  AND (
+                    enrich_lease_until IS NULL
+                    OR enrich_lease_until < ?
+                  )
+                ORDER BY enrich_priority DESC, first_seen DESC, id DESC
+                LIMIT ?
+                """,
+                (*providers, now_s, int(limit)),
+            ).fetchall()
+            for row in rows:
+                jid = int(row["id"])
+                cur = self._conn.execute(
+                    """
+                    UPDATE jobs SET
+                        enrichment_status = 'processing',
+                        enrich_lease_owner = ?,
+                        enrich_lease_until = ?,
+                        enrich_attempts = COALESCE(enrich_attempts, 0) + 1
+                    WHERE id = ?
+                      AND enrichment_status IN ('pending', 'stale', 'failed')
+                    """,
+                    (worker_id, until, jid),
+                )
+                if cur.rowcount == 1:
+                    full = self._conn.execute(
+                        "SELECT * FROM jobs WHERE id = ?", (jid,)
+                    ).fetchone()
+                    if full:
+                        claimed.append(dict(full))
+        return claimed
+
+    def complete_enrichment(
+        self,
+        job_id: int,
+        *,
+        ok: bool,
+        error: str | None = None,
+    ) -> None:
+        with self.transaction():
+            if ok:
+                self._conn.execute(
+                    """
+                    UPDATE jobs SET
+                        enrichment_status = 'complete',
+                        enrich_lease_owner = NULL,
+                        enrich_lease_until = NULL,
+                        enrich_last_error = NULL
+                    WHERE id = ?
+                    """,
+                    (int(job_id),),
+                )
+            else:
+                self._conn.execute(
+                    """
+                    UPDATE jobs SET
+                        enrichment_status = 'failed',
+                        enrich_lease_owner = NULL,
+                        enrich_lease_until = NULL,
+                        enrich_last_error = ?
+                    WHERE id = ?
+                    """,
+                    ((error or "enrichment failed")[:500], int(job_id)),
+                )
+
     def list_jobs(
         self,
         *,
@@ -449,15 +673,25 @@ class Database:
         limit: int = 50,
         score_kind: str = "deterministic",
         eligibility: str | None = "ELIGIBLE",
+        require_complete: bool = True,
+        enrichment_status: str | None = None,
     ) -> list[dict[str, Any]]:
         """List jobs with scores.
 
         ``eligibility`` defaults to ``ELIGIBLE`` so the main shortlist is never
         silently padded with UNCERTAIN/INELIGIBLE roles. Pass ``UNCERTAIN``,
         ``INELIGIBLE``, ``ALL``, or ``None`` to inspect other buckets.
+
+        Confirmed shortlists require ``description_complete=1`` by default so
+        provisional / list-only jobs are never shown as fully verified.
         """
         params: list[Any] = []
         clauses = ["j.removed_at IS NULL"]
+        if require_complete and score_kind != "provisional":
+            clauses.append("j.description_complete = 1")
+        if enrichment_status:
+            clauses.append("j.enrichment_status = ?")
+            params.append(enrichment_status)
         if status:
             clauses.append("j.status = ?")
             params.append(status)
@@ -570,18 +804,30 @@ class Database:
         current_model: str | None,
         config_fingerprint: str | None,
         count_only: bool = False,
+        require_complete: bool | None = None,
     ) -> tuple[str, list[Any]]:
         """Build SQL for jobs that lack a valid score for the current config."""
         select = "COUNT(*)" if count_only else "j.*"
+        # Confirmed ranking requires complete descriptions; provisional ranks the rest.
+        if require_complete is None:
+            require_complete = score_kind != "provisional"
+        complete_clause = (
+            "AND j.description_complete = 1"
+            if require_complete
+            else "AND (j.description_complete = 0 OR j.description_complete IS NULL)"
+            if score_kind == "provisional"
+            else ""
+        )
         if re_rank:
             return (
                 f"""
                 SELECT {select} FROM jobs j
                 WHERE j.removed_at IS NULL AND j.status != 'removed'
+                {complete_clause}
                 """,
                 [],
             )
-        if current_model:
+        if current_model and score_kind != "provisional":
             models = (
                 list(current_model)
                 if isinstance(current_model, (list, tuple, set))
@@ -593,6 +839,7 @@ class Database:
                 WHERE j.removed_at IS NULL
                   AND j.status != 'removed'
                   AND j.description IS NOT NULL
+                  {complete_clause}
                   AND NOT EXISTS (
                     SELECT 1 FROM job_scores s
                     WHERE s.job_id = j.id
@@ -616,6 +863,7 @@ class Database:
             WHERE j.removed_at IS NULL
               AND j.status != 'removed'
               AND j.description IS NOT NULL
+              {complete_clause}
               AND s.id IS NULL
         """
         fp = config_fingerprint
@@ -628,6 +876,7 @@ class Database:
         score_kind: str = "deterministic",
         current_model: str | None = None,
         config_fingerprint: str | None = None,
+        require_complete: bool | None = None,
     ) -> int:
         sql, params = self._jobs_needing_score_sql(
             re_rank=re_rank,
@@ -635,6 +884,7 @@ class Database:
             current_model=current_model,
             config_fingerprint=config_fingerprint,
             count_only=True,
+            require_complete=require_complete,
         )
         row = self._conn.execute(sql, params).fetchone()
         return int(row[0] if row else 0)
@@ -649,6 +899,7 @@ class Database:
         current_model: str | None = None,
         title_priority: Any = None,
         config_fingerprint: str | None = None,
+        require_complete: bool | None = None,
     ) -> list[dict[str, Any]]:
         from jobseek.rank.selection import select_jobs_fairly
 
@@ -661,6 +912,7 @@ class Database:
             current_model=current_model,
             config_fingerprint=config_fingerprint,
             count_only=False,
+            require_complete=require_complete,
         )
         order = (
             "ORDER BY j.last_seen DESC"
@@ -919,6 +1171,8 @@ class Database:
              AND s.score_kind = ?
             WHERE j.removed_at IS NULL
               AND j.status = 'ranked'
+              AND j.description_complete = 1
+              AND s.score_kind != 'provisional'
               AND s.overall >= ?
               {since_clause}
             ORDER BY s.overall DESC, j.first_seen DESC

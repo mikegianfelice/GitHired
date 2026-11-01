@@ -83,13 +83,15 @@ cd GitHired
 python3 -m pip install -e ".[dev]"   # Python 3.10+ (3.11+ recommended on macOS)
 githired setup                       # province, city, tracks, salary — interactive
 githired doctor
-githired discover                    # public ATS; often 20–45+ min with Workday
-githired rank
+githired discover                    # listings only (fast); browse while enriching
+githired enrich                      # Workday full descriptions + geo (resumable)
+githired rank                        # confirmed scores (complete jobs only)
 githired jobs                        # confirmed Canada-compatible matches
 githired digest
 ```
 
-**One-liner daily loop:** `githired run-daily`  
+**One-liner daily loop:** `githired refresh` or `githired run-daily`  
+**Statuses:** *discovered* → *enriched* → *confirmed eligible* (provisional ranks never count as confirmed)  
 **Agent apply flow:** `/apply <job-url>` (asks before drafting)
 
 ---

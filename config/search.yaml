@@ -174,6 +174,10 @@ sources:
   # across distinct myworkdayjobs.com tenants without shared-throttle starvation.
   company_concurrency: 4
   workday_company_concurrency: 3
+  # Enrichment (post-discover detail hydration) — independent of listing discover.
+  enrich_concurrency: 4
+  enrich_batch_size: 200
+  enrich_budget_s: 300
   gem: false
   career_pages: true
   linkedin_search_index: true

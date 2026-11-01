@@ -19,6 +19,7 @@ from jobseek.config_loader import Settings, load_dotenv, load_profile, load_sear
 from jobseek.db.store import Database
 from jobseek.digest.build import build_digest, render_digest_markdown
 from jobseek.discover import run_discover
+from jobseek.enrich import run_enrich
 from jobseek.email.send import send_digest_email
 from jobseek.logging_util import setup_logging
 from jobseek.paths import ROOT, config_dir, db_path, packaged_defaults_dir, seen_jobs_path, tracker_path
@@ -63,22 +64,19 @@ def cmd_discover(args: argparse.Namespace) -> int:
             mode=mode,
             force_refresh_descriptions=bool(getattr(args, "force_refresh_descriptions", False)),
         )
+        summary["enrichment"] = db.count_enrichment_by_status()
+        summary["hint"] = (
+            f"Listing discovery finished (list-only). Next: "
+            f"`{_prog_name()} enrich` for Workday descriptions, then "
+            f"`{_prog_name()} rank` and `{_prog_name()} jobs`. "
+            f"Or `{_prog_name()} refresh` to run discover→enrich→rank."
+        )
         summary["next"] = [
+            f"{_prog_name()} enrich",
             f"{_prog_name()} rank",
             f"{_prog_name()} jobs",
             f"{_prog_name()} digest",
         ]
-        if mode == "quick":
-            summary["hint"] = (
-                f"Quick discover finished (mode={mode}). Next: `{_prog_name()} rank` then "
-                f"`{_prog_name()} jobs`. Run `{_prog_name()} discover --mode deep` weekly "
-                "to refresh stale Workday descriptions."
-            )
-        else:
-            summary["hint"] = (
-                f"Next: run `{_prog_name()} rank` to score new jobs, then "
-                f"`{_prog_name()} jobs` for confirmed Canada-compatible matches."
-            )
         # Human-readable source warnings (LinkedIn free index / empty boards).
         friendly: list[str] = []
         for w in summary.get("warnings") or []:
@@ -121,8 +119,12 @@ def cmd_rank(args: argparse.Namespace) -> int:
     from jobseek.rank.scorer import STAGE1_MODELS
 
     use_llm = bool(args.llm) or settings.rank_llm
-    score_kind = "llm" if use_llm else "deterministic"
-    current_model = None if use_llm else STAGE1_MODELS
+    provisional = bool(getattr(args, "provisional", False))
+    if provisional and use_llm:
+        _err("error: --provisional cannot be combined with --llm")
+        return 2
+    score_kind = "provisional" if provisional else ("llm" if use_llm else "deterministic")
+    current_model = None if (use_llm or provisional) else STAGE1_MODELS
     # Default: score all unscored / stale track-relevant jobs in bounded batches.
     # Explicit --limit still caps total persisted scores this run.
     user_limit = args.limit  # None → unbounded
@@ -146,6 +148,7 @@ def cmd_rank(args: argparse.Namespace) -> int:
             score_kind=score_kind,
             current_model=current_model,
             config_fingerprint=fp,
+            require_complete=False if provisional else True,
         )
         load_s = round(time.monotonic() - load_t0, 2)
         _err(
@@ -195,6 +198,7 @@ def cmd_rank(args: argparse.Namespace) -> int:
                 config_fingerprint=fp,
                 title_priority=_title_priority,
                 pool_size=max(fetch_n * 8, 400),
+                require_complete=False if provisional else True,
             )
             if not jobs:
                 break
@@ -213,20 +217,44 @@ def cmd_rank(args: argparse.Namespace) -> int:
                     use_llm=use_llm,
                 )
                 score_s += time.monotonic() - st
+                hard = scored.hard_filter.to_dict() if scored.hard_filter else None
+                kind = scored.score_kind
+                model_name = scored.model
+                elig = scored.hard_filter.eligibility if scored.hard_filter else None
+                verdict = scored.hard_filter.verdict if scored.hard_filter else None
+                if provisional:
+                    kind = "provisional"
+                    model_name = f"provisional/{scored.model}"
+                    if hard is None:
+                        hard = {
+                            "verdict": "FLAG",
+                            "eligibility": "UNCERTAIN",
+                            "reasons": ["provisional: awaiting enrichment"],
+                            "evidence": [],
+                        }
+                    else:
+                        hard = dict(hard)
+                        hard["eligibility"] = "UNCERTAIN"
+                        hard["verdict"] = "FLAG"
+                        ev = list(hard.get("evidence") or [])
+                        ev.append("provisional: full description not yet enriched")
+                        hard["evidence"] = ev
+                    elig = "UNCERTAIN"
+                    verdict = "FLAG"
                 pt = time.monotonic()
                 db.save_score(
                     job["id"],
                     overall=scored.overall,
                     scores=scored.scores,
-                    hard_filter=scored.hard_filter.to_dict() if scored.hard_filter else None,
+                    hard_filter=hard,
                     strengths=scored.strengths,
                     gaps=scored.gaps,
                     salary_alignment=scored.salary_alignment,
                     rejection_reasons=scored.rejection_reasons,
                     evidence=scored.evidence,
-                    model=scored.model,
+                    model=model_name,
                     description_hash=job.get("description_hash") or "",
-                    score_kind=scored.score_kind,
+                    score_kind=kind,
                     config_fingerprint=fp,
                 )
                 persist_s += time.monotonic() - pt
@@ -238,10 +266,10 @@ def cmd_rank(args: argparse.Namespace) -> int:
                         "company": job["company"],
                         "title": job["title"],
                         "overall": scored.overall,
-                        "score_kind": scored.score_kind,
-                        "verdict": scored.hard_filter.verdict if scored.hard_filter else None,
-                        "eligibility": scored.hard_filter.eligibility if scored.hard_filter else None,
-                        "model": scored.model,
+                        "score_kind": kind,
+                        "verdict": verdict,
+                        "eligibility": elig,
+                        "model": model_name,
                     }
                 )
             _err(
@@ -460,6 +488,166 @@ def cmd_companies(args: argparse.Namespace) -> int:
         db.close()
 
 
+
+def cmd_enrich(args: argparse.Namespace) -> int:
+    load_dotenv()
+    settings = Settings.from_env()
+    setup_logging(settings.log_level)
+    db = _db(settings)
+    try:
+        def _progress(msg: str) -> None:
+            _err(msg)
+
+        summary = run_enrich(
+            db,
+            settings=settings,
+            mode=getattr(args, "mode", None) or "standard",
+            limit=getattr(args, "limit", None),
+            workers=getattr(args, "workers", None),
+            time_budget_s=getattr(args, "budget", None),
+            force_refresh=bool(getattr(args, "force_refresh", False)),
+            progress=_progress,
+        )
+        summary["next"] = [
+            f"{_prog_name()} rank",
+            f"{_prog_name()} jobs",
+            f"{_prog_name()} enrich  # resume if queue remains",
+        ]
+        pending = int((summary.get("queue_after") or {}).get("pending") or 0)
+        processing = int((summary.get("queue_after") or {}).get("processing") or 0)
+        failed = int((summary.get("queue_after") or {}).get("failed") or 0)
+        if pending or failed or processing:
+            summary["hint"] = (
+                f"Enrichment batch done. Queue still has pending={pending} "
+                f"failed={failed} processing={processing}. Re-run "
+                f"`{_prog_name()} enrich` to continue, then `{_prog_name()} rank`."
+            )
+        else:
+            summary["hint"] = (
+                f"Enrichment complete for this batch. Next: `{_prog_name()} rank` "
+                f"then `{_prog_name()} jobs` for confirmed matches."
+            )
+        _print_json(summary)
+        return 0 if summary.get("ok", True) else 1
+    finally:
+        db.close()
+
+
+def cmd_refresh(args: argparse.Namespace) -> int:
+    """Orchestrate discover → enrich → rank (local-first daily path)."""
+    load_dotenv()
+    settings = Settings.from_env()
+    setup_logging(settings.log_level)
+    db = _db(settings)
+    report: dict[str, Any] = {"steps": []}
+    try:
+        db.import_tracker_csv(tracker_path())
+        mode = getattr(args, "mode", None) or "standard"
+        disc = run_discover(
+            db,
+            settings=settings,
+            detect_unknown=not getattr(args, "no_detect", False),
+            mode=mode,
+        )
+        report["discover"] = {
+            k: disc.get(k)
+            for k in (
+                "ok",
+                "new",
+                "updated",
+                "fetched",
+                "timing",
+                "boards_succeeded",
+                "boards_attempted",
+                "enrichment",
+                "pipeline",
+            )
+        }
+        report["steps"].append("discover")
+        if not getattr(args, "skip_enrich", False):
+            enr = run_enrich(
+                db,
+                settings=settings,
+                mode=mode,
+                limit=getattr(args, "enrich_limit", None),
+                progress=lambda m: _err(m),
+            )
+            report["enrich"] = {
+                k: enr.get(k)
+                for k in (
+                    "ok",
+                    "claimed",
+                    "enriched",
+                    "failed",
+                    "timing",
+                    "queue_after",
+                    "http_requests",
+                    "cache_hit_rate",
+                )
+            }
+            report["steps"].append("enrich")
+        if not getattr(args, "skip_rank", False):
+            # Reuse rank path via a lightweight inline call
+            from jobseek.filters.tracks import title_matches_selected_tracks
+            from jobseek.rank.fingerprint import scoring_fingerprint
+            from jobseek.rank.scorer import STAGE1_MODELS
+
+            search = load_search()
+            profile = load_profile()
+            fp = scoring_fingerprint(search, profile)
+            scored_n = 0
+            while True:
+                jobs = db.jobs_needing_score(
+                    limit=250,
+                    re_rank=False,
+                    score_kind="deterministic",
+                    current_model=STAGE1_MODELS,
+                    config_fingerprint=fp,
+                    title_priority=lambda j: (
+                        2 if title_matches_selected_tracks(j.get("title") or "", search) else 0
+                    ),
+                )
+                if not jobs:
+                    break
+                batch = 0
+                for job in jobs:
+                    if db.should_skip_recommendation(job["company"], job["title"]):
+                        continue
+                    scored = score_job(
+                        job, search_cfg=search, profile=profile, settings=settings, use_llm=False
+                    )
+                    db.save_score(
+                        job["id"],
+                        overall=scored.overall,
+                        scores=scored.scores,
+                        hard_filter=scored.hard_filter.to_dict() if scored.hard_filter else None,
+                        strengths=scored.strengths,
+                        gaps=scored.gaps,
+                        salary_alignment=scored.salary_alignment,
+                        rejection_reasons=scored.rejection_reasons,
+                        evidence=scored.evidence,
+                        model=scored.model,
+                        description_hash=job.get("description_hash") or "",
+                        score_kind=scored.score_kind,
+                        config_fingerprint=fp,
+                    )
+                    scored_n += 1
+                    batch += 1
+                if batch == 0:
+                    break
+            report["rank"] = {"scored": scored_n, "config_fingerprint": fp}
+            report["steps"].append("rank")
+        report["ok"] = bool(report.get("discover", {}).get("ok", True))
+        report["hint"] = (
+            f"Refresh finished ({', '.join(report['steps'])}). "
+            f"Browse `{_prog_name()} jobs` for confirmed matches."
+        )
+        _print_json(report)
+        return 0 if report.get("ok") else 1
+    finally:
+        db.close()
+
+
 def cmd_run_daily(args: argparse.Namespace) -> int:
     load_dotenv()
     settings = Settings.from_env()
@@ -474,10 +662,25 @@ def cmd_run_daily(args: argparse.Namespace) -> int:
 
             report["companies"] = run_companies_discover(db, settings=settings)
         report["discover"] = run_discover(db, settings=settings)
+        report["enrich"] = run_enrich(
+            db,
+            settings=settings,
+            mode="standard",
+            progress=lambda m: _err(m) if not args.quiet else None,
+        )
         search = load_search()
         profile = load_profile()
         score_kind = "llm" if use_llm else "deterministic"
-        jobs = db.jobs_needing_score(limit=args.limit, re_rank=False, score_kind=score_kind)
+        from jobseek.rank.scorer import STAGE1_MODELS
+        from jobseek.rank.fingerprint import scoring_fingerprint
+        fp = None if use_llm else scoring_fingerprint(search, profile)
+        jobs = db.jobs_needing_score(
+            limit=args.limit,
+            re_rank=False,
+            score_kind=score_kind,
+            current_model=None if use_llm else STAGE1_MODELS,
+            config_fingerprint=fp,
+        )
         ranked = 0
         for job in jobs:
             if db.should_skip_recommendation(job["company"], job["title"]):
@@ -498,6 +701,7 @@ def cmd_run_daily(args: argparse.Namespace) -> int:
                 model=scored.model,
                 description_hash=job.get("description_hash") or "",
                 score_kind=scored.score_kind,
+                config_fingerprint=fp,
             )
             ranked += 1
         report["ranked"] = ranked
@@ -713,6 +917,7 @@ def cmd_jobs(args: argparse.Namespace) -> int:
             limit=args.limit,
             score_kind=args.score_kind,
             eligibility=elig_norm,
+            require_complete=not bool(getattr(args, "include_incomplete", False)),
         )
         counts = db.count_scored_by_eligibility(
             score_kind=args.score_kind or "deterministic",
@@ -1090,7 +1295,10 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     )
     s.set_defaults(func=cmd_setup)
 
-    d = sub.add_parser("discover", help="Run ATS + compliant LinkedIn discovery")
+    d = sub.add_parser(
+        "discover",
+        help="Fetch job listings only (no Workday detail hydration)",
+    )
     d.add_argument("--no-detect", action="store_true", help="Skip ATS auto-detect")
     d.add_argument("--import-tracker", action="store_true", help="Print tracker import count")
     d.add_argument(
@@ -1098,17 +1306,47 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
         choices=("quick", "standard", "deep"),
         default="standard",
         help=(
-            "quick: incremental daily (reuse Workday description cache); "
-            "standard: default separate list/detail budgets + TTL cache; "
-            "deep: full Workday hydration / force refresh (weekly)"
+            "Listing pace only. quick/standard/deep adjust list budgets. "
+            "Descriptions: run `enrich` (or `refresh`)."
         ),
     )
     d.add_argument(
         "--force-refresh-descriptions",
         action="store_true",
-        help="Ignore Workday description TTL and re-fetch details",
+        help="Deprecated for discover (list-only); use enrich --force-refresh",
     )
     d.set_defaults(func=cmd_discover)
+
+    en = sub.add_parser(
+        "enrich",
+        help="Hydrate Workday descriptions / geo for queued jobs",
+    )
+    en.add_argument(
+        "--mode",
+        choices=("quick", "standard", "deep"),
+        default="standard",
+        help="quick: small batch; standard: daily; deep: stale refresh + larger batch",
+    )
+    en.add_argument("--limit", type=int, default=None, help="Max jobs to claim this run")
+    en.add_argument("--workers", type=int, default=None, help="Company-level enrich workers")
+    en.add_argument("--budget", type=float, default=None, dest="budget", help="Wall-clock seconds")
+    en.add_argument(
+        "--force-refresh",
+        action="store_true",
+        help="Re-fetch even TTL-fresh complete descriptions",
+    )
+    en.set_defaults(func=cmd_enrich)
+
+    rf = sub.add_parser(
+        "refresh",
+        help="discover → enrich → rank (local daily orchestration)",
+    )
+    rf.add_argument("--mode", choices=("quick", "standard", "deep"), default="standard")
+    rf.add_argument("--no-detect", action="store_true")
+    rf.add_argument("--skip-enrich", action="store_true")
+    rf.add_argument("--skip-rank", action="store_true")
+    rf.add_argument("--enrich-limit", type=int, default=None)
+    rf.set_defaults(func=cmd_refresh)
 
     r = sub.add_parser("rank", help="Deterministic score (optional --llm)")
     r.add_argument(
@@ -1123,6 +1361,14 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
         action="store_true",
         help="Enable optional LLM stage-2 scoring (requires API key)",
     )
+    r.add_argument(
+        "--provisional",
+        action="store_true",
+        help=(
+            "Score list-only / incomplete jobs as score_kind=provisional "
+            "(never confirmed ELIGIBLE; for enrichment prioritization only)"
+        ),
+    )
     r.set_defaults(func=cmd_rank)
 
     j = sub.add_parser(
@@ -1132,7 +1378,16 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     j.add_argument("--min-score", type=float, default=None)
     j.add_argument("--status", default=None)
     j.add_argument("--limit", type=int, default=25)
-    j.add_argument("--score-kind", default="deterministic", choices=["deterministic", "llm", "hard_filter"])
+    j.add_argument(
+        "--score-kind",
+        default="deterministic",
+        choices=["deterministic", "llm", "hard_filter", "provisional"],
+    )
+    j.add_argument(
+        "--include-incomplete",
+        action="store_true",
+        help="Include jobs that are not yet fully enriched (not confirmed)",
+    )
     j.add_argument(
         "--eligibility",
         default="eligible",
@@ -1162,7 +1417,7 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     e.add_argument("--since", default=None)
     e.set_defaults(func=cmd_email_digest)
 
-    daily = sub.add_parser("run-daily", help="discover → rank → digest → optional email")
+    daily = sub.add_parser("run-daily", help="discover → enrich → rank → digest → optional email")
     daily.add_argument("--limit", type=int, default=40)
     daily.add_argument("--email", action="store_true")
     daily.add_argument("--quiet", action="store_true")

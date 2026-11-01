@@ -135,6 +135,14 @@ MIGRATIONS = [
 JOB_COLUMN_MIGRATIONS = [
     ("description_complete", "ALTER TABLE jobs ADD COLUMN description_complete INTEGER NOT NULL DEFAULT 0"),
     ("description_fetched_at", "ALTER TABLE jobs ADD COLUMN description_fetched_at TEXT"),
+    # Progressive pipeline: discover (list) → enrich (details) → rank.
+    # pending | processing | complete | failed | stale
+    ("enrichment_status", "ALTER TABLE jobs ADD COLUMN enrichment_status TEXT NOT NULL DEFAULT 'pending'"),
+    ("enrich_lease_owner", "ALTER TABLE jobs ADD COLUMN enrich_lease_owner TEXT"),
+    ("enrich_lease_until", "ALTER TABLE jobs ADD COLUMN enrich_lease_until TEXT"),
+    ("enrich_attempts", "ALTER TABLE jobs ADD COLUMN enrich_attempts INTEGER NOT NULL DEFAULT 0"),
+    ("enrich_last_error", "ALTER TABLE jobs ADD COLUMN enrich_last_error TEXT"),
+    ("enrich_priority", "ALTER TABLE jobs ADD COLUMN enrich_priority INTEGER NOT NULL DEFAULT 0"),
 ]
 
 SCORE_COLUMN_MIGRATIONS = [
