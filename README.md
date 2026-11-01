@@ -36,7 +36,7 @@
 
 <p align="center"><img src="assets/showcase/top-paying-jobs.svg" alt="Top 5 high-paying Canada-eligible engineering jobs discovered by GitHired" width="880" /></p>
 
-**Apply directly:** [1. Wattpad ↗](https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply) · [2. PointClickCare ↗](https://jobs.lever.co/pointclickcare/ccdecc93-aef2-4b2b-a981-6843f3c16221/apply) · [3. PointClickCare ↗](https://jobs.lever.co/pointclickcare/150b07cd-04e9-46c4-9015-114498f3798c/apply) · [4. PointClickCare ↗](https://jobs.lever.co/pointclickcare/d27ec0dd-570d-4626-9962-2db3fc56b991/apply) · [5. Wattpad ↗](https://jobs.lever.co/wattpad/da811487-88c8-440b-b6c2-5da90eb80ca1/apply)
+**Apply directly:** [1. PointClickCare ↗](https://jobs.lever.co/pointclickcare/c705af74-d0ed-4cbc-bdfb-3ac8f99fcea6/apply) · [2. Wattpad ↗](https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply) · [3. PointClickCare ↗](https://jobs.lever.co/pointclickcare/ccdecc93-aef2-4b2b-a981-6843f3c16221/apply) · [4. Wattpad ↗](https://jobs.lever.co/wattpad/da811487-88c8-440b-b6c2-5da90eb80ca1/apply) · [5. PointClickCare ↗](https://jobs.lever.co/pointclickcare/e826a207-dba8-41ff-b7b0-c4a4210d5f7d/apply)
 
 <p align="center"><strong>Discovered and verified by GitHired · Open Source</strong></p>
 
@@ -47,7 +47,7 @@
 
 Rank by advertised annual base salary high end, converted to CAD for sorting only (USD×1.35; other currencies excluded). Display the employer-stated currency and range unchanged. No estimates for undisclosed pay.
 
-- Snapshot refreshed: **2026-10-31 18:04 UTC** (preserved on failure — never backdated).
+- Snapshot refreshed: **2026-11-01 18:41 UTC** (preserved on failure — never backdated).
 - Blue ✓ marks listings confirmed against a direct employer career / ATS URL.
 - SVG cards are visual only on GitHub; use **Apply directly** links below the image (order matches card numbers 1–N).
 - **Discovered Today** is shown only when the job’s `first_seen` date is today; otherwise the card shows the last verified date.
