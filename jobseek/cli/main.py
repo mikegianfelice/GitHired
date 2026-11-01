@@ -10,6 +10,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -126,7 +127,9 @@ def cmd_rank(args: argparse.Namespace) -> int:
     # Explicit --limit still caps total persisted scores this run.
     user_limit = args.limit  # None → unbounded
     batch_size = 250
+    rank_t0 = time.monotonic()
     try:
+        load_t0 = time.monotonic()
         db.import_tracker_csv(tracker_path())
         warn = profile_warnings(profile)
         for w in warn:
@@ -138,8 +141,47 @@ def cmd_rank(args: argparse.Namespace) -> int:
         from jobseek.rank.fingerprint import scoring_fingerprint
 
         fp = None if use_llm else scoring_fingerprint(search, profile)
+        pending = db.count_jobs_needing_score(
+            re_rank=bool(args.re_rank),
+            score_kind=score_kind,
+            current_model=current_model,
+            config_fingerprint=fp,
+        )
+        load_s = round(time.monotonic() - load_t0, 2)
+        _err(
+            f"rank: {pending} job(s) need scoring "
+            f"(fingerprint={fp or 'n/a'}, re_rank={bool(args.re_rank)}, "
+            f"load_s={load_s})"
+        )
+        if pending == 0 and not args.re_rank:
+            counts = db.count_scored_by_eligibility(score_kind=score_kind)
+            _print_json(
+                {
+                    "scored": 0,
+                    "skipped": "unchanged",
+                    "pending": 0,
+                    "config_fingerprint": fp,
+                    "score_kind": score_kind,
+                    "timing": {
+                        "total_s": round(time.monotonic() - rank_t0, 2),
+                        "load_s": load_s,
+                        "score_s": 0.0,
+                        "persist_s": 0.0,
+                    },
+                    "eligibility_counts": counts,
+                    "hint": (
+                        f"Nothing to rescore — config and descriptions unchanged. "
+                        f"Use `{_prog_name()} rank --re-rank` for a full rescore."
+                    ),
+                }
+            )
+            return 0
+
         results: list[dict[str, Any]] = []
         persisted = 0
+        skipped_tracked = 0
+        score_s = 0.0
+        persist_s = 0.0
         while True:
             remaining = None if user_limit is None else max(0, user_limit - persisted)
             if remaining == 0:
@@ -152,15 +194,17 @@ def cmd_rank(args: argparse.Namespace) -> int:
                 current_model=current_model,
                 config_fingerprint=fp,
                 title_priority=_title_priority,
-                pool_size=max(fetch_n * 40, 500),
+                pool_size=max(fetch_n * 8, 400),
             )
             if not jobs:
                 break
             batch_persisted = 0
             for job in jobs:
                 if db.should_skip_recommendation(job["company"], job["title"]):
+                    skipped_tracked += 1
                     results.append({"id": job["id"], "skipped": "tracked_application"})
                     continue
+                st = time.monotonic()
                 scored = score_job(
                     job,
                     search_cfg=search,
@@ -168,6 +212,8 @@ def cmd_rank(args: argparse.Namespace) -> int:
                     settings=settings,
                     use_llm=use_llm,
                 )
+                score_s += time.monotonic() - st
+                pt = time.monotonic()
                 db.save_score(
                     job["id"],
                     overall=scored.overall,
@@ -183,6 +229,7 @@ def cmd_rank(args: argparse.Namespace) -> int:
                     score_kind=scored.score_kind,
                     config_fingerprint=fp,
                 )
+                persist_s += time.monotonic() - pt
                 persisted += 1
                 batch_persisted += 1
                 results.append(
@@ -197,6 +244,10 @@ def cmd_rank(args: argparse.Namespace) -> int:
                         "model": scored.model,
                     }
                 )
+            _err(
+                f"rank progress: scored={persisted}/{pending or '?'} "
+                f"batch={batch_persisted} elapsed_s={time.monotonic() - rank_t0:.1f}"
+            )
             # Avoid infinite loop if re_rank keeps returning the same pool
             if args.re_rank:
                 break
@@ -207,12 +258,21 @@ def cmd_rank(args: argparse.Namespace) -> int:
 
         companies = sorted({r.get("company") for r in results if r.get("company")})
         counts = db.count_scored_by_eligibility(score_kind=score_kind)
+        total_s = round(time.monotonic() - rank_t0, 2)
         _print_json(
             {
                 "scored": persisted,
+                "skipped_tracked": skipped_tracked,
+                "pending_at_start": pending,
                 "reported": len(results),
                 "config_fingerprint": fp,
                 "score_kind": score_kind,
+                "timing": {
+                    "total_s": total_s,
+                    "load_s": load_s,
+                    "score_s": round(score_s, 2),
+                    "persist_s": round(persist_s, 2),
+                },
                 "model": (
                     list(current_model) if current_model is not None else score_kind
                 ),

@@ -170,8 +170,10 @@ sources:
   # Set workday_complete: true (or `githired discover --mode deep`) for full hydration.
   workday_complete: false
   # Bounded concurrent company fetches (non-Workday / Workday pools).
+  # Workday boards use isolated HTTP clients; 3 concurrent hosts is polite
+  # across distinct myworkdayjobs.com tenants without shared-throttle starvation.
   company_concurrency: 4
-  workday_company_concurrency: 2
+  workday_company_concurrency: 3
   gem: false
   career_pages: true
   linkedin_search_index: true

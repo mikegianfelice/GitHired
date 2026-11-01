@@ -384,7 +384,26 @@ class Database:
         company: str,
         ats_job_ids: list[str] | None = None,
     ) -> dict[str, dict[str, Any]]:
-        """Return cached Workday descriptions keyed by ats_job_id for hydration reuse."""
+        """Return cached Workday descriptions keyed by ats_job_id and URL path id.
+
+        Multi-key index lets hydration match list rows that only expose the path
+        slug when bulletFields omit the requisition id.
+        """
+
+        def _index_rows(rows: list[Any]) -> dict[str, dict[str, Any]]:
+            out: dict[str, dict[str, Any]] = {}
+            for row in rows:
+                entry = dict(row)
+                job_id = entry.get("ats_job_id")
+                if job_id:
+                    out[str(job_id)] = entry
+                url = str(entry.get("url") or entry.get("apply_url") or "")
+                if url:
+                    path_id = url.rstrip("/").split("/")[-1].split("?")[0]
+                    if path_id and path_id not in out:
+                        out[path_id] = entry
+            return out
+
         clauses = [
             "ats_provider = 'workday'",
             "company = ?",
@@ -392,31 +411,31 @@ class Database:
             "ats_job_id IS NOT NULL",
         ]
         params: list[Any] = [company]
+        select_cols = (
+            "ats_job_id, description, description_complete, "
+            "description_fetched_at, location_raw, description_hash, url, apply_url"
+        )
         if ats_job_ids:
-            # Chunk large IN lists
             out: dict[str, dict[str, Any]] = {}
             for i in range(0, len(ats_job_ids), 400):
                 chunk = ats_job_ids[i : i + 400]
                 ph = ",".join("?" for _ in chunk)
                 sql = f"""
-                    SELECT ats_job_id, description, description_complete,
-                           description_fetched_at, location_raw, description_hash
+                    SELECT {select_cols}
                     FROM jobs
                     WHERE ats_provider = 'workday' AND company = ?
                       AND removed_at IS NULL AND ats_job_id IN ({ph})
                 """
                 rows = self._conn.execute(sql, [company, *chunk]).fetchall()
-                for row in rows:
-                    out[str(row["ats_job_id"])] = dict(row)
+                out.update(_index_rows(rows))
             return out
         sql = f"""
-            SELECT ats_job_id, description, description_complete,
-                   description_fetched_at, location_raw, description_hash
+            SELECT {select_cols}
             FROM jobs
             WHERE {' AND '.join(clauses)}
         """
         rows = self._conn.execute(sql, params).fetchall()
-        return {str(row["ats_job_id"]): dict(row) for row in rows}
+        return _index_rows(rows)
 
     def get_job(self, job_id: int) -> dict[str, Any] | None:
         row = self._conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
@@ -543,40 +562,34 @@ class Database:
             counts[elig] += 1
         return counts
 
-    def jobs_needing_score(
+    def _jobs_needing_score_sql(
         self,
         *,
-        limit: int = 50,
-        re_rank: bool = False,
-        score_kind: str = "deterministic",
-        pool_size: int | None = None,
-        current_model: str | None = None,
-        title_priority: Any = None,
-        config_fingerprint: str | None = None,
-    ) -> list[dict[str, Any]]:
-        from jobseek.rank.selection import select_jobs_fairly
-
-        pool = pool_size or max(limit * 40, 500)
+        re_rank: bool,
+        score_kind: str,
+        current_model: str | None,
+        config_fingerprint: str | None,
+        count_only: bool = False,
+    ) -> tuple[str, list[Any]]:
+        """Build SQL for jobs that lack a valid score for the current config."""
+        select = "COUNT(*)" if count_only else "j.*"
         if re_rank:
-            sql = """
-                SELECT j.* FROM jobs j
+            return (
+                f"""
+                SELECT {select} FROM jobs j
                 WHERE j.removed_at IS NULL AND j.status != 'removed'
-                ORDER BY j.last_seen DESC
-                LIMIT ?
-            """
-            rows = self._conn.execute(sql, (pool,)).fetchall()
-        elif current_model:
-            # current_model may be a single string or a sequence of acceptable Stage-1 models
-            # (deterministic + hard_filter share a scorer version).
+                """,
+                [],
+            )
+        if current_model:
             models = (
                 list(current_model)
                 if isinstance(current_model, (list, tuple, set))
                 else [current_model]
             )
             placeholders = ",".join("?" for _ in models)
-            # Valid prior score: matching model + description_hash + fingerprint.
             sql = f"""
-                SELECT j.* FROM jobs j
+                SELECT {select} FROM jobs j
                 WHERE j.removed_at IS NULL
                   AND j.status != 'removed'
                   AND j.description IS NOT NULL
@@ -590,28 +603,72 @@ class Database:
                         OR (s.config_fingerprint IS NOT NULL AND s.config_fingerprint = ?)
                       )
                   )
-                ORDER BY j.first_seen DESC
-                LIMIT ?
             """
             fp = config_fingerprint
-            rows = self._conn.execute(sql, (*models, fp, fp, pool)).fetchall()
-        else:
-            sql = """
-                SELECT j.* FROM jobs j
-                LEFT JOIN job_scores s
-                  ON s.job_id = j.id
-                 AND s.description_hash = j.description_hash
-                 AND s.score_kind = ?
-                 AND (? IS NULL OR s.config_fingerprint = ?)
-                WHERE j.removed_at IS NULL
-                  AND j.status != 'removed'
-                  AND j.description IS NOT NULL
-                  AND s.id IS NULL
-                ORDER BY j.first_seen DESC
-                LIMIT ?
-            """
-            fp = config_fingerprint
-            rows = self._conn.execute(sql, (score_kind, fp, fp, pool)).fetchall()
+            return sql, [*models, fp, fp]
+        sql = f"""
+            SELECT {select} FROM jobs j
+            LEFT JOIN job_scores s
+              ON s.job_id = j.id
+             AND s.description_hash = j.description_hash
+             AND s.score_kind = ?
+             AND (? IS NULL OR s.config_fingerprint = ?)
+            WHERE j.removed_at IS NULL
+              AND j.status != 'removed'
+              AND j.description IS NOT NULL
+              AND s.id IS NULL
+        """
+        fp = config_fingerprint
+        return sql, [score_kind, fp, fp]
+
+    def count_jobs_needing_score(
+        self,
+        *,
+        re_rank: bool = False,
+        score_kind: str = "deterministic",
+        current_model: str | None = None,
+        config_fingerprint: str | None = None,
+    ) -> int:
+        sql, params = self._jobs_needing_score_sql(
+            re_rank=re_rank,
+            score_kind=score_kind,
+            current_model=current_model,
+            config_fingerprint=config_fingerprint,
+            count_only=True,
+        )
+        row = self._conn.execute(sql, params).fetchone()
+        return int(row[0] if row else 0)
+
+    def jobs_needing_score(
+        self,
+        *,
+        limit: int = 50,
+        re_rank: bool = False,
+        score_kind: str = "deterministic",
+        pool_size: int | None = None,
+        current_model: str | None = None,
+        title_priority: Any = None,
+        config_fingerprint: str | None = None,
+    ) -> list[dict[str, Any]]:
+        from jobseek.rank.selection import select_jobs_fairly
+
+        # Keep the candidate pool modest — large pools with title_priority make
+        # incremental ranking feel hung on big databases.
+        pool = pool_size or max(limit * 8, 400)
+        base_sql, params = self._jobs_needing_score_sql(
+            re_rank=re_rank,
+            score_kind=score_kind,
+            current_model=current_model,
+            config_fingerprint=config_fingerprint,
+            count_only=False,
+        )
+        order = (
+            "ORDER BY j.last_seen DESC"
+            if re_rank
+            else "ORDER BY j.first_seen DESC"
+        )
+        sql = f"{base_sql} {order} LIMIT ?"
+        rows = self._conn.execute(sql, (*params, pool)).fetchall()
         candidates = [dict(r) for r in rows]
         return select_jobs_fairly(
             candidates, limit=limit, title_priority=title_priority
