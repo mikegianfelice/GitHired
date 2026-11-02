@@ -46,6 +46,8 @@ Resume drafting and application submission stay behind explicit approval (`githi
 
 **Fresh install:** you do **not** need to hand-maintain a company list. Builtin boards + `companies discover` expand the registry automatically. Core path needs no paid APIs or LLM keys.
 
+**Coverage note (2026-11):** builtin registry includes Canadian-heavy boards such as Ada (Toronto AI), Arctic Wolf (Waterloo cybersecurity), Magnet Forensics (Waterloo), and Wave (Toronto fintech), validated live before merge. Many UNCERTAIN scores are US-primary remotes that already have full descriptions — enrichment cannot invent Canadian eligibility for those.
+
 ### Enrichment status values
 
 `pending` → `processing` (leased with worker id + token) → `complete` | `failed` | `stale` (TTL expired; re-queued by enrich). Completion requires matching lease ownership so an expired worker cannot overwrite a newer claim. Failed jobs get `enrich_next_retry_at` (exponential backoff). Incomplete jobs are never shown as confirmed matches.
@@ -157,6 +159,20 @@ Three-state classification (never invent eligibility from employer brand alone):
 | **ELIGIBLE** | Explicit Canada / province / city, or genuine worldwide remote | Priority in ranking |
 | **UNCERTAIN** | Ambiguous remote / US-primary without Canada evidence | Visible; ranking penalty + warning |
 | **INELIGIBLE** | US-only, foreign work-auth, or on-site outside Canada | Hard-filter FAIL |
+
+`githired jobs --eligibility uncertain` explains **why** each role stayed uncertain (missing description, US-primary without Canada evidence, province/city mismatch, remote ambiguity, etc.) and whether enrichment is likely to help.
+
+## Salary policy
+
+Configure under `salary` in [`config/search.yaml`](../config/search.yaml):
+
+| Policy | Missing pay | Below floor |
+|--------|-------------|-------------|
+| **flexible** (default) | Allowed with warning | Rejected |
+| **strict** | Rejected | Rejected |
+| **none** | Ignored | Ignored |
+
+CAD is the default candidate currency. USD salaries are compared using an explicit `usd_to_cad` rate (never treated as CAD 1:1). Legacy `reject_missing: true` maps to `strict`.
 
 Supported modes: `remote_canada`, `remote_province`, `hybrid`, `onsite`.
 

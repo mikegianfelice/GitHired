@@ -609,6 +609,7 @@ def cmd_refresh(args: argparse.Namespace) -> int:
         http_before_first = 0
         saw_confirmed = False
         fp = scoring_fingerprint(search, profile)
+        counts_before = db.count_scored_by_eligibility(score_kind="deterministic")
 
         def _rank_available() -> int:
             nonlocal rank_total
@@ -745,6 +746,24 @@ def cmd_refresh(args: argparse.Namespace) -> int:
         }
         counts = db.count_scored_by_eligibility(score_kind="deterministic")
         report["eligibility_counts"] = counts
+        report["eligibility_transitions"] = {
+            "before": {
+                k: int(counts_before.get(k) or 0)
+                for k in ("ELIGIBLE", "UNCERTAIN", "INELIGIBLE", "confirmed")
+            },
+            "after": {
+                k: int(counts.get(k) or 0)
+                for k in ("ELIGIBLE", "UNCERTAIN", "INELIGIBLE", "confirmed")
+            },
+            "delta_confirmed": int(counts.get("confirmed") or 0)
+            - int(counts_before.get("confirmed") or 0),
+            "delta_uncertain": int(counts.get("UNCERTAIN") or 0)
+            - int(counts_before.get("UNCERTAIN") or 0),
+            "delta_eligible": int(counts.get("ELIGIBLE") or 0)
+            - int(counts_before.get("ELIGIBLE") or 0),
+            "delta_ineligible": int(counts.get("INELIGIBLE") or 0)
+            - int(counts_before.get("INELIGIBLE") or 0),
+        }
         report["ok"] = bool(report.get("discover", {}).get("ok", True))
         confirmed = int(counts.get("confirmed") or snap["confirmed_matches"])
         if confirmed >= target:
@@ -1046,10 +1065,15 @@ def cmd_jobs(args: argparse.Namespace) -> int:
             score_kind=args.score_kind or "deterministic",
             min_score=args.min_score,
         )
+        from jobseek.uncertainty import classify_uncertainty, uncertainty_counts
+
         confirmed = int(counts.get("confirmed") or 0)
         geo_eligible = int(counts.get("ELIGIBLE") or 0)
         uncertain = int(counts.get("relevant_uncertain") or counts.get("UNCERTAIN") or 0)
         hard_fail_geo = int(counts.get("geo_eligible_hard_fail") or 0)
+        if elig_norm == "UNCERTAIN":
+            for row in rows:
+                row["uncertainty"] = classify_uncertainty(row)
         summary = {
             "count": len(rows),
             "eligibility": elig_norm,
@@ -1057,9 +1081,21 @@ def cmd_jobs(args: argparse.Namespace) -> int:
             "geo_eligible": geo_eligible,
             "geo_eligible_hard_fail": hard_fail_geo,
             "uncertain_opportunities": uncertain,
+            "irrelevant": int(counts.get("irrelevant") or 0),
             "eligibility_counts": counts,
             "jobs": rows,
         }
+        if elig_norm == "UNCERTAIN":
+            summary["uncertainty_breakdown"] = uncertainty_counts(rows)
+            enrichable_n = sum(
+                1 for r in rows if (r.get("uncertainty") or {}).get("enrichable")
+            )
+            summary["enrichable_uncertain"] = enrichable_n
+            summary["next_actions"] = [
+                f"{_prog_name()} enrich --mode standard",
+                f"{_prog_name()} rank",
+                f"{_prog_name()} jobs",
+            ]
         if elig_norm == "ELIGIBLE":
             summary["next"] = f"{_prog_name()} jobs --eligibility uncertain"
             relevant_u = int(counts.get("relevant_uncertain") or 0)
@@ -1118,6 +1154,17 @@ def cmd_jobs(args: argparse.Namespace) -> int:
                 f"Showing relevant roles with ambiguous Canadian eligibility "
                 f"({len(rows)} listed; {relevant_u} relevant-uncertain scored)."
             )
+            breakdown = summary.get("uncertainty_breakdown") or {}
+            if breakdown:
+                parts = [f"{k}={v}" for k, v in sorted(breakdown.items()) if k != "not_uncertain"]
+                if parts:
+                    print("Uncertainty causes: " + ", ".join(parts))
+            enrichable_n = int(summary.get("enrichable_uncertain") or 0)
+            if enrichable_n:
+                print(
+                    f"{enrichable_n} may gain evidence from "
+                    f"`{_prog_name()} enrich` (incomplete descriptions)."
+                )
             print(
                 "Off-track titles are classified separately as IRRELEVANT — "
                 f"use `{_prog_name()} jobs --eligibility all` to inspect them."
@@ -1146,13 +1193,11 @@ def cmd_jobs(args: argparse.Namespace) -> int:
                 sal_note = " | Salary undisclosed / unverified"
             uncertain_why = ""
             if elig_norm == "UNCERTAIN":
-                for r in reasons:
-                    low = r.casefold()
-                    if "uncertain" in low or "not evidenced" in low or "ambiguous" in low:
-                        uncertain_why = f"\n       Why uncertain: {r}"
-                        break
-                if not uncertain_why:
-                    uncertain_why = "\n       Why uncertain: Canada eligibility not clearly evidenced"
+                unc = row.get("uncertainty") or classify_uncertainty(row)
+                uncertain_why = (
+                    f"\n       Why uncertain: {unc.get('summary')}"
+                    f"\n       Next: {unc.get('next_action')}"
+                )
             print(
                 f"[{row['id']}] {score_s:>3}  {row['company']} — {row['title']}\n"
                 f"       {row.get('location_raw') or '?'}{sal_note} | {row.get('url')}"
@@ -1162,8 +1207,8 @@ def cmd_jobs(args: argparse.Namespace) -> int:
             print(f"\nNext: {_prog_name()} prepare <id>  (briefing only; no auto-apply)")
         elif elig_norm == "UNCERTAIN":
             print(
-                f"\nNext: review URLs manually, or {_prog_name()} jobs --eligibility eligible "
-                "for confirmed matches only."
+                f"\nNext: `{_prog_name()} enrich` for incomplete descriptions, then "
+                f"`{_prog_name()} rank`; or `{_prog_name()} jobs` for confirmed matches only."
             )
         return 0
     finally:

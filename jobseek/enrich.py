@@ -361,11 +361,15 @@ def run_enrich(
     )
     summary["claimed_track_relevant"] = claimed_track
     summary["claimed_irrelevant"] = max(0, len(claimed) - claimed_track)
+    summary["relevant_pending_before"] = int(prioritized.get("track_relevant") or 0)
+    incomplete_claimed = sum(1 for r in claimed if not r.get("description_complete"))
+    summary["incomplete_claimed"] = incomplete_claimed
     if progress:
         progress(
             f"enrich: claimed {len(claimed)} job(s) across "
             f"{len(summary['companies_in_batch'])} employer(s) (mode={mode_norm}); "
             f"batch_track={claimed_track} batch_off_track={summary['claimed_irrelevant']}; "
+            f"incomplete={incomplete_claimed}; "
             f"queue_track≈{prioritized.get('track_relevant')}"
         )
 

@@ -146,7 +146,13 @@ location:
   unknown_location_policy: flag  # flag | reject | pass
 
 salary:
-  reject_missing: false
+  # flexible (default): missing pay allowed with warning; below-floor rejected
+  # strict: require verified compensation meeting the floor
+  # none: ignore salary minimum entirely
+  policy: flexible
+  reject_missing: false  # legacy alias for policy=strict when true
+  # Explicit USD→CAD rate for cross-currency floor checks (never equate 1:1).
+  usd_to_cad: 1.35
   floors:
     CAD: 120000
     USD: 90000

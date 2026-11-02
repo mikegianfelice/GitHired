@@ -10,6 +10,13 @@ companies:
   board_token: 1password
   enabled: true
   notes: 'Validated 2026-10-29: ashby/1password → 88 jobs (https://api.ashbyhq.com/posting-api/job-board/1password)'
+- name: Ada
+  domain: ada.cx
+  careers_url: https://www.ada.cx/careers/
+  ats: greenhouse
+  board_token: ada18
+  enabled: true
+  notes: 'Validated 2026-11-02: greenhouse/ada18 → 7 jobs (5 Remote-Canada); Toronto AI customer-automation'
 - name: Adept
   careers_url: https://www.adept.ai/careers
   ats: ashby
@@ -44,6 +51,16 @@ companies:
   board_token: anthropic
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/anthropic → 680 jobs (https://boards-api.greenhouse.io/v1/boards/anthropic/jobs)'
+- name: Arctic Wolf
+  domain: arcticwolf.com
+  careers_url: https://arcticwolf.com/company/careers/
+  ats: workday
+  board_token: arcticwolf.wd1.myworkdayjobs.com/arcticwolf/External
+  workday_host: arcticwolf.wd1.myworkdayjobs.com
+  workday_tenant: arcticwolf
+  workday_site: External
+  enabled: true
+  notes: 'Validated 2026-11-02: Workday CXS → 102 jobs incl. Remote Canada Staff AI / Waterloo cybersecurity (DevOps/SRE adjacent)'
 - name: Asana
   domain: asana.com
   careers_url: https://asana.com/jobs
@@ -319,6 +336,13 @@ companies:
   board_token: loopio
   enabled: true
   notes: 'Validated 2026-10-29: ashby/loopio → 16 jobs'
+- name: Magnet Forensics
+  domain: magnetforensics.com
+  careers_url: https://www.magnetforensics.com/careers-at-magnet/
+  ats: lever
+  board_token: magnetforensics
+  enabled: true
+  notes: 'Validated 2026-11-02: lever/magnetforensics → 37 jobs (15 Canada-located incl. Staff SWE, SRE/DevOps, AI) — Waterloo cybersecurity'
 - name: Manulife
   domain: manulife.com
   careers_url: https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs
@@ -581,6 +605,13 @@ companies:
   board_token: waabi
   enabled: true
   notes: 'Validated 2026-10-29: lever/waabi → 94 jobs (https://api.lever.co/v0/postings/waabi?mode=json)'
+- name: Wave
+  domain: waveapps.com
+  careers_url: https://www.waveapps.com/careers
+  ats: lever
+  board_token: waveapps
+  enabled: true
+  notes: 'Validated 2026-11-02: lever/waveapps → 8 Canada jobs incl. Machine Learning Engineer + Senior Software Engineer (Toronto fintech)'
 - name: Wattpad
   domain: wattpad.com
   careers_url: https://company.wattpad.com/careers

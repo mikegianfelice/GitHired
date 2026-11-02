@@ -184,6 +184,15 @@ def compute_enrich_priority(
     score += _seniority_boost(title, search_cfg)
     score += _salary_boost(job, search_cfg)
     score += _freshness_boost(job)
+    # Prefer incomplete / multi-location stubs — enrichment can resolve geography.
+    loc = str(job.get("location_raw") or "")
+    incomplete = not bool(job.get("description_complete"))
+    multi_stub = bool(re.match(r"^\d+\s+locations?$", loc.strip(), re.I))
+    if incomplete or multi_stub:
+        score += 60
+    elif bool(job.get("description_complete")):
+        # Already-complete descriptions: only re-enrich when stale (caller marks).
+        score -= 25
     # Soft skill keyword hints from listing title only (never invent).
     skills = ((profile or {}).get("skills") or {}).get("primary") or []
     title_cf = title.casefold()
