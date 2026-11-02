@@ -286,7 +286,10 @@ def run_discover(
         total_boards = len(fetchable)
         discover_t0 = time.monotonic()
         summary["mode"] = mode_norm
-        summary["timing"] = {}
+        summary["timing"] = {
+            "first_listing_s": None,
+            "first_relevant_listing_s": None,
+        }
         summary["http"] = {
             "workday_details_cached": 0,
             "workday_details_fetched": 0,
@@ -308,6 +311,20 @@ def run_discover(
 
         progress_lock = threading.Lock()
         boards_done = 0
+        from jobseek.filters.tracks import title_matches_selected_tracks
+
+        def _note_listing(job: Any) -> None:
+            """Record wall-clock to first persisted listing / relevant listing."""
+            elapsed = round(time.monotonic() - discover_t0, 2)
+            with progress_lock:
+                if summary["timing"].get("first_listing_s") is None:
+                    summary["timing"]["first_listing_s"] = elapsed
+                if summary["timing"].get("first_relevant_listing_s") is None:
+                    title = getattr(job, "title", None) or (
+                        job.get("title") if isinstance(job, dict) else ""
+                    )
+                    if title_matches_selected_tracks(str(title or ""), search):
+                        summary["timing"]["first_relevant_listing_s"] = elapsed
 
         def _process_company(company: dict[str, Any]) -> dict[str, Any]:
             """Fetch one company board. Safe for worker threads (DB writes locked)."""
@@ -423,6 +440,7 @@ def run_discover(
 
             for job in result.jobs:
                 job_id, is_new = db.upsert_job(job)
+                _note_listing(job)
                 local["job_ids"].append(job_id)
                 if is_new:
                     local["jobs_new"] += 1
@@ -561,6 +579,7 @@ def run_discover(
             for job in li_result.jobs:
                 summary["fetched"] += 1
                 job_id, is_new = db.upsert_job(job)
+                _note_listing(job)
                 if is_new:
                     summary["new"] += 1
                 else:
@@ -588,6 +607,7 @@ def run_discover(
             for job in fh_result.jobs:
                 summary["fetched"] += 1
                 job_id, is_new = db.upsert_job(job)
+                _note_listing(job)
                 if is_new:
                     summary["new"] += 1
                 else:

@@ -181,6 +181,11 @@ sources:
   enrich_budget_s: 300
   # Cap jobs from one employer per enrich claim (round-robin fills the rest).
   enrich_max_per_company: 12
+  # Minimum enrich_priority to claim (track-match floor ≈ 500). Do not pad with
+  # off-track titles. deep=0 allows backlog drain when explicitly requested.
+  enrich_min_priority_quick: 500
+  enrich_min_priority_standard: 400
+  enrich_min_priority_deep: 0
   gem: false
   career_pages: true
   linkedin_search_index: true

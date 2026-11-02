@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from jobseek.db.store import Database
+from jobseek.shortlist import is_confirmed_match
 
 
 def count_confirmed_matches(
@@ -12,15 +13,17 @@ def count_confirmed_matches(
     *,
     min_score: float | None = None,
 ) -> int:
-    """Count ELIGIBLE + complete + deterministic scores (confirmed shortlist)."""
+    """Count jobs that pass the shared confirmed-match gate."""
     rows = db.list_jobs(
         min_score=min_score,
         limit=10_000,
         score_kind="deterministic",
         eligibility="ELIGIBLE",
         require_complete=True,
+        confirmed_only=True,
     )
-    return len(rows)
+    # list_jobs already applies the gate; keep an explicit guard for safety.
+    return sum(1 for r in rows if is_confirmed_match(r, min_score=min_score))
 
 
 def ttf_snapshot(
@@ -45,5 +48,9 @@ def ttf_snapshot(
         **{k: milestones.get(k) for k in ("ttf1_s", "ttf5_s", "ttf10_s")},
     }
     if n < target:
-        out["note"] = f"Only {n} confirmed matches found."
+        out["note"] = (
+            f"Only {n} confirmed matches found."
+            if n
+            else "No confirmed matches found — constraints may be too restrictive."
+        )
     return out

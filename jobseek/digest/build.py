@@ -35,15 +35,18 @@ def build_digest(
     )
     counts = db.count_scored_by_eligibility(min_score=None)
     relevant_uncertain = int(counts.get("relevant_uncertain") or 0)
+    confirmed_n = int(counts.get("confirmed") or len(jobs))
     return {
         "count": len(jobs),
         "min_score": min_score,
         "since": since,
         "eligibility": eligibility,
         "confirmed_matches": len(jobs),
+        "confirmed_total": confirmed_n,
         "uncertain_opportunities": relevant_uncertain,
         "relevant_uncertain": relevant_uncertain,
         "irrelevant": int(counts.get("irrelevant") or 0),
+        "geo_eligible_hard_fail": int(counts.get("geo_eligible_hard_fail") or 0),
         "uncertain_shortlist": uncertain_jobs,
         "eligibility_counts": counts,
         "jobs": jobs,

@@ -26,7 +26,9 @@ These are separate axes — do not confuse them:
 | **Off-track** | eligibility=`IRRELEVANT` | Title failed track match — **not** “uncertain Canada” |
 | **Enrichment** | `pending` → `processing` → `complete` \| `failed` \| `stale` | Detail hydration queue |
 
-`githired jobs` (default) shows **confirmed** matches only (`ELIGIBLE` + complete description). Off-track roles are counted as irrelevant, not as unverified Canadian opportunities.
+**Confirmed match** = complete description + hard-filter `verdict=PASS` + geographic `ELIGIBLE`. Canada-eligible roles that fail salary / seniority / apply-URL gates are **not** confirmed. Missing salary is not auto-rejected.
+
+`githired jobs` (default) shows confirmed matches only. Enrichment modes: **quick** (track-relevant only), **standard** (high-priority), **deep** (allows low-priority backlog).
 
 1. **Three-layer company registry** — builtin [`config/companies.yaml`](../config/companies.yaml) → community [`registry/community/`](../registry/community/) → SQLite discoveries → user [`config/companies.local.yaml`](../config/companies.local.yaml.example) (overrides win; auto-discovery never writes overrides)
 2. **Company discovery** — `githired companies discover` validates public ATS boards (Greenhouse, Lever, Ashby, Workable, RSS/XML, Rippling, Workday guest CXS; Gem adapter present but opt-in)

@@ -591,11 +591,14 @@ class Database:
         ats_providers: list[str] | None = None,
         job_ids: list[int] | None = None,
         max_per_company: int | None = None,
+        min_priority: int = 0,
     ) -> list[dict[str, Any]]:
         """Atomically claim pending/stale/failed jobs for enrichment (lease).
 
         Recovers expired ``processing`` leases. Optional ``job_ids`` claims a
         pre-selected fair batch (priority + employer diversity applied by caller).
+        ``min_priority`` excludes clearly irrelevant rows so batches are not
+        padded with off-track titles.
         """
         import uuid
         from datetime import timedelta
@@ -610,6 +613,7 @@ class Database:
         providers = [p.lower() for p in (ats_providers or list(_ENRICH_REQUIRED_ATS))]
         ph = ",".join("?" for _ in providers)
         claimed: list[dict[str, Any]] = []
+        min_pri = int(min_priority or 0)
         with self.transaction():
             # Release expired leases back to pending/stale.
             self._conn.execute(
@@ -640,6 +644,7 @@ class Database:
                     WHERE removed_at IS NULL
                       AND LOWER(COALESCE(ats_provider, '')) IN ({ph})
                       AND enrichment_status IN ('pending', 'stale', 'failed')
+                      AND COALESCE(enrich_priority, 0) >= ?
                       AND (
                         enrich_next_retry_at IS NULL
                         OR enrich_next_retry_at <= ?
@@ -651,13 +656,14 @@ class Database:
                     ORDER BY enrich_priority DESC, first_seen DESC, id DESC
                     LIMIT ?
                     """,
-                    (*providers, now_s, now_s, pool_n),
+                    (*providers, min_pri, now_s, now_s, pool_n),
                 ).fetchall()
                 candidates = [dict(r) for r in rows]
                 selected = fair_select_for_enrichment(
                     candidates,
                     limit=int(limit),
                     max_per_company=max_per_company,
+                    min_priority=min_pri,
                 )
                 id_list = [int(r["id"]) for r in selected]
 
@@ -716,6 +722,113 @@ class Database:
             )
             return cur.rowcount == 1
 
+    def _lease_matches(
+        self,
+        job_id: int,
+        *,
+        worker_id: str | None,
+        lease_token: str | None,
+        require_active: bool = False,
+    ) -> tuple[bool, Any]:
+        """Return (ok, row). Caller must hold the write lock.
+
+        When ``require_active`` is True the job must still be ``processing``
+        under this worker/token (used for description writes).
+        """
+        row = self._conn.execute(
+            """
+            SELECT enrich_lease_owner, enrich_lease_token, enrichment_status,
+                   description_complete, description, description_hash
+            FROM jobs WHERE id = ?
+            """,
+            (int(job_id),),
+        ).fetchone()
+        if row is None:
+            return False, None
+        owner = row["enrich_lease_owner"]
+        token = row["enrich_lease_token"]
+        status = row["enrichment_status"]
+        if require_active:
+            if status != "processing":
+                return False, row
+            if worker_id is None or lease_token is None:
+                return False, row
+            if owner != worker_id or token != lease_token:
+                return False, row
+            return True, row
+        if worker_id is not None and owner is not None and owner != worker_id:
+            return False, row
+        if lease_token is not None and token is not None and token != lease_token:
+            return False, row
+        return True, row
+
+    def apply_leased_enrichment(
+        self,
+        job_id: int,
+        *,
+        worker_id: str,
+        lease_token: str,
+        enriched: RawJob,
+    ) -> bool:
+        """Atomically verify lease ownership, write enriched fields, mark complete.
+
+        A stale worker whose lease was reclaimed cannot overwrite the current
+        owner's description. Returns False when the lease does not match.
+        """
+        identity = JobIdentity.from_fields(
+            company=enriched.company,
+            title=enriched.title,
+            url=enriched.url,
+            ats_provider=enriched.ats_provider,
+            ats_job_id=enriched.ats_job_id,
+        )
+        now = _utcnow()
+        incoming_desc = (
+            enriched.description if enriched.description not in (None, "") else None
+        )
+        incoming_complete = bool(enriched.description_complete and incoming_desc)
+        with self.transaction():
+            ok, row = self._lease_matches(
+                job_id,
+                worker_id=worker_id,
+                lease_token=lease_token,
+                require_active=True,
+            )
+            if not ok or row is None:
+                return False
+            self._update_existing_job(
+                int(job_id),
+                job=enriched,
+                identity=identity,
+                now=now,
+                incoming_complete=incoming_complete,
+                incoming_desc=incoming_desc,
+                stub_desc=incoming_desc or enriched.title,
+            )
+            # _update_existing_job may already set enrichment_status=complete;
+            # require matching lease ownership to clear the lease atomically.
+            cur = self._conn.execute(
+                """
+                UPDATE jobs SET
+                    enrichment_status = 'complete',
+                    enrich_lease_owner = NULL,
+                    enrich_lease_until = NULL,
+                    enrich_lease_token = NULL,
+                    enrich_last_error = NULL,
+                    enrich_next_retry_at = NULL
+                WHERE id = ?
+                  AND enrich_lease_owner = ?
+                  AND enrich_lease_token = ?
+                """,
+                (int(job_id), worker_id, lease_token),
+            )
+            if cur.rowcount != 1:
+                # Lost the lease mid-write; roll back by raising so transaction undoes.
+                raise RuntimeError(
+                    f"apply_leased_enrichment: lease lost for job {job_id}"
+                )
+            return True
+
     def complete_enrichment(
         self,
         job_id: int,
@@ -729,36 +842,28 @@ class Database:
         """Finish enrichment. Requires matching lease when worker_id/token given.
 
         Returns False when a stale worker lost the lease (no overwrite).
+        Prefer ``apply_leased_enrichment`` when writing a new description so the
+        lease check and body write share one transaction.
         """
         from datetime import timedelta
 
         with self.transaction():
             if worker_id is not None or lease_token is not None:
-                row = self._conn.execute(
-                    """
-                    SELECT enrich_lease_owner, enrich_lease_token, enrichment_status
-                    FROM jobs WHERE id = ?
-                    """,
-                    (int(job_id),),
-                ).fetchone()
+                matched, row = self._lease_matches(
+                    job_id, worker_id=worker_id, lease_token=lease_token
+                )
                 if row is None:
                     return False
-                # Stale worker lost the lease to a newer claim.
+                if not matched:
+                    return False
                 owner = row["enrich_lease_owner"]
-                token = row["enrich_lease_token"]
                 status = row["enrichment_status"]
-                if owner is not None and worker_id is not None and owner != worker_id:
-                    return False
-                if token is not None and lease_token is not None and token != lease_token:
-                    return False
                 # Idempotent success: already complete and lease cleared.
                 if ok and status == "complete" and owner is None:
                     return True
                 # Never demote a complete description via a failed completion.
                 if not ok and status == "complete":
                     return False
-                # Success path: upsert may already have set enrichment_status=complete
-                # while this worker still holds the lease — allow that.
                 if not ok and status != "processing":
                     return False
                 if ok and status not in ("processing", "complete"):
@@ -817,16 +922,20 @@ class Database:
         eligibility: str | None = "ELIGIBLE",
         require_complete: bool = True,
         enrichment_status: str | None = None,
+        confirmed_only: bool | None = None,
     ) -> list[dict[str, Any]]:
         """List jobs with scores.
 
-        ``eligibility`` defaults to ``ELIGIBLE`` so the main shortlist is never
-        silently padded with UNCERTAIN/INELIGIBLE roles. Pass ``UNCERTAIN``,
-        ``INELIGIBLE``, ``ALL``, or ``None`` to inspect other buckets.
+        ``eligibility`` defaults to ``ELIGIBLE``. When the caller asks for the
+        default confirmed shortlist (ELIGIBLE), ``confirmed_only`` defaults to
+        True so hard-filter FAIL rows (e.g. salary below floor) are excluded —
+        geographic eligibility alone is never enough.
 
-        Confirmed shortlists require ``description_complete=1`` by default so
-        provisional / list-only jobs are never shown as fully verified.
+        Pass ``UNCERTAIN``, ``INELIGIBLE``, ``ALL``, or ``confirmed_only=False``
+        to inspect other buckets.
         """
+        from jobseek.shortlist import is_confirmed_match
+
         params: list[Any] = []
         clauses = ["j.removed_at IS NULL"]
         if require_complete and score_kind != "provisional":
@@ -858,11 +967,13 @@ class Database:
             if min_score is not None:
                 clauses.append("s.overall >= ?")
                 params.append(min_score)
-        # Over-fetch when filtering eligibility so LIMIT still fills.
         elig_filter = (eligibility or "").strip().upper()
+        if confirmed_only is None:
+            confirmed_only = elig_filter in ("", "ELIGIBLE", "CONFIRMED", "MATCH", "MATCHES")
+        # Over-fetch when filtering eligibility / confirmed so LIMIT still fills.
         fetch_limit = limit
-        if elig_filter and elig_filter not in ("ALL", "*"):
-            fetch_limit = max(limit * 20, 100)
+        if confirmed_only or (elig_filter and elig_filter not in ("ALL", "*")):
+            fetch_limit = max(limit * 40, 200)
         params.append(fetch_limit)
         sql = f"""
             SELECT j.*, {select_score}
@@ -873,30 +984,28 @@ class Database:
             LIMIT ?
         """
         rows = [dict(r) for r in self._conn.execute(sql, params).fetchall()]
-        if not elig_filter or elig_filter in ("ALL", "*"):
-            return rows[:limit]
         out: list[dict[str, Any]] = []
         for row in rows:
-            elig = self._eligibility_from_score_row(row)
-            if elig == elig_filter:
-                out.append(row)
+            if confirmed_only:
+                if not is_confirmed_match(
+                    row,
+                    min_score=min_score,
+                    require_complete=require_complete and score_kind != "provisional",
+                ):
+                    continue
+            elif elig_filter and elig_filter not in ("ALL", "*"):
+                if self._eligibility_from_score_row(row) != elig_filter:
+                    continue
+            out.append(row)
             if len(out) >= limit:
                 break
         return out
 
     @staticmethod
     def _eligibility_from_score_row(row: dict[str, Any]) -> str:
-        import json
+        from jobseek.shortlist import parse_hard_filter
 
-        hf = row.get("hard_filter_json")
-        if isinstance(hf, str) and hf:
-            try:
-                return str((json.loads(hf) or {}).get("eligibility") or "UNCERTAIN").upper()
-            except json.JSONDecodeError:
-                return "UNCERTAIN"
-        if isinstance(hf, dict):
-            return str(hf.get("eligibility") or "UNCERTAIN").upper()
-        return "UNCERTAIN"
+        return str(parse_hard_filter(row).get("eligibility") or "UNCERTAIN").upper()
 
     def count_scored_by_eligibility(
         self,
@@ -904,8 +1013,8 @@ class Database:
         score_kind: str = "deterministic",
         min_score: float | None = None,
     ) -> dict[str, int]:
-        """Count scored jobs by hard-filter eligibility (ELIGIBLE/UNCERTAIN/INELIGIBLE)."""
-        import json
+        """Count scored jobs by hard-filter eligibility and confirmed-match gate."""
+        from jobseek.shortlist import is_confirmed_match, parse_hard_filter
 
         params: list[Any] = [score_kind]
         score_clause = ""
@@ -914,7 +1023,7 @@ class Database:
             params.append(min_score)
         rows = self._conn.execute(
             f"""
-            SELECT s.hard_filter_json, s.overall
+            SELECT j.description_complete, s.hard_filter_json, s.overall, s.score_kind
             FROM job_scores s
             JOIN jobs j ON j.id = s.job_id
             WHERE j.removed_at IS NULL
@@ -931,23 +1040,16 @@ class Database:
             "IRRELEVANT": 0,
             "relevant_uncertain": 0,
             "irrelevant": 0,
+            "confirmed": 0,
+            "geo_eligible_hard_fail": 0,
         }
         for row in rows:
-            elig = "UNCERTAIN"
-            relevance = None
-            title_match = None
-            hf = row["hard_filter_json"] if hasattr(row, "keys") else row[0]
-            parsed: dict[str, Any] = {}
-            if isinstance(hf, str) and hf:
-                try:
-                    parsed = json.loads(hf) or {}
-                except json.JSONDecodeError:
-                    parsed = {}
-            elif isinstance(hf, dict):
-                parsed = hf
+            item = dict(row)
+            parsed = parse_hard_filter(item)
             elig = str(parsed.get("eligibility") or "UNCERTAIN").upper()
             relevance = str(parsed.get("relevance") or "").upper() or None
             title_match = parsed.get("title_match")
+            verdict = str(parsed.get("verdict") or "").upper()
             if elig not in ("ELIGIBLE", "UNCERTAIN", "INELIGIBLE", "IRRELEVANT"):
                 elig = "UNCERTAIN"
             counts[elig] = counts.get(elig, 0) + 1
@@ -960,6 +1062,10 @@ class Database:
                 counts["irrelevant"] += 1
             elif elig == "UNCERTAIN":
                 counts["relevant_uncertain"] += 1
+            if elig == "ELIGIBLE" and verdict == "FAIL":
+                counts["geo_eligible_hard_fail"] += 1
+            if is_confirmed_match(item, min_score=min_score, require_complete=True):
+                counts["confirmed"] += 1
         return counts
 
     def _jobs_needing_score_sql(
@@ -1316,9 +1422,12 @@ class Database:
         since: str | None = None,
         score_kind: str = "deterministic",
         eligibility: str | None = "ELIGIBLE",
+        confirmed_only: bool | None = None,
     ) -> list[dict[str, Any]]:
-        # Over-fetch so filtering tracked applications + eligibility can still fill top_n
-        fetch_limit = max(limit * 25, 100)
+        from jobseek.shortlist import is_confirmed_match
+
+        # Over-fetch so filtering tracked applications + confirmed gate can still fill top_n
+        fetch_limit = max(limit * 40, 200)
         params: list[Any] = [score_kind, min_score]
         since_clause = ""
         if since:
@@ -1347,12 +1456,17 @@ class Database:
             params,
         ).fetchall()
         elig_filter = (eligibility or "ELIGIBLE").strip().upper()
+        if confirmed_only is None:
+            confirmed_only = elig_filter in ("ELIGIBLE", "CONFIRMED", "MATCH", "MATCHES")
         results = []
         for row in rows:
             item = dict(row)
             if self.should_skip_recommendation(item["company"], item["title"]):
                 continue
-            if elig_filter not in ("ALL", "*"):
+            if confirmed_only:
+                if not is_confirmed_match(item, min_score=min_score, require_complete=True):
+                    continue
+            elif elig_filter not in ("ALL", "*"):
                 if self._eligibility_from_score_row(item) != elig_filter:
                     continue
             results.append(item)

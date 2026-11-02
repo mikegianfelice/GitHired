@@ -550,6 +550,7 @@ def cmd_refresh(args: argparse.Namespace) -> int:
         "ttf5_s": None,
         "ttf10_s": None,
         "first_discovered_s": None,
+        "first_relevant_discovered_s": None,
         "first_confirmed_s": None,
     }
     try:
@@ -578,7 +579,14 @@ def cmd_refresh(args: argparse.Namespace) -> int:
             detect_unknown=not getattr(args, "no_detect", False),
             mode=mode,
         )
-        milestones["first_discovered_s"] = round(time.monotonic() - t0, 2)
+        disc_timing = disc.get("timing") or {}
+        # Prefer actual first-persist events from discover (not total duration).
+        if disc_timing.get("first_listing_s") is not None:
+            milestones["first_discovered_s"] = float(disc_timing["first_listing_s"])
+        if disc_timing.get("first_relevant_listing_s") is not None:
+            milestones["first_relevant_discovered_s"] = float(
+                disc_timing["first_relevant_listing_s"]
+            )
         report["discover"] = {
             k: disc.get(k)
             for k in (
@@ -728,20 +736,27 @@ def cmd_refresh(args: argparse.Namespace) -> int:
         report["ttf"] = {
             **snap,
             "first_discovered_s": milestones.get("first_discovered_s"),
+            "first_relevant_discovered_s": milestones.get("first_relevant_discovered_s"),
             "first_confirmed_s": milestones.get("first_confirmed_s"),
             "http_before_first_confirmed": http_before_first if saw_confirmed else None,
-            "irrelevant_enriched_before_first_confirmed_est": (
+            "irrelevant_enriched_before_first_confirmed": (
                 irrelevant_enriched_before_first if saw_confirmed else None
             ),
         }
         counts = db.count_scored_by_eligibility(score_kind="deterministic")
         report["eligibility_counts"] = counts
         report["ok"] = bool(report.get("discover", {}).get("ok", True))
-        confirmed = snap["confirmed_matches"]
+        confirmed = int(counts.get("confirmed") or snap["confirmed_matches"])
         if confirmed >= target:
             report["hint"] = (
                 f"Refresh ready: {confirmed} confirmed matches "
                 f"(TTF10≈{milestones.get('ttf10_s')}s). Run `{_prog_name()} jobs`."
+            )
+        elif confirmed == 0:
+            report["hint"] = (
+                "No confirmed matches found — constraints may be too restrictive, "
+                "or enrichment/ranking still needs more budget. "
+                f"Try `{_prog_name()} enrich` then `{_prog_name()} rank`."
             )
         else:
             report["hint"] = (
@@ -1031,17 +1046,21 @@ def cmd_jobs(args: argparse.Namespace) -> int:
             score_kind=args.score_kind or "deterministic",
             min_score=args.min_score,
         )
-        confirmed = int(counts.get("ELIGIBLE") or 0)
-        uncertain = int(counts.get("UNCERTAIN") or 0)
+        confirmed = int(counts.get("confirmed") or 0)
+        geo_eligible = int(counts.get("ELIGIBLE") or 0)
+        uncertain = int(counts.get("relevant_uncertain") or counts.get("UNCERTAIN") or 0)
+        hard_fail_geo = int(counts.get("geo_eligible_hard_fail") or 0)
         summary = {
             "count": len(rows),
             "eligibility": elig_norm,
             "confirmed_matches": confirmed,
+            "geo_eligible": geo_eligible,
+            "geo_eligible_hard_fail": hard_fail_geo,
             "uncertain_opportunities": uncertain,
             "eligibility_counts": counts,
             "jobs": rows,
         }
-        if elig_norm == "ELIGIBLE" and uncertain:
+        if elig_norm == "ELIGIBLE":
             summary["next"] = f"{_prog_name()} jobs --eligibility uncertain"
             relevant_u = int(counts.get("relevant_uncertain") or 0)
             irrelevant = int(counts.get("irrelevant") or counts.get("IRRELEVANT") or 0)
@@ -1050,6 +1069,11 @@ def cmd_jobs(args: argparse.Namespace) -> int:
             parts = [
                 f"Found {confirmed} confirmed match{'es' if confirmed != 1 else ''}."
             ]
+            if hard_fail_geo:
+                parts.append(
+                    f"{hard_fail_geo} Canada-eligible role(s) failed other hard filters "
+                    "(e.g. salary below floor) and are excluded."
+                )
             if relevant_u:
                 parts.append(
                     f"{relevant_u} relevant role(s) have unverified Canadian eligibility "
@@ -1072,6 +1096,11 @@ def cmd_jobs(args: argparse.Namespace) -> int:
             )
             relevant_u = int(counts.get("relevant_uncertain") or 0)
             irrelevant = int(counts.get("irrelevant") or counts.get("IRRELEVANT") or 0)
+            if hard_fail_geo:
+                print(
+                    f"{hard_fail_geo} Canada-eligible role(s) failed other hard filters "
+                    "(e.g. salary below floor) and are excluded from the confirmed shortlist."
+                )
             if relevant_u:
                 print(
                     f"{relevant_u} relevant role(s) still have unverified Canadian "

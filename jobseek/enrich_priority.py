@@ -199,16 +199,26 @@ def fair_select_for_enrichment(
     *,
     limit: int,
     max_per_company: int | None = None,
+    min_priority: int = 0,
 ) -> list[dict[str, Any]]:
-    """Round-robin across employers so one bank cannot monopolize a batch."""
+    """Round-robin across employers so one bank cannot monopolize a batch.
+
+    Rows below ``min_priority`` are excluded — never pad a batch with clearly
+    irrelevant jobs just to hit ``limit``.
+    """
     if limit <= 0 or not ranked_rows:
+        return []
+    eligible = [
+        r for r in ranked_rows if int(r.get("enrich_priority") or 0) >= int(min_priority)
+    ]
+    if not eligible:
         return []
     if max_per_company is None:
         # Aim for diversity: at least ~5 companies in a 50-job batch when possible.
         max_per_company = max(3, (limit + 4) // 5)
 
     by_co: dict[str, list[dict[str, Any]]] = {}
-    for row in ranked_rows:
+    for row in eligible:
         co = str(row.get("company") or "").strip() or "?"
         by_co.setdefault(co, []).append(row)
 

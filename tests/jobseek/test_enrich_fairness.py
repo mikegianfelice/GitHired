@@ -161,7 +161,10 @@ class FairSelectAcceptanceTests(unittest.TestCase):
             ranked.append(job)
 
         ranked.sort(key=lambda r: (-(r["enrich_priority"] or 0), r["id"]))
-        selected = fair_select_for_enrichment(ranked, limit=50, max_per_company=12)
+        selected = fair_select_for_enrichment(
+            ranked, limit=50, max_per_company=12, min_priority=500
+        )
+        # 20+15+10+10 = 55 relevant; limit 50 → exactly 50, zero noise.
         self.assertEqual(len(selected), 50)
         companies = {r["company"] for r in selected}
         self.assertIn("TD", companies)
@@ -495,6 +498,87 @@ class PriorityFingerprintTests(unittest.TestCase):
             }
             c = prioritize_enrichment(db, search=SEARCH, profile=profile2, force=False)
             self.assertGreater(c["updated"], 0)
+            db.close()
+
+
+class LeaseWriteSafetyTests(unittest.TestCase):
+    def test_stale_worker_cannot_overwrite_newer_enrichment(self):
+        with TemporaryDirectory() as tmp:
+            db = Database(Path(tmp) / "t.db")
+            jid, _ = db.upsert_job(_stub("TD", "Data Engineer", jid="LW1"))
+            first = db.claim_enrichment_jobs(limit=1, worker_id="old", lease_s=60)
+            token_old = first[0]["enrich_lease_token"]
+            db._conn.execute(
+                "UPDATE jobs SET enrich_lease_until = ? WHERE id = ?",
+                ("2000-01-01T00:00:00Z", jid),
+            )
+            db._conn.commit()
+            second = db.claim_enrichment_jobs(limit=1, worker_id="new", lease_s=60)
+            token_new = second[0]["enrich_lease_token"]
+            body_b = RawJob(
+                company="TD",
+                title="Data Engineer",
+                url="https://td.example/job/LW1",
+                source="workday",
+                ats_provider="workday",
+                ats_job_id="LW1",
+                location_raw="Toronto, ON Remote Canada",
+                description="WORKER B BODY " + ("x" * 400),
+                description_complete=True,
+                description_fetched_at=_now(),
+            )
+            self.assertTrue(
+                db.apply_leased_enrichment(
+                    jid, worker_id="new", lease_token=token_new, enriched=body_b
+                )
+            )
+            body_a = RawJob(
+                company="TD",
+                title="Data Engineer",
+                url="https://td.example/job/LW1",
+                source="workday",
+                ats_provider="workday",
+                ats_job_id="LW1",
+                location_raw="Toronto, ON",
+                description="WORKER A STALE " + ("y" * 400),
+                description_complete=True,
+                description_fetched_at=_now(),
+            )
+            self.assertFalse(
+                db.apply_leased_enrichment(
+                    jid, worker_id="old", lease_token=token_old, enriched=body_a
+                )
+            )
+            row = db.get_job(jid)
+            assert row is not None
+            self.assertIn("WORKER B BODY", row["description"])
+            self.assertNotIn("WORKER A STALE", row["description"])
+            self.assertEqual(row["enrichment_status"], "complete")
+            db.close()
+
+
+class MinPriorityClaimTests(unittest.TestCase):
+    def test_quick_threshold_skips_off_track_padding(self):
+        with TemporaryDirectory() as tmp:
+            db = Database(Path(tmp) / "t.db")
+            for i in range(40):
+                db.upsert_job(_stub("RBC", f"Personal Banker {i}", jid=f"N{i}"))
+            for i in range(5):
+                db.upsert_job(
+                    _stub(
+                        "TD",
+                        f"Data Engineer - Pipelines {i}",
+                        jid=f"E{i}",
+                        location="Remote - Canada",
+                    )
+                )
+            prioritize_enrichment(db, search=SEARCH, profile=PROFILE, force=True)
+            claimed = db.claim_enrichment_jobs(
+                limit=50, worker_id="w", lease_s=60, min_priority=500, max_per_company=12
+            )
+            self.assertEqual(len(claimed), 5)
+            self.assertTrue(all("Data Engineer" in (r["title"] or "") for r in claimed))
+            self.assertFalse(any("Banker" in (r["title"] or "") for r in claimed))
             db.close()
 
 

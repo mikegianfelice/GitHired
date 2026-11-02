@@ -296,6 +296,19 @@ def run_enrich(
     prioritized = prioritize_enrichment(db, search=search, profile=profile)
     max_per_company = int(sources.get("enrich_max_per_company") or max(5, batch_limit // 6))
     max_per_company = max(2, min(max_per_company, batch_limit))
+    # Relevance thresholds: do not pad batches with off-track titles.
+    # Track-matched listing priority floor is 500; off-track maxes around 20.
+    default_min = {
+        "quick": 500,
+        "standard": 400,
+        "deep": 0,
+    }.get(mode_norm, 400)
+    min_priority = int(
+        sources.get(f"enrich_min_priority_{mode_norm}")
+        or sources.get("enrich_min_priority")
+        or default_min
+    )
+    min_priority = max(0, min_priority)
     run_id = db.start_run("enrich")
     worker_id = f"enrich-{uuid.uuid4().hex[:10]}"
     t0 = time.monotonic()
@@ -317,6 +330,7 @@ def run_enrich(
         "queue_before": db.count_enrichment_by_status(),
         "timing": {},
         "max_per_company": max_per_company,
+        "min_priority": min_priority,
     }
 
     yaml_companies = load_companies()
@@ -332,6 +346,7 @@ def run_enrich(
         worker_id=worker_id,
         lease_s=max(90.0, float(budget) / max(worker_n, 1) + 60.0),
         max_per_company=max_per_company,
+        min_priority=min_priority,
     )
     summary["claimed"] = len(claimed)
     summary["companies_in_batch"] = sorted(
@@ -456,9 +471,27 @@ def run_enrich(
                         if _done(row, ok=False, error=err):
                             local["failed"] += 1
                     continue
-                db.upsert_job(enriched)
-                if _done(row, ok=True):
+                # Lease check + body write + complete in one transaction so a
+                # stale worker cannot overwrite after its lease was reclaimed.
+                try:
+                    applied = db.apply_leased_enrichment(
+                        int(row["id"]),
+                        worker_id=worker_id,
+                        lease_token=str(row.get("enrich_lease_token") or ""),
+                        enriched=enriched,
+                    )
+                except RuntimeError as exc:
+                    if "lease lost" in str(exc).casefold():
+                        applied = False
+                    else:
+                        raise
+                if applied:
                     local["enriched"] += 1
+                else:
+                    local["skipped"] = local.get("skipped", 0) + 1
+                    local["warnings"].append(
+                        f"{company_name}#{row['id']}: lost lease — skipped stale write"
+                    )
             except Exception as exc:  # noqa: BLE001
                 if row.get("description_complete"):
                     if _done(row, ok=True):
@@ -490,8 +523,11 @@ def run_enrich(
                 summary["http_requests"] += local["http"]
                 summary["cache_reused"] += local["cache"]
                 summary["warnings"].extend(local.get("warnings") or [])
+                summary["skipped"] += int(local.get("skipped") or 0)
                 summary["by_company"][name] = {
-                    k: local[k] for k in ("enriched", "failed", "http", "cache")
+                    k: local[k]
+                    for k in ("enriched", "failed", "http", "cache")
+                    if k in local
                 }
                 if progress:
                     progress(
