@@ -53,13 +53,15 @@ def apply_hard_filters(
 
     track = match_track(job.get("title") or "", search_cfg)
     if not track.matched:
+        # Off-track titles are irrelevant — not "uncertain Canadian eligibility".
         return HardFilterResult(
             verdict="FAIL",
-            reasons=track.reasons,
+            reasons=track.reasons + ["relevance=NO_MATCH (title outside selected tracks)"],
             title_match=False,
+            relevance="NO_MATCH",
             location_verdict="FLAG",
             salary_verdict="PASS",
-            eligibility="UNCERTAIN",
+            eligibility="IRRELEVANT",
         )
 
     reasons.extend(track.reasons)
@@ -83,11 +85,13 @@ def apply_hard_filters(
     if not sen.allowed:
         return HardFilterResult(
             verdict="FAIL",
-            reasons=reasons + sen.reasons,
+            reasons=reasons + sen.reasons + ["relevance=REVIEW (seniority gate)"],
             title_match=True,
+            relevance="REVIEW",
             location_verdict="FLAG",
             salary_verdict="PASS",
-            eligibility="UNCERTAIN",
+            # Seniority fail is not a geography claim.
+            eligibility="IRRELEVANT",
             evidence=evidence,
         )
     reasons.extend(sen.reasons)
@@ -141,6 +145,7 @@ def apply_hard_filters(
         verdict=overall,
         reasons=reasons,
         title_match=True,
+        relevance="MATCH",
         location_verdict=loc_verdict,
         salary_verdict=sal_verdict,
         eligibility=eligibility,

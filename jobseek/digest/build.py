@@ -34,20 +34,22 @@ def build_digest(
         eligibility="UNCERTAIN",
     )
     counts = db.count_scored_by_eligibility(min_score=None)
-    uncertain = int(counts.get("UNCERTAIN") or 0)
+    relevant_uncertain = int(counts.get("relevant_uncertain") or 0)
     return {
         "count": len(jobs),
         "min_score": min_score,
         "since": since,
         "eligibility": eligibility,
         "confirmed_matches": len(jobs),
-        "uncertain_opportunities": uncertain,
+        "uncertain_opportunities": relevant_uncertain,
+        "relevant_uncertain": relevant_uncertain,
+        "irrelevant": int(counts.get("irrelevant") or 0),
         "uncertain_shortlist": uncertain_jobs,
         "eligibility_counts": counts,
         "jobs": jobs,
         "next": (
             f"githired jobs --eligibility uncertain"
-            if uncertain
+            if relevant_uncertain
             else None
         ),
     }
@@ -69,11 +71,20 @@ def render_digest_markdown(digest: dict[str, Any]) -> str:
         + ".",
         "",
     ]
-    if uncertain:
+    counts = digest.get("eligibility_counts") or {}
+    relevant_u = int(counts.get("relevant_uncertain") or 0)
+    irrelevant = int(counts.get("irrelevant") or counts.get("IRRELEVANT") or 0)
+    if relevant_u:
         cmd = digest.get("next") or "githired jobs --eligibility uncertain"
         lines.append(
-            f"There are {uncertain} additional opportunities with unverified "
-            f"Canadian eligibility. Run `{cmd}` to review them."
+            f"There are {relevant_u} relevant role(s) with unverified Canadian "
+            f"eligibility. Run `{cmd}` to review them."
+        )
+        lines.append("")
+    if irrelevant:
+        lines.append(
+            f"{irrelevant} scored role(s) are off-track for your selected titles "
+            "(not Canada-eligibility issues)."
         )
         lines.append("")
     if not digest.get("jobs"):

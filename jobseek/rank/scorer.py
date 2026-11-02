@@ -188,7 +188,12 @@ def score_deterministic(
 
     track = match_track(job.get("title") or "", search_cfg)
     elig = hard.eligibility or "UNCERTAIN"
-    canada = {"ELIGIBLE": 100.0, "UNCERTAIN": 40.0, "INELIGIBLE": 0.0}.get(elig, 40.0)
+    canada = {
+        "ELIGIBLE": 100.0,
+        "UNCERTAIN": 40.0,
+        "INELIGIBLE": 0.0,
+        "IRRELEVANT": 0.0,
+    }.get(elig, 40.0)
 
     # Exact selected-track titles outrank adjacent / weak keyword noise.
     if track.matched and track.match_strength == "exact":

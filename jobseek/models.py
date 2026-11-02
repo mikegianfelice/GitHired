@@ -38,9 +38,13 @@ class HardFilterResult:
     verdict: str  # PASS | FAIL | FLAG
     reasons: list[str] = field(default_factory=list)
     title_match: bool = False
+    # Relevance is independent of Canada geography.
+    # MATCH = selected track; NO_MATCH = off-track; REVIEW = seniority/ambiguous track.
+    relevance: str = "REVIEW"  # MATCH | NO_MATCH | REVIEW
     location_verdict: str = "FLAG"
     salary_verdict: str = "PASS"
-    eligibility: str = "UNCERTAIN"  # ELIGIBLE | UNCERTAIN | INELIGIBLE
+    # Geographic eligibility only — never use UNCERTAIN as a catch-all for off-track titles.
+    eligibility: str = "UNCERTAIN"  # ELIGIBLE | UNCERTAIN | INELIGIBLE | IRRELEVANT
     evidence: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:

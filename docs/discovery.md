@@ -9,22 +9,36 @@ Progressive local-first pipeline (discover ≠ enrich ≠ rank):
 | Stage | Command | What you get |
 |-------|---------|----------------|
 | **Discovered** | `githired discover` | Titles, companies, URLs, list locations — **no** Workday detail HTTP |
-| **Enriched** | `githired enrich` | Full descriptions + resolved geo (Workday CXS details); resumable queue/leases |
+| **Enriched** | `githired enrich` | Full descriptions + resolved geo; **priority + employer fairness** (one bank cannot monopolize a batch) |
 | **Provisionally ranked** | `githired rank --provisional` | Fit signal from listing metadata only — **never** confirmed Canada ELIGIBLE |
 | **Confirmed eligible** | `githired rank` then `jobs` | Complete description + hard filters; default shortlist |
 
-Orchestration: `githired refresh` (discover → enrich → rank) or `githired run-daily` (same + digest).
+Orchestration: `githired refresh` (progressive enrich/rank loops; reports **TTF10**) or `githired run-daily` (same + digest).
+
+### Relevance vs geographic eligibility
+
+These are separate axes — do not confuse them:
+
+| Axis | Values | Meaning |
+|------|--------|---------|
+| **Relevance** | `MATCH` / `NO_MATCH` / `REVIEW` | Title/track fit for your configured engineering tracks |
+| **Geographic eligibility** | `ELIGIBLE` / `UNCERTAIN` / `INELIGIBLE` | Canada / remote / hybrid evidence |
+| **Off-track** | eligibility=`IRRELEVANT` | Title failed track match — **not** “uncertain Canada” |
+| **Enrichment** | `pending` → `processing` → `complete` \| `failed` \| `stale` | Detail hydration queue |
+
+`githired jobs` (default) shows **confirmed** matches only (`ELIGIBLE` + complete description). Off-track roles are counted as irrelevant, not as unverified Canadian opportunities.
 
 1. **Three-layer company registry** — builtin [`config/companies.yaml`](../config/companies.yaml) → community [`registry/community/`](../registry/community/) → SQLite discoveries → user [`config/companies.local.yaml`](../config/companies.local.yaml.example) (overrides win; auto-discovery never writes overrides)
 2. **Company discovery** — `githired companies discover` validates public ATS boards (Greenhouse, Lever, Ashby, Workable, RSS/XML, Rippling, Workday guest CXS; Gem adapter present but opt-in)
 3. **Job discover (list-only)** — `githired discover` fetches enabled boards + LinkedIn search-index / SerpAPI / alert import + optional Freehire. Workday listings persist immediately with `enrichment_status=pending` (or `complete` when a TTL-fresh SQLite description is reused).
-4. **Enrich** — `githired enrich` claims pending/stale/failed Workday jobs with leases, hydrates details under rate limits, preserves prior complete bodies on failure
-5. **SQLite** — `data/jobseek.db` stores jobs (`enrichment_status`, description provenance), scores (`deterministic` vs `provisional`), applications, companies, runs
-6. **Hard filters** — engineering tracks, Canada eligibility modes, salary floors (no LLM)
+4. **Enrich** — scores the **full** pending queue from listing metadata (track, location hints, seniority, salary, freshness), fair-schedules across employers, claims with owner+lease token, retries with exponential backoff, preserves prior complete bodies on failure
+5. **SQLite** — `data/jobseek.db` stores jobs (`enrichment_status`, leases, priorities), scores (`deterministic` vs `provisional`), applications, companies, runs
+6. **Hard filters** — engineering tracks (relevance), Canada eligibility, salary floors (no LLM)
 7. **Stage-1 rank** — confirmed deterministic scores on **complete** descriptions (default)
 8. **Stage-2 rank** — optional LLM evidence scores (`--llm` or `GITHIRED_RANK_LLM=1`)
 9. **Digest** — top 10 **confirmed** high-score jobs only; SMTP or Resend email
 10. **README showcase** — optional public Top Paying Jobs block ([`docs/showcase/ARCHITECTURE.md`](showcase/ARCHITECTURE.md); `githired showcase-readme`)
+11. **TTF10** — `githired refresh` reports time to first 10 relevant confirmed matches (never pads with uncertain/off-track)
 
 Resume drafting and application submission stay behind explicit approval (`githired prepare` → `/apply`).
 
@@ -32,7 +46,9 @@ Resume drafting and application submission stay behind explicit approval (`githi
 
 ### Enrichment status values
 
-`pending` → `processing` (leased) → `complete` | `failed` | `stale` (TTL expired; re-queued by enrich). Incomplete jobs are never shown as confirmed matches.
+`pending` → `processing` (leased with worker id + token) → `complete` | `failed` | `stale` (TTL expired; re-queued by enrich). Completion requires matching lease ownership so an expired worker cannot overwrite a newer claim. Failed jobs get `enrich_next_retry_at` (exponential backoff). Incomplete jobs are never shown as confirmed matches.
+
+**Provisional vs confirmed scores:** provisional ranks use list-only metadata and never enter the default shortlist. Confirmed scores require a complete description and pass geographic + track hard filters.
 
 ## CLI
 

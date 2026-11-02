@@ -57,33 +57,85 @@ def prioritize_enrichment(
     db: Database,
     *,
     search: dict[str, Any],
-    limit: int = 500,
-) -> int:
-    """Bump enrich_priority for track-relevant pending jobs. Returns rows touched."""
-    from jobseek.filters.tracks import title_matches_selected_tracks
+    profile: dict[str, Any] | None = None,
+    force: bool = False,
+) -> dict[str, Any]:
+    """Score the full pending enrichment queue from listing metadata.
+
+    Considers every pending/stale/failed Workday row (not a recent subset).
+    Recalculates when the search/profile fingerprint changes.
+    """
+    from jobseek.config_loader import load_profile
+    from jobseek.enrich_priority import (
+        compute_enrich_priority,
+        priority_fingerprint,
+    )
+
+    profile = profile if profile is not None else load_profile()
+    fp = priority_fingerprint(search, profile)
+    if not force:
+        sample = db._conn.execute(
+            """
+            SELECT enrich_priority_fp FROM jobs
+            WHERE removed_at IS NULL
+              AND enrichment_status IN ('pending', 'stale', 'failed')
+              AND LOWER(COALESCE(ats_provider, '')) = 'workday'
+            LIMIT 1
+            """
+        ).fetchone()
+        # If queue empty or already stamped with this fingerprint, skip full scan
+        # only when every pending row matches — check mismatch cheaply.
+        mismatch = db._conn.execute(
+            """
+            SELECT COUNT(*) AS n FROM jobs
+            WHERE removed_at IS NULL
+              AND enrichment_status IN ('pending', 'stale', 'failed')
+              AND LOWER(COALESCE(ats_provider, '')) = 'workday'
+              AND (enrich_priority_fp IS NULL OR enrich_priority_fp != ?)
+            """,
+            (fp,),
+        ).fetchone()
+        if mismatch and int(mismatch["n"] or 0) == 0:
+            total = db._conn.execute(
+                """
+                SELECT COUNT(*) AS n FROM jobs
+                WHERE removed_at IS NULL
+                  AND enrichment_status IN ('pending', 'stale', 'failed')
+                  AND LOWER(COALESCE(ats_provider, '')) = 'workday'
+                """
+            ).fetchone()
+            return {
+                "updated": 0,
+                "skipped": "fingerprint_unchanged",
+                "fingerprint": fp,
+                "pending": int(total["n"] if total else 0),
+            }
 
     rows = db._conn.execute(
         """
-        SELECT id, title FROM jobs
+        SELECT id, company, title, location_raw, salary_raw, salary_min, salary_max,
+               posted_date, first_seen, last_seen, enrich_priority
+        FROM jobs
         WHERE removed_at IS NULL
           AND enrichment_status IN ('pending', 'stale', 'failed')
           AND LOWER(COALESCE(ats_provider, '')) = 'workday'
-        ORDER BY first_seen DESC
-        LIMIT ?
-        """,
-        (max(limit, 1),),
+        """
     ).fetchall()
-    hot: list[int] = []
-    cold: list[int] = []
+    updates: list[tuple[int, int]] = []
+    track_hits = 0
     for row in rows:
-        title = row["title"] or ""
-        if title_matches_selected_tracks(title, search):
-            hot.append(int(row["id"]))
-        else:
-            cold.append(int(row["id"]))
-    db.set_enrich_priorities(hot, 100)
-    db.set_enrich_priorities(cold, 10)
-    return len(hot) + len(cold)
+        job = dict(row)
+        pri = compute_enrich_priority(job, search, profile)
+        if pri >= 500:
+            track_hits += 1
+        updates.append((int(job["id"]), pri))
+    written = db.set_enrich_priorities(updates, fingerprint=fp)
+    return {
+        "updated": written,
+        "fingerprint": fp,
+        "pending": len(updates),
+        "track_relevant": track_hits,
+    }
 
 
 def _enrich_workday_job(
@@ -238,7 +290,12 @@ def run_enrich(
     else:
         stale_n = db.mark_enrichment_stale(ttl_s=desc_ttl)
 
-    prioritized = prioritize_enrichment(db, search=search, limit=max(batch_limit * 3, 200))
+    from jobseek.config_loader import load_profile
+
+    profile = load_profile()
+    prioritized = prioritize_enrichment(db, search=search, profile=profile)
+    max_per_company = int(sources.get("enrich_max_per_company") or max(5, batch_limit // 6))
+    max_per_company = max(2, min(max_per_company, batch_limit))
     run_id = db.start_run("enrich")
     worker_id = f"enrich-{uuid.uuid4().hex[:10]}"
     t0 = time.monotonic()
@@ -256,8 +313,10 @@ def run_enrich(
         "errors": [],
         "warnings": [],
         "by_company": {},
+        "companies_in_batch": [],
         "queue_before": db.count_enrichment_by_status(),
         "timing": {},
+        "max_per_company": max_per_company,
     }
 
     yaml_companies = load_companies()
@@ -272,10 +331,28 @@ def run_enrich(
         limit=batch_limit,
         worker_id=worker_id,
         lease_s=max(90.0, float(budget) / max(worker_n, 1) + 60.0),
+        max_per_company=max_per_company,
     )
     summary["claimed"] = len(claimed)
+    summary["companies_in_batch"] = sorted(
+        {str(r.get("company") or "") for r in claimed if r.get("company")}
+    )
+    from jobseek.filters.tracks import title_matches_selected_tracks
+
+    claimed_track = sum(
+        1
+        for r in claimed
+        if title_matches_selected_tracks(str(r.get("title") or ""), search)
+    )
+    summary["claimed_track_relevant"] = claimed_track
+    summary["claimed_irrelevant"] = max(0, len(claimed) - claimed_track)
     if progress:
-        progress(f"enrich: claimed {len(claimed)} job(s) (mode={mode_norm})")
+        progress(
+            f"enrich: claimed {len(claimed)} job(s) across "
+            f"{len(summary['companies_in_batch'])} employer(s) (mode={mode_norm}); "
+            f"batch_track={claimed_track} batch_off_track={summary['claimed_irrelevant']}; "
+            f"queue_track≈{prioritized.get('track_relevant')}"
+        )
 
     if not claimed:
         summary["timing"]["total_s"] = round(time.monotonic() - t0, 2)
@@ -300,24 +377,29 @@ def run_enrich(
             "cache": 0,
             "warnings": [],
         }
+        def _done(row: dict[str, Any], *, ok: bool, error: str | None = None) -> bool:
+            return db.complete_enrichment(
+                int(row["id"]),
+                ok=ok,
+                error=error,
+                worker_id=worker_id,
+                lease_token=str(row.get("enrich_lease_token") or "") or None,
+            )
+
         company = by_name.get(company_name.casefold())
         if not company:
             for row in rows:
-                db.complete_enrichment(
-                    int(row["id"]), ok=False, error=f"company config missing: {company_name}"
-                )
-                local["failed"] += 1
+                if _done(row, ok=False, error=f"company config missing: {company_name}"):
+                    local["failed"] += 1
             return local
         if (company.get("ats") or "").lower() != "workday":
             for row in rows:
                 if row.get("description_complete"):
-                    db.complete_enrichment(int(row["id"]), ok=True)
-                    local["enriched"] += 1
+                    if _done(row, ok=True):
+                        local["enriched"] += 1
                 else:
-                    db.complete_enrichment(
-                        int(row["id"]), ok=False, error="enrichment not supported for ATS"
-                    )
-                    local["failed"] += 1
+                    if _done(row, ok=False, error="enrichment not supported for ATS"):
+                        local["failed"] += 1
             return local
 
         client = workday_http_client()
@@ -333,47 +415,60 @@ def run_enrich(
         )
         for row in rows:
             if budget is not None and (time.monotonic() - t0) >= budget:
-                db.complete_enrichment(
-                    int(row["id"]), ok=False, error="enrichment time budget reached"
-                )
-                local["failed"] += 1
+                if db.complete_enrichment(
+                    int(row["id"]),
+                    ok=False,
+                    error="enrichment time budget reached",
+                    worker_id=worker_id,
+                    lease_token=str(row.get("enrich_lease_token") or "") or None,
+                    retry_backoff_s=15.0,
+                ):
+                    local["failed"] += 1
                 continue
+            token = str(row.get("enrich_lease_token") or "")
+            if token:
+                db.renew_enrichment_lease(
+                    int(row["id"]),
+                    worker_id=worker_id,
+                    lease_token=token,
+                    lease_s=120.0,
+                )
             if (
                 row.get("description_complete")
                 and row.get("enrichment_status") != "stale"
                 and not (force_refresh or mode_norm == "deep")
             ):
-                db.complete_enrichment(int(row["id"]), ok=True)
-                local["enriched"] += 1
-                local["cache"] += 1
+                if _done(row, ok=True):
+                    local["enriched"] += 1
+                    local["cache"] += 1
                 continue
             try:
                 enriched, err = _enrich_workday_job(adapter, company, row)
                 local["http"] += 1
                 if enriched is None:
                     if row.get("description_complete"):
-                        db.complete_enrichment(int(row["id"]), ok=True)
-                        local["enriched"] += 1
-                        local["warnings"].append(
-                            f"{company_name}#{row['id']}: refresh failed ({err}); kept prior"
-                        )
+                        if _done(row, ok=True):
+                            local["enriched"] += 1
+                            local["warnings"].append(
+                                f"{company_name}#{row['id']}: refresh failed ({err}); kept prior"
+                            )
                     else:
-                        db.complete_enrichment(int(row["id"]), ok=False, error=err)
-                        local["failed"] += 1
+                        if _done(row, ok=False, error=err):
+                            local["failed"] += 1
                     continue
                 db.upsert_job(enriched)
-                db.complete_enrichment(int(row["id"]), ok=True)
-                local["enriched"] += 1
+                if _done(row, ok=True):
+                    local["enriched"] += 1
             except Exception as exc:  # noqa: BLE001
                 if row.get("description_complete"):
-                    db.complete_enrichment(int(row["id"]), ok=True)
-                    local["enriched"] += 1
-                    local["warnings"].append(
-                        f"{company_name}#{row['id']}: {exc}; kept prior description"
-                    )
+                    if _done(row, ok=True):
+                        local["enriched"] += 1
+                        local["warnings"].append(
+                            f"{company_name}#{row['id']}: {exc}; kept prior description"
+                        )
                 else:
-                    db.complete_enrichment(int(row["id"]), ok=False, error=str(exc))
-                    local["failed"] += 1
+                    if _done(row, ok=False, error=str(exc)):
+                        local["failed"] += 1
         return local
 
     try:

@@ -133,9 +133,11 @@ class EnrichLeaseTests(unittest.TestCase):
             ids_a = {r["id"] for r in a}
             ids_b = {r["id"] for r in b}
             self.assertFalse(ids_a & ids_b)
-            # Complete one; fail one; leave one processing with expired lease
+            # Complete one; fail one (retry immediately); leave one processing with expired lease
             db.complete_enrichment(a[0]["id"], ok=True)
-            db.complete_enrichment(a[1]["id"], ok=False, error="boom")
+            db.complete_enrichment(
+                a[1]["id"], ok=False, error="boom", retry_backoff_s=0
+            )
             db._conn.execute(
                 "UPDATE jobs SET enrich_lease_until = ? WHERE id = ?",
                 ("2000-01-01T00:00:00Z", a[2]["id"]),
@@ -143,7 +145,7 @@ class EnrichLeaseTests(unittest.TestCase):
             db._conn.commit()
             resumed = db.claim_enrichment_jobs(limit=10, worker_id="w-c", lease_s=60)
             resumed_ids = {r["id"] for r in resumed}
-            self.assertIn(a[1]["id"], resumed_ids)  # failed
+            self.assertIn(a[1]["id"], resumed_ids)  # failed (backoff elapsed)
             self.assertIn(a[2]["id"], resumed_ids)  # expired lease
             self.assertNotIn(a[0]["id"], resumed_ids)  # complete
             db.close()

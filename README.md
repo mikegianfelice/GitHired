@@ -84,14 +84,15 @@ python3 -m pip install -e ".[dev]"   # Python 3.10+ (3.11+ recommended on macOS)
 githired setup                       # province, city, tracks, salary — interactive
 githired doctor
 githired discover                    # listings only (fast); browse while enriching
-githired enrich                      # Workday full descriptions + geo (resumable)
+githired enrich                      # priority + fair Workday detail queue (resumable leases)
 githired rank                        # confirmed scores (complete jobs only)
-githired jobs                        # confirmed Canada-compatible matches
+githired jobs                        # confirmed matches only (never pads with off-track)
 githired digest
 ```
 
-**One-liner daily loop:** `githired refresh` or `githired run-daily`  
-**Statuses:** *discovered* → *enriched* → *confirmed eligible* (provisional ranks never count as confirmed)  
+**One-liner daily loop:** `githired refresh` (progressive enrich→rank; reports TTF10) or `githired run-daily`  
+**Statuses:** *discovered* → *enriched* → *confirmed eligible*  
+**Relevance ≠ Canada eligibility:** off-track titles are IRRELEVANT, not “uncertain Canada”.  
 **Agent apply flow:** `/apply <job-url>` (asks before drafting)
 
 ---
@@ -158,12 +159,14 @@ Optional config after setup: [`config/profile.yaml`](config/profile.yaml), [`con
 
 ```bash
 githired companies discover   # optional board expansion
-githired discover
+githired discover             # list-only
+githired enrich               # most promising Workday details first
 githired rank                 # optional --limit N; --llm for stage-2
-githired jobs
-githired jobs --eligibility uncertain
+githired jobs                 # confirmed shortlist
+githired jobs --eligibility uncertain   # relevant roles with ambiguous geo only
+githired refresh              # discover → enrich → rank loops; TTF10 metrics
 githired digest
-githired run-daily            # discover → rank → digest [--email] [--companies]
+githired run-daily            # refresh-style pipeline + digest [--email] [--companies]
 ```
 
 LinkedIn is optional (free index is best-effort; SerpAPI / alert import available). **Freehire.me** is off by default. Details: [docs/discovery.md](docs/discovery.md).
@@ -182,7 +185,8 @@ githired prepare <job_id>   # briefing only — never drafts or submits
 
 ## Canada market defaults
 
-- **Three-state eligibility:** ELIGIBLE · UNCERTAIN · INELIGIBLE — never invented from a global brand alone ([`jobseek/filters/hard.py`](jobseek/filters/hard.py))
+- **Geographic eligibility:** ELIGIBLE · UNCERTAIN · INELIGIBLE (plus IRRELEVANT for off-track titles) — never invented from a global brand alone ([`jobseek/filters/hard.py`](jobseek/filters/hard.py))
+- **Relevance** (MATCH / NO_MATCH / REVIEW) is reported separately from Canadian eligibility
 - A Toronto-only hybrid is **not** eligible for a Vancouver candidate who will not relocate
 - Engineering **tracks** in [`config/search.yaml`](config/search.yaml): software, AI, ML, data, platform, cloud, DevOps/SRE, FDE
 - Seniority mid+ by default; internships / co-ops / new-grad / junior excluded unless enabled
@@ -202,11 +206,13 @@ githired prepare <job_id>   # briefing only — never drafts or submits
 | `doctor` / `sources` | Environment and company/source health |
 | `companies discover` | Discover and validate public ATS boards |
 | `companies validate` / `list` / `stats` / `export` / `import` | Registry ops |
-| `discover` | Fetch jobs from enabled boards (+ optional LinkedIn) |
+| `discover` | List-only fetch from enabled boards (+ optional LinkedIn) |
+| `enrich` | Priority + fair Workday detail hydration (leases / retries) |
+| `refresh` | Progressive discover → enrich → rank; reports TTF10 |
 | `rank` | Deterministic Stage-1; `--llm` for Stage-2 |
-| `jobs` | Confirmed shortlist (never pads with UNCERTAIN) |
+| `jobs` | Confirmed shortlist (never pads with UNCERTAIN / IRRELEVANT) |
 | `digest` / `email-digest` | Top-N shortlist; optional email |
-| `run-daily` | discover → rank → digest → email |
+| `run-daily` | discover → enrich → rank → digest → email |
 | `showcase-readme` | Refresh README Top Paying section from DB / snapshot |
 | `prepare` | Briefing only; no auto-draft/submit |
 | `migrate` / `import-seen` / `import-alerts` | Legacy + LinkedIn alert import |

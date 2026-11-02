@@ -185,22 +185,30 @@ def cmd_rank(args: argparse.Namespace) -> int:
         skipped_tracked = 0
         score_s = 0.0
         persist_s = 0.0
-        while True:
-            remaining = None if user_limit is None else max(0, user_limit - persisted)
-            if remaining == 0:
-                break
-            fetch_n = batch_size if remaining is None else min(batch_size, remaining)
-            jobs = db.jobs_needing_score(
-                limit=fetch_n,
-                re_rank=args.re_rank and persisted == 0,
-                score_kind=score_kind,
-                current_model=current_model,
-                config_fingerprint=fp,
-                title_priority=_title_priority,
-                pool_size=max(fetch_n * 8, 400),
-                require_complete=False if provisional else True,
-            )
-            if not jobs:
+        select_s = 0.0
+        # One SQL fetch for the full worklist — repeated jobs_needing_score queries
+        # previously dominated wall-clock (~35s of a 41s rank of ~9k jobs).
+        fetch_cap = pending if user_limit is None else min(pending, user_limit)
+        if args.re_rank and user_limit is not None:
+            fetch_cap = user_limit
+        elif args.re_rank:
+            fetch_cap = max(pending, batch_size)
+        st_sel = time.monotonic()
+        worklist = db.jobs_needing_score(
+            limit=max(fetch_cap, 1) if fetch_cap else 0,
+            re_rank=bool(args.re_rank),
+            score_kind=score_kind,
+            current_model=current_model,
+            config_fingerprint=fp,
+            title_priority=_title_priority,
+            pool_size=max(fetch_cap * 2, fetch_cap + 100, 500) if fetch_cap else 500,
+            require_complete=False if provisional else True,
+        ) if fetch_cap else []
+        select_s = time.monotonic() - st_sel
+        _err(f"rank: selected {len(worklist)} job(s) in {select_s:.2f}s")
+        for offset in range(0, len(worklist), batch_size):
+            jobs = worklist[offset : offset + batch_size]
+            if user_limit is not None and persisted >= user_limit:
                 break
             batch_persisted = 0
             for job in jobs:
@@ -276,11 +284,6 @@ def cmd_rank(args: argparse.Namespace) -> int:
                 f"rank progress: scored={persisted}/{pending or '?'} "
                 f"batch={batch_persisted} elapsed_s={time.monotonic() - rank_t0:.1f}"
             )
-            # Avoid infinite loop if re_rank keeps returning the same pool
-            if args.re_rank:
-                break
-            if batch_persisted == 0:
-                break
             if user_limit is not None and persisted >= user_limit:
                 break
 
@@ -298,6 +301,7 @@ def cmd_rank(args: argparse.Namespace) -> int:
                 "timing": {
                     "total_s": total_s,
                     "load_s": load_s,
+                    "select_s": round(select_s, 2),
                     "score_s": round(score_s, 2),
                     "persist_s": round(persist_s, 2),
                 },
@@ -534,21 +538,47 @@ def cmd_enrich(args: argparse.Namespace) -> int:
 
 
 def cmd_refresh(args: argparse.Namespace) -> int:
-    """Orchestrate discover → enrich → rank (local-first daily path)."""
+    """Progressive discover → prioritize → enrich → rank loops (TTF10-aware)."""
     load_dotenv()
     settings = Settings.from_env()
     setup_logging(settings.log_level)
     db = _db(settings)
-    report: dict[str, Any] = {"steps": []}
+    report: dict[str, Any] = {"steps": [], "ttf": {}}
+    t0 = time.monotonic()
+    milestones: dict[str, float | None] = {
+        "ttf1_s": None,
+        "ttf5_s": None,
+        "ttf10_s": None,
+        "first_discovered_s": None,
+        "first_confirmed_s": None,
+    }
     try:
+        from jobseek.filters.tracks import title_matches_selected_tracks
+        from jobseek.rank.fingerprint import scoring_fingerprint
+        from jobseek.rank.scorer import STAGE1_MODELS
+        from jobseek.ttf import ttf_snapshot
+
         db.import_tracker_csv(tracker_path())
         mode = getattr(args, "mode", None) or "standard"
+        search = load_search()
+        profile = load_profile()
+        sources = search.get("sources") or {}
+        enrich_budget = float(
+            getattr(args, "enrich_budget", None)
+            or sources.get("enrich_budget_s")
+            or (90 if mode == "quick" else 300)
+        )
+        batch = int(getattr(args, "enrich_limit", None) or sources.get("enrich_batch_size") or 80)
+        target = int(getattr(args, "ttf_target", None) or 10)
+        min_score = float((search.get("digest") or {}).get("min_score") or 60)
+
         disc = run_discover(
             db,
             settings=settings,
             detect_unknown=not getattr(args, "no_detect", False),
             mode=mode,
         )
+        milestones["first_discovered_s"] = round(time.monotonic() - t0, 2)
         report["discover"] = {
             k: disc.get(k)
             for k in (
@@ -564,88 +594,166 @@ def cmd_refresh(args: argparse.Namespace) -> int:
             )
         }
         report["steps"].append("discover")
-        if not getattr(args, "skip_enrich", False):
-            enr = run_enrich(
-                db,
-                settings=settings,
-                mode=mode,
-                limit=getattr(args, "enrich_limit", None),
-                progress=lambda m: _err(m),
+
+        enrich_rounds: list[dict[str, Any]] = []
+        rank_total = 0
+        irrelevant_enriched_before_first = 0
+        http_before_first = 0
+        saw_confirmed = False
+        fp = scoring_fingerprint(search, profile)
+
+        def _rank_available() -> int:
+            nonlocal rank_total
+            if getattr(args, "skip_rank", False):
+                return 0
+            pending = db.count_jobs_needing_score(
+                re_rank=False,
+                score_kind="deterministic",
+                current_model=STAGE1_MODELS,
+                config_fingerprint=fp,
+                require_complete=True,
             )
-            report["enrich"] = {
-                k: enr.get(k)
-                for k in (
-                    "ok",
-                    "claimed",
-                    "enriched",
-                    "failed",
-                    "timing",
-                    "queue_after",
-                    "http_requests",
-                    "cache_hit_rate",
+            if pending == 0:
+                return 0
+            jobs = db.jobs_needing_score(
+                limit=pending,
+                re_rank=False,
+                score_kind="deterministic",
+                current_model=STAGE1_MODELS,
+                config_fingerprint=fp,
+                title_priority=lambda j: (
+                    2 if title_matches_selected_tracks(j.get("title") or "", search) else 0
+                ),
+                pool_size=max(pending * 2, 500),
+                require_complete=True,
+            )
+            n = 0
+            for job in jobs:
+                if db.should_skip_recommendation(job["company"], job["title"]):
+                    continue
+                scored = score_job(
+                    job, search_cfg=search, profile=profile, settings=settings, use_llm=False
                 )
+                db.save_score(
+                    job["id"],
+                    overall=scored.overall,
+                    scores=scored.scores,
+                    hard_filter=scored.hard_filter.to_dict() if scored.hard_filter else None,
+                    strengths=scored.strengths,
+                    gaps=scored.gaps,
+                    salary_alignment=scored.salary_alignment,
+                    rejection_reasons=scored.rejection_reasons,
+                    evidence=scored.evidence,
+                    model=scored.model,
+                    description_hash=job.get("description_hash") or "",
+                    score_kind=scored.score_kind,
+                    config_fingerprint=fp,
+                )
+                n += 1
+            rank_total += n
+            return n
+
+        if not getattr(args, "skip_enrich", False):
+            deadline = t0 + enrich_budget
+            rounds = 0
+            while time.monotonic() < deadline:
+                remaining = max(5.0, deadline - time.monotonic())
+                enr = run_enrich(
+                    db,
+                    settings=settings,
+                    mode=mode,
+                    limit=batch,
+                    time_budget_s=min(remaining, enrich_budget / 2),
+                    progress=lambda m: _err(m),
+                )
+                enrich_rounds.append(
+                    {
+                        "claimed": enr.get("claimed"),
+                        "enriched": enr.get("enriched"),
+                        "failed": enr.get("failed"),
+                        "companies": enr.get("companies_in_batch"),
+                        "http_requests": enr.get("http_requests"),
+                        "prioritized": enr.get("prioritized"),
+                    }
+                )
+                if not saw_confirmed:
+                    http_before_first += int(enr.get("http_requests") or 0)
+                    irrelevant_enriched_before_first += int(
+                        enr.get("claimed_irrelevant") or 0
+                    )
+                rounds += 1
+                scored = _rank_available()
+                snap = ttf_snapshot(
+                    db,
+                    t0=t0,
+                    now=time.monotonic(),
+                    milestones=milestones,
+                    target=target,
+                    min_score=min_score,
+                )
+                if snap["confirmed_matches"] >= 1 and milestones["first_confirmed_s"] is None:
+                    milestones["first_confirmed_s"] = snap["elapsed_s"]
+                    saw_confirmed = True
+                _err(
+                    f"refresh: enrich round {rounds} ranked+{scored} "
+                    f"confirmed={snap['confirmed_matches']} elapsed_s={snap['elapsed_s']}"
+                )
+                if snap["confirmed_matches"] >= target:
+                    break
+                if int(enr.get("claimed") or 0) == 0:
+                    break
+            report["enrich"] = {
+                "rounds": rounds,
+                "batches": enrich_rounds,
+                "budget_s": enrich_budget,
             }
             report["steps"].append("enrich")
-        if not getattr(args, "skip_rank", False):
-            # Reuse rank path via a lightweight inline call
-            from jobseek.filters.tracks import title_matches_selected_tracks
-            from jobseek.rank.fingerprint import scoring_fingerprint
-            from jobseek.rank.scorer import STAGE1_MODELS
+        else:
+            _rank_available()
 
-            search = load_search()
-            profile = load_profile()
-            fp = scoring_fingerprint(search, profile)
-            scored_n = 0
-            while True:
-                jobs = db.jobs_needing_score(
-                    limit=250,
-                    re_rank=False,
-                    score_kind="deterministic",
-                    current_model=STAGE1_MODELS,
-                    config_fingerprint=fp,
-                    title_priority=lambda j: (
-                        2 if title_matches_selected_tracks(j.get("title") or "", search) else 0
-                    ),
-                )
-                if not jobs:
-                    break
-                batch = 0
-                for job in jobs:
-                    if db.should_skip_recommendation(job["company"], job["title"]):
-                        continue
-                    scored = score_job(
-                        job, search_cfg=search, profile=profile, settings=settings, use_llm=False
-                    )
-                    db.save_score(
-                        job["id"],
-                        overall=scored.overall,
-                        scores=scored.scores,
-                        hard_filter=scored.hard_filter.to_dict() if scored.hard_filter else None,
-                        strengths=scored.strengths,
-                        gaps=scored.gaps,
-                        salary_alignment=scored.salary_alignment,
-                        rejection_reasons=scored.rejection_reasons,
-                        evidence=scored.evidence,
-                        model=scored.model,
-                        description_hash=job.get("description_hash") or "",
-                        score_kind=scored.score_kind,
-                        config_fingerprint=fp,
-                    )
-                    scored_n += 1
-                    batch += 1
-                if batch == 0:
-                    break
-            report["rank"] = {"scored": scored_n, "config_fingerprint": fp}
-            report["steps"].append("rank")
-        report["ok"] = bool(report.get("discover", {}).get("ok", True))
-        report["hint"] = (
-            f"Refresh finished ({', '.join(report['steps'])}). "
-            f"Browse `{_prog_name()} jobs` for confirmed matches."
+        if not getattr(args, "skip_rank", False):
+            _rank_available()
+            report["rank"] = {"scored": rank_total, "config_fingerprint": fp}
+            if "rank" not in report["steps"]:
+                report["steps"].append("rank")
+
+        snap = ttf_snapshot(
+            db,
+            t0=t0,
+            now=time.monotonic(),
+            milestones=milestones,
+            target=target,
+            min_score=min_score,
         )
+        report["ttf"] = {
+            **snap,
+            "first_discovered_s": milestones.get("first_discovered_s"),
+            "first_confirmed_s": milestones.get("first_confirmed_s"),
+            "http_before_first_confirmed": http_before_first if saw_confirmed else None,
+            "irrelevant_enriched_before_first_confirmed_est": (
+                irrelevant_enriched_before_first if saw_confirmed else None
+            ),
+        }
+        counts = db.count_scored_by_eligibility(score_kind="deterministic")
+        report["eligibility_counts"] = counts
+        report["ok"] = bool(report.get("discover", {}).get("ok", True))
+        confirmed = snap["confirmed_matches"]
+        if confirmed >= target:
+            report["hint"] = (
+                f"Refresh ready: {confirmed} confirmed matches "
+                f"(TTF10≈{milestones.get('ttf10_s')}s). Run `{_prog_name()} jobs`."
+            )
+        else:
+            report["hint"] = (
+                f"Only {confirmed} confirmed matches found so far. "
+                f"Re-run `{_prog_name()} enrich` then `{_prog_name()} rank`, "
+                f"or `{_prog_name()} refresh` with a larger enrich budget."
+            )
         _print_json(report)
         return 0 if report.get("ok") else 1
     finally:
         db.close()
+
 
 
 def cmd_run_daily(args: argparse.Namespace) -> int:
@@ -935,12 +1043,25 @@ def cmd_jobs(args: argparse.Namespace) -> int:
         }
         if elig_norm == "ELIGIBLE" and uncertain:
             summary["next"] = f"{_prog_name()} jobs --eligibility uncertain"
-            summary["message"] = (
-                f"Found {confirmed} confirmed match"
-                f"{'es' if confirmed != 1 else ''}. "
-                f"There are {uncertain} additional opportunities with unverified "
-                f"Canadian eligibility. Run `{summary['next']}` to review them."
-            )
+            relevant_u = int(counts.get("relevant_uncertain") or 0)
+            irrelevant = int(counts.get("irrelevant") or counts.get("IRRELEVANT") or 0)
+            summary["relevant_uncertain"] = relevant_u
+            summary["irrelevant"] = irrelevant
+            parts = [
+                f"Found {confirmed} confirmed match{'es' if confirmed != 1 else ''}."
+            ]
+            if relevant_u:
+                parts.append(
+                    f"{relevant_u} relevant role(s) have unverified Canadian eligibility "
+                    f"(run `{summary['next']}`)."
+                )
+            if irrelevant:
+                parts.append(
+                    f"{irrelevant} scored role(s) are off-track for your selected titles "
+                    "(not Canada-eligibility issues)."
+                )
+            summary["message"] = " ".join(parts)
+
         if args.json:
             _print_json(summary)
             return 0
@@ -949,17 +1070,28 @@ def cmd_jobs(args: argparse.Namespace) -> int:
                 f"Found {confirmed} confirmed match"
                 f"{'es' if confirmed != 1 else ''}."
             )
-            if uncertain:
+            relevant_u = int(counts.get("relevant_uncertain") or 0)
+            irrelevant = int(counts.get("irrelevant") or counts.get("IRRELEVANT") or 0)
+            if relevant_u:
                 print(
-                    f"There are {uncertain} additional opportunities with unverified "
-                    f"Canadian eligibility. Run `{_prog_name()} jobs --eligibility uncertain` "
-                    "to review them."
+                    f"{relevant_u} relevant role(s) still have unverified Canadian "
+                    f"eligibility. Run `{_prog_name()} jobs --eligibility uncertain`."
+                )
+            if irrelevant:
+                print(
+                    f"{irrelevant} scored role(s) are off-track for your selected titles "
+                    "(not Canada-eligibility issues)."
                 )
             print()
         elif elig_norm == "UNCERTAIN":
+            relevant_u = int(counts.get("relevant_uncertain") or 0)
             print(
-                f"Showing uncertain opportunities ({len(rows)} listed; "
-                f"{uncertain} scored UNCERTAIN in total)."
+                f"Showing relevant roles with ambiguous Canadian eligibility "
+                f"({len(rows)} listed; {relevant_u} relevant-uncertain scored)."
+            )
+            print(
+                "Off-track titles are classified separately as IRRELEVANT — "
+                f"use `{_prog_name()} jobs --eligibility all` to inspect them."
             )
             print()
         if not rows:
@@ -1339,13 +1471,27 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
 
     rf = sub.add_parser(
         "refresh",
-        help="discover → enrich → rank (local daily orchestration)",
+        help="Progressive discover → enrich (fair queue) → rank; reports TTF10",
     )
     rf.add_argument("--mode", choices=("quick", "standard", "deep"), default="standard")
     rf.add_argument("--no-detect", action="store_true")
     rf.add_argument("--skip-enrich", action="store_true")
     rf.add_argument("--skip-rank", action="store_true")
-    rf.add_argument("--enrich-limit", type=int, default=None)
+    rf.add_argument("--enrich-limit", type=int, default=None, help="Jobs per enrich round")
+    rf.add_argument(
+        "--enrich-budget",
+        type=float,
+        default=None,
+        dest="enrich_budget",
+        help="Wall-clock seconds for progressive enrichment (default: sources.enrich_budget_s)",
+    )
+    rf.add_argument(
+        "--ttf-target",
+        type=int,
+        default=10,
+        dest="ttf_target",
+        help="Stop enrichment early once this many confirmed matches exist (default: 10)",
+    )
     rf.set_defaults(func=cmd_refresh)
 
     r = sub.add_parser("rank", help="Deterministic score (optional --llm)")

@@ -248,7 +248,11 @@ class CanadianPersonaEligibilityTests(unittest.TestCase):
                             msg=f"{result.eligibility} {result.reasons}",
                         )
                         if "onsite" in job["id"] or "us-only" in job["id"] or "vancouver" in persona_name and "toronto-hybrid" in job["id"]:
-                            self.assertIn(result.eligibility, ("INELIGIBLE", "UNCERTAIN"))
+                            # Off-track titles are IRRELEVANT (not a geography claim).
+                            self.assertIn(
+                                result.eligibility,
+                                ("INELIGIBLE", "UNCERTAIN", "IRRELEVANT"),
+                            )
                     elif expected == "ELIGIBLE":
                         self.assertEqual(
                             result.eligibility,

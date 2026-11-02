@@ -175,9 +175,12 @@ sources:
   company_concurrency: 4
   workday_company_concurrency: 3
   # Enrichment (post-discover detail hydration) — independent of listing discover.
+  # Priority + employer fairness select the batch; off-track titles are low priority.
   enrich_concurrency: 4
   enrich_batch_size: 200
   enrich_budget_s: 300
+  # Cap jobs from one employer per enrich claim (round-robin fills the rest).
+  enrich_max_per_company: 12
   gem: false
   career_pages: true
   linkedin_search_index: true

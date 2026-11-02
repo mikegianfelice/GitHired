@@ -143,6 +143,9 @@ JOB_COLUMN_MIGRATIONS = [
     ("enrich_attempts", "ALTER TABLE jobs ADD COLUMN enrich_attempts INTEGER NOT NULL DEFAULT 0"),
     ("enrich_last_error", "ALTER TABLE jobs ADD COLUMN enrich_last_error TEXT"),
     ("enrich_priority", "ALTER TABLE jobs ADD COLUMN enrich_priority INTEGER NOT NULL DEFAULT 0"),
+    ("enrich_lease_token", "ALTER TABLE jobs ADD COLUMN enrich_lease_token TEXT"),
+    ("enrich_next_retry_at", "ALTER TABLE jobs ADD COLUMN enrich_next_retry_at TEXT"),
+    ("enrich_priority_fp", "ALTER TABLE jobs ADD COLUMN enrich_priority_fp TEXT"),
 ]
 
 SCORE_COLUMN_MIGRATIONS = [

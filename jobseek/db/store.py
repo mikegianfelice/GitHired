@@ -111,6 +111,14 @@ class Database:
             "CREATE INDEX IF NOT EXISTS idx_jobs_enrichment "
             "ON jobs(enrichment_status, ats_provider, enrich_lease_until)"
         )
+        self._conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_jobs_enrich_claim "
+            "ON jobs(enrichment_status, enrich_priority DESC, enrich_next_retry_at)"
+        )
+        self._conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_jobs_rank_complete "
+            "ON jobs(description_complete, removed_at, status)"
+        )
         # Backfill enrichment_status from description_complete for upgraded DBs.
         if "enrichment_status" in {
             row["name"]
@@ -546,15 +554,33 @@ class Database:
             )
             return int(cur.rowcount or 0)
 
-    def set_enrich_priorities(self, job_ids: list[int], priority: int) -> None:
-        if not job_ids:
-            return
+    def set_enrich_priorities(
+        self,
+        updates: list[tuple[int, int]],
+        *,
+        fingerprint: str | None = None,
+    ) -> int:
+        """Bulk-set ``(job_id, priority)``. Returns rows written."""
+        if not updates:
+            return 0
         with self.transaction():
-            for jid in job_ids:
-                self._conn.execute(
-                    "UPDATE jobs SET enrich_priority = ? WHERE id = ?",
-                    (int(priority), int(jid)),
-                )
+            n = 0
+            for jid, priority in updates:
+                if fingerprint is not None:
+                    self._conn.execute(
+                        """
+                        UPDATE jobs SET enrich_priority = ?, enrich_priority_fp = ?
+                        WHERE id = ?
+                        """,
+                        (int(priority), fingerprint, int(jid)),
+                    )
+                else:
+                    self._conn.execute(
+                        "UPDATE jobs SET enrich_priority = ? WHERE id = ?",
+                        (int(priority), int(jid)),
+                    )
+                n += 1
+            return n
 
     def claim_enrichment_jobs(
         self,
@@ -563,12 +589,18 @@ class Database:
         worker_id: str,
         lease_s: float = 120.0,
         ats_providers: list[str] | None = None,
+        job_ids: list[int] | None = None,
+        max_per_company: int | None = None,
     ) -> list[dict[str, Any]]:
         """Atomically claim pending/stale/failed jobs for enrichment (lease).
 
-        Recovers expired ``processing`` leases so interrupted runs resume.
+        Recovers expired ``processing`` leases. Optional ``job_ids`` claims a
+        pre-selected fair batch (priority + employer diversity applied by caller).
         """
+        import uuid
         from datetime import timedelta
+
+        from jobseek.enrich_priority import fair_select_for_enrichment
 
         now = datetime.now(timezone.utc)
         now_s = now.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -588,41 +620,66 @@ class Database:
                         ELSE 'pending'
                     END,
                     enrich_lease_owner = NULL,
-                    enrich_lease_until = NULL
+                    enrich_lease_until = NULL,
+                    enrich_lease_token = NULL
                 WHERE enrichment_status = 'processing'
                   AND enrich_lease_until IS NOT NULL
                   AND enrich_lease_until < ?
                 """,
                 (now_s,),
             )
-            rows = self._conn.execute(
-                f"""
-                SELECT id FROM jobs
-                WHERE removed_at IS NULL
-                  AND LOWER(COALESCE(ats_provider, '')) IN ({ph})
-                  AND enrichment_status IN ('pending', 'stale', 'failed')
-                  AND (
-                    enrich_lease_until IS NULL
-                    OR enrich_lease_until < ?
-                  )
-                ORDER BY enrich_priority DESC, first_seen DESC, id DESC
-                LIMIT ?
-                """,
-                (*providers, now_s, int(limit)),
-            ).fetchall()
-            for row in rows:
-                jid = int(row["id"])
+            if job_ids is not None:
+                id_list = [int(x) for x in job_ids][: max(int(limit), 0)]
+            else:
+                # Over-fetch then fair-select so one employer cannot monopolize.
+                pool_n = max(int(limit) * 8, int(limit) + 50)
+                rows = self._conn.execute(
+                    f"""
+                    SELECT id, company, enrich_priority, first_seen
+                    FROM jobs
+                    WHERE removed_at IS NULL
+                      AND LOWER(COALESCE(ats_provider, '')) IN ({ph})
+                      AND enrichment_status IN ('pending', 'stale', 'failed')
+                      AND (
+                        enrich_next_retry_at IS NULL
+                        OR enrich_next_retry_at <= ?
+                      )
+                      AND (
+                        enrich_lease_until IS NULL
+                        OR enrich_lease_until < ?
+                      )
+                    ORDER BY enrich_priority DESC, first_seen DESC, id DESC
+                    LIMIT ?
+                    """,
+                    (*providers, now_s, now_s, pool_n),
+                ).fetchall()
+                candidates = [dict(r) for r in rows]
+                selected = fair_select_for_enrichment(
+                    candidates,
+                    limit=int(limit),
+                    max_per_company=max_per_company,
+                )
+                id_list = [int(r["id"]) for r in selected]
+
+            for jid in id_list:
+                token = uuid.uuid4().hex
                 cur = self._conn.execute(
                     """
                     UPDATE jobs SET
                         enrichment_status = 'processing',
                         enrich_lease_owner = ?,
                         enrich_lease_until = ?,
-                        enrich_attempts = COALESCE(enrich_attempts, 0) + 1
+                        enrich_lease_token = ?,
+                        enrich_attempts = COALESCE(enrich_attempts, 0) + 1,
+                        enrich_next_retry_at = NULL
                     WHERE id = ?
                       AND enrichment_status IN ('pending', 'stale', 'failed')
+                      AND (
+                        enrich_next_retry_at IS NULL
+                        OR enrich_next_retry_at <= ?
+                      )
                     """,
-                    (worker_id, until, jid),
+                    (worker_id, until, token, jid, now_s),
                 )
                 if cur.rowcount == 1:
                     full = self._conn.execute(
@@ -632,14 +689,81 @@ class Database:
                         claimed.append(dict(full))
         return claimed
 
+    def renew_enrichment_lease(
+        self,
+        job_id: int,
+        *,
+        worker_id: str,
+        lease_token: str,
+        lease_s: float = 120.0,
+    ) -> bool:
+        """Extend lease if ownership matches. Returns False if lost."""
+        from datetime import timedelta
+
+        until = (
+            datetime.now(timezone.utc) + timedelta(seconds=max(30.0, float(lease_s)))
+        ).strftime("%Y-%m-%dT%H:%M:%SZ")
+        with self.transaction():
+            cur = self._conn.execute(
+                """
+                UPDATE jobs SET enrich_lease_until = ?
+                WHERE id = ?
+                  AND enrichment_status = 'processing'
+                  AND enrich_lease_owner = ?
+                  AND enrich_lease_token = ?
+                """,
+                (until, int(job_id), worker_id, lease_token),
+            )
+            return cur.rowcount == 1
+
     def complete_enrichment(
         self,
         job_id: int,
         *,
         ok: bool,
         error: str | None = None,
-    ) -> None:
+        worker_id: str | None = None,
+        lease_token: str | None = None,
+        retry_backoff_s: float | None = None,
+    ) -> bool:
+        """Finish enrichment. Requires matching lease when worker_id/token given.
+
+        Returns False when a stale worker lost the lease (no overwrite).
+        """
+        from datetime import timedelta
+
         with self.transaction():
+            if worker_id is not None or lease_token is not None:
+                row = self._conn.execute(
+                    """
+                    SELECT enrich_lease_owner, enrich_lease_token, enrichment_status
+                    FROM jobs WHERE id = ?
+                    """,
+                    (int(job_id),),
+                ).fetchone()
+                if row is None:
+                    return False
+                # Stale worker lost the lease to a newer claim.
+                owner = row["enrich_lease_owner"]
+                token = row["enrich_lease_token"]
+                status = row["enrichment_status"]
+                if owner is not None and worker_id is not None and owner != worker_id:
+                    return False
+                if token is not None and lease_token is not None and token != lease_token:
+                    return False
+                # Idempotent success: already complete and lease cleared.
+                if ok and status == "complete" and owner is None:
+                    return True
+                # Never demote a complete description via a failed completion.
+                if not ok and status == "complete":
+                    return False
+                # Success path: upsert may already have set enrichment_status=complete
+                # while this worker still holds the lease — allow that.
+                if not ok and status != "processing":
+                    return False
+                if ok and status not in ("processing", "complete"):
+                    return False
+
             if ok:
                 self._conn.execute(
                     """
@@ -647,23 +771,41 @@ class Database:
                         enrichment_status = 'complete',
                         enrich_lease_owner = NULL,
                         enrich_lease_until = NULL,
-                        enrich_last_error = NULL
+                        enrich_lease_token = NULL,
+                        enrich_last_error = NULL,
+                        enrich_next_retry_at = NULL
                     WHERE id = ?
                     """,
                     (int(job_id),),
                 )
             else:
+                attempts_row = self._conn.execute(
+                    "SELECT enrich_attempts FROM jobs WHERE id = ?",
+                    (int(job_id),),
+                ).fetchone()
+                attempts = int((attempts_row["enrich_attempts"] if attempts_row else 1) or 1)
+                if retry_backoff_s is None:
+                    # Exponential backoff: 2^min(attempts,6) minutes.
+                    retry_backoff_s = float(min(2 ** min(attempts, 6), 64) * 60)
+                # Allow retry_backoff_s=0 for immediate reclaim in tests / budget cuts.
+                next_at = (
+                    datetime.now(timezone.utc)
+                    + timedelta(seconds=max(0.0, float(retry_backoff_s)))
+                ).strftime("%Y-%m-%dT%H:%M:%SZ")
                 self._conn.execute(
                     """
                     UPDATE jobs SET
                         enrichment_status = 'failed',
                         enrich_lease_owner = NULL,
                         enrich_lease_until = NULL,
-                        enrich_last_error = ?
+                        enrich_lease_token = NULL,
+                        enrich_last_error = ?,
+                        enrich_next_retry_at = ?
                     WHERE id = ?
                     """,
-                    ((error or "enrichment failed")[:500], int(job_id)),
+                    ((error or "enrichment failed")[:500], next_at, int(job_id)),
                 )
+            return True
 
     def list_jobs(
         self,
@@ -782,18 +924,42 @@ class Database:
             """,
             params,
         ).fetchall()
-        counts = {"ELIGIBLE": 0, "UNCERTAIN": 0, "INELIGIBLE": 0}
+        counts = {
+            "ELIGIBLE": 0,
+            "UNCERTAIN": 0,
+            "INELIGIBLE": 0,
+            "IRRELEVANT": 0,
+            "relevant_uncertain": 0,
+            "irrelevant": 0,
+        }
         for row in rows:
             elig = "UNCERTAIN"
+            relevance = None
+            title_match = None
             hf = row["hard_filter_json"] if hasattr(row, "keys") else row[0]
+            parsed: dict[str, Any] = {}
             if isinstance(hf, str) and hf:
                 try:
-                    elig = str((json.loads(hf) or {}).get("eligibility") or "UNCERTAIN").upper()
+                    parsed = json.loads(hf) or {}
                 except json.JSONDecodeError:
-                    elig = "UNCERTAIN"
-            if elig not in counts:
-                counts[elig] = 0
-            counts[elig] += 1
+                    parsed = {}
+            elif isinstance(hf, dict):
+                parsed = hf
+            elig = str(parsed.get("eligibility") or "UNCERTAIN").upper()
+            relevance = str(parsed.get("relevance") or "").upper() or None
+            title_match = parsed.get("title_match")
+            if elig not in ("ELIGIBLE", "UNCERTAIN", "INELIGIBLE", "IRRELEVANT"):
+                elig = "UNCERTAIN"
+            counts[elig] = counts.get(elig, 0) + 1
+            is_irrelevant = (
+                elig == "IRRELEVANT"
+                or relevance == "NO_MATCH"
+                or title_match is False
+            )
+            if is_irrelevant:
+                counts["irrelevant"] += 1
+            elif elig == "UNCERTAIN":
+                counts["relevant_uncertain"] += 1
         return counts
 
     def _jobs_needing_score_sql(
