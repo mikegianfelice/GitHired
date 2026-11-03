@@ -187,7 +187,7 @@ githired prepare <job_id>   # briefing only — never drafts or submits
 
 - **Geographic eligibility:** ELIGIBLE · UNCERTAIN · INELIGIBLE (plus IRRELEVANT for off-track titles) — never invented from a global brand alone ([`jobseek/filters/hard.py`](jobseek/filters/hard.py))
 - **Relevance** (MATCH / NO_MATCH / REVIEW) is reported separately from Canadian eligibility
-- **Salary policy:** `flexible` (default) · `strict` · `none` — USD↔CAD uses explicit `usd_to_cad`, never 1:1
+- **Salary policy:** `flexible` (default) · `strict` · `none` — preferred currency + explicit `usd_to_cad` (never 1:1); setup does not invent a USD floor
 - **Uncertain jobs:** `githired jobs --eligibility uncertain` shows root causes and whether enrichment can help
 - A Toronto-only hybrid is **not** eligible for a Vancouver candidate who will not relocate
 - Engineering **tracks** in [`config/search.yaml`](config/search.yaml): software, AI, ML, data, platform, cloud, DevOps/SRE, FDE

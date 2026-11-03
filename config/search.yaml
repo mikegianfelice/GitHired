@@ -151,11 +151,16 @@ salary:
   # none: ignore salary minimum entirely
   policy: flexible
   reject_missing: false  # legacy alias for policy=strict when true
+  # Authoritative currency for floor checks. Job pay is converted into this
+  # currency via usd_to_cad before comparing (never treated as 1:1).
+  preferred_currency: CAD
+  # When true, compare each job in its native currency against that currency's
+  # floor only (advanced dual-floor setups). Default false — preferred wins.
+  floors_independent: false
   # Explicit USD→CAD rate for cross-currency floor checks (never equate 1:1).
   usd_to_cad: 1.35
   floors:
     CAD: 120000
-    USD: 90000
 
 sources:
   greenhouse: true

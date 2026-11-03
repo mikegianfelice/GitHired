@@ -157,10 +157,12 @@ Three-state classification (never invent eligibility from employer brand alone):
 | State | Meaning | Effect |
 |-------|---------|--------|
 | **ELIGIBLE** | Explicit Canada / province / city, or genuine worldwide remote | Priority in ranking |
-| **UNCERTAIN** | Ambiguous remote / US-primary without Canada evidence | Visible; ranking penalty + warning |
-| **INELIGIBLE** | US-only, foreign work-auth, or on-site outside Canada | Hard-filter FAIL |
+| **UNCERTAIN** | Ambiguous remote / missing arrangement / incomplete evidence | Visible; ranking penalty + warning |
+| **INELIGIBLE** | Clear foreign-only / US-only location, or Canada excluded | Hard-filter FAIL |
 
-`githired jobs --eligibility uncertain` explains **why** each role stayed uncertain (missing description, US-primary without Canada evidence, province/city mismatch, remote ambiguity, etc.) and whether enrichment is likely to help.
+`githired jobs --eligibility uncertain` explains **why** each role stayed uncertain using the hard-filter reasons (missing description, unspecified work arrangement on a Canadian city, province/city mismatch, remote ambiguity, etc.) and whether enrichment is likely to help. Explanations must match classifier evidence — a Toronto posting with unknown remote/hybrid/onsite is not reported as a province mismatch.
+
+Clearly foreign-only locations (e.g. Chengdu, Hong Kong, Quezon City, Chicago IL USA, Remote USA) are **INELIGIBLE** for Canada-only candidates unless the posting also evidences Canadian hiring. Unfamiliar city names without non-Canadian country/state evidence stay **UNCERTAIN**.
 
 ## Salary policy
 
@@ -172,7 +174,9 @@ Configure under `salary` in [`config/search.yaml`](../config/search.yaml):
 | **strict** | Rejected | Rejected |
 | **none** | Ignored | Ignored |
 
-CAD is the default candidate currency. USD salaries are compared using an explicit `usd_to_cad` rate (never treated as CAD 1:1). Legacy `reject_missing: true` maps to `strict`.
+`preferred_currency` (default `CAD`) is authoritative: job pay is converted into that currency via explicit `usd_to_cad` (documented default `1.35`; never 1:1) before comparing to the preferred floor. Range checks use the high end of a verified band. Setup writes only the CAD floor the user enters — it does **not** invent a USD $90k floor.
+
+Advanced: set `floors_independent: true` plus per-currency `floors` to keep independent USD/CAD floors without cross-conversion. Changing `preferred_currency`, `usd_to_cad`, `floors`, `floors_independent`, or `policy` changes the scoring fingerprint and triggers incremental re-rank. Legacy `reject_missing: true` maps to `strict`.
 
 Supported modes: `remote_canada`, `remote_province`, `hybrid`, `onsite`.
 

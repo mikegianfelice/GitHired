@@ -105,9 +105,10 @@ class HardFilterTests(unittest.TestCase):
             "description": "Remote within the United States. Offices in NYC.",
         }
         result = apply_hard_filters(job, SEARCH)
-        # US-primary without explicit Canada → UNCERTAIN (not invented ELIGIBLE)
-        self.assertEqual(result.eligibility, "UNCERTAIN")
-        self.assertEqual(result.location_verdict, "FLAG")
+        # US-primary without explicit Canada → INELIGIBLE (not invented ELIGIBLE)
+        self.assertEqual(result.eligibility, "INELIGIBLE")
+        self.assertEqual(result.location_verdict, "FAIL")
+        self.assertEqual(result.verdict, "FAIL")
         self.assertFalse(any("invent" in r.lower() for r in result.reasons))
 
     def test_us_only_ineligible(self):

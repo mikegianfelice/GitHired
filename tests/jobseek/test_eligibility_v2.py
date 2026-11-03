@@ -147,8 +147,8 @@ class UatFalsePositiveTests(unittest.TestCase):
             "description": "Hire from anywhere in the world. Build data platforms.",
         }
         elig, verdict, _, _ = classify_canada_eligibility(job, SEARCH)
-        self.assertNotEqual(elig, "ELIGIBLE")
-        self.assertEqual(verdict, "FLAG")
+        self.assertEqual(elig, "INELIGIBLE")
+        self.assertEqual(verdict, "FAIL")
 
     def test_us_only_stripe_style(self):
         job = {

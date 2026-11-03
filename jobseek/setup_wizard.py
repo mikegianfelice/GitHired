@@ -235,8 +235,17 @@ def apply_answers_to_search(data: dict[str, Any], answers: dict[str, Any]) -> di
     salary = dict(out.get("salary") or {})
     floors = dict(salary.get("floors") or {})
     floors["CAD"] = int(answers["salary_cad"])
-    floors.setdefault("USD", 90000)
+    # Do not invent a USD floor when the user only specified a CAD minimum.
+    # Existing USD floors are left untouched (no silent migration wipe); with
+    # preferred_currency=CAD and floors_independent=false they are ignored for
+    # comparison. Advanced users set floors_independent: true explicitly.
     salary["floors"] = floors
+    salary["preferred_currency"] = "CAD"
+    # Wizard always writes preferred-currency mode; do not flip an explicit true
+    # the user may have set outside the wizard unless they re-run setup.
+    salary["floors_independent"] = False
+    salary.setdefault("usd_to_cad", 1.35)
+    salary.setdefault("policy", "flexible")
     salary.setdefault("reject_missing", False)
     out["salary"] = salary
     sen = dict(out.get("seniority") or {})

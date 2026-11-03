@@ -31,6 +31,70 @@ def _salary_policy(search_cfg: dict[str, Any]) -> str:
     return "flexible"
 
 
+DEFAULT_USD_TO_CAD = 1.35
+
+
+def _resolve_fx_rate(salary_cfg: dict[str, Any]) -> tuple[float, list[str]]:
+    """Return (usd_to_cad, notes). Invalid/non-positive rates fall back to default."""
+    notes: list[str] = []
+    raw = salary_cfg.get("usd_to_cad")
+    if raw is None:
+        return DEFAULT_USD_TO_CAD, notes
+    try:
+        fx_f = float(raw)
+    except (TypeError, ValueError):
+        notes.append(
+            f"invalid usd_to_cad={raw!r}; using documented default {DEFAULT_USD_TO_CAD}"
+        )
+        return DEFAULT_USD_TO_CAD, notes
+    if fx_f <= 0:
+        notes.append(
+            f"invalid usd_to_cad={fx_f}; using documented default {DEFAULT_USD_TO_CAD}"
+        )
+        return DEFAULT_USD_TO_CAD, notes
+    return fx_f, notes
+
+
+def _preferred_currency(salary_cfg: dict[str, Any], floors: dict[str, Any]) -> str | None:
+    """Authoritative currency for floor comparison unless floors_independent."""
+    raw = str(salary_cfg.get("preferred_currency") or "").strip().upper()
+    if raw in ("CAD", "USD"):
+        return raw
+    if floors.get("CAD") is not None or floors.get("cad") is not None:
+        return "CAD"
+    if floors.get("USD") is not None or floors.get("usd") is not None:
+        return "USD"
+    return None
+
+
+def _floor_for(floors: dict[str, Any], currency: str) -> float | None:
+    key = currency.upper()
+    val = floors.get(key)
+    if val is None:
+        val = floors.get(key.lower())
+    if val is None:
+        return None
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return None
+
+
+def _convert_to_preferred(
+    amount: float, job_currency: str, preferred: str, fx: float
+) -> float:
+    """Convert annual amount into preferred currency using usd_to_cad."""
+    jc = job_currency.upper()
+    pc = preferred.upper()
+    if jc == pc:
+        return amount
+    if jc == "USD" and pc == "CAD":
+        return amount * fx
+    if jc == "CAD" and pc == "USD":
+        return amount / fx
+    return amount
+
+
 def _salary_verdict(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[str, list[str]]:
     """Salary floor gate with configurable policy.
 
@@ -40,9 +104,10 @@ def _salary_verdict(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[st
       - strict: missing/unverified pay FAILs; below-floor FAILs.
       - none: ignore salary minimum entirely.
 
-    USD vs CAD: never silently equate currencies. When a CAD floor is configured and
-    the job is USD (or vice versa), compare using ``salary.usd_to_cad`` (documented
-    FX rate) and label the conversion explicitly.
+    Preferred currency is authoritative by default: job pay is converted via
+    ``salary.usd_to_cad`` (documented default 1.35; never 1:1) before comparing
+    to the preferred floor. Set ``floors_independent: true`` to keep advanced
+    per-currency floors without cross-conversion.
     """
     from jobseek.filters.salary import salary_label_for_job
 
@@ -52,13 +117,18 @@ def _salary_verdict(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[st
         return "PASS", ["salary policy=none — minimum ignored"]
 
     floors = dict(salary_cfg.get("floors") or {})
-    # Cross-currency comparison uses an explicit FX rate (never 1:1).
-    fx = salary_cfg.get("usd_to_cad")
-    try:
-        fx_f = float(fx) if fx is not None else 1.35
-    except (TypeError, ValueError):
-        fx_f = 1.35
-    info = salary_label_for_job(job, floors=floors if floors else None)
+    fx_f, fx_notes = _resolve_fx_rate(salary_cfg)
+    floors_independent = bool(salary_cfg.get("floors_independent"))
+    preferred = _preferred_currency(salary_cfg, floors)
+
+    # For label helpers: when preferred-currency mode is active, only expose the
+    # preferred floor so native-currency dual floors cannot short-circuit FX.
+    label_floors = floors
+    if floors and preferred and not floors_independent:
+        pref_floor = _floor_for(floors, preferred)
+        label_floors = {preferred: pref_floor} if pref_floor is not None else {}
+
+    info = salary_label_for_job(job, floors=label_floors if label_floors else None)
 
     if info.confidence in ("undisclosed", "unverified") or info.salary_max is None:
         if policy == "strict":
@@ -67,6 +137,7 @@ def _salary_verdict(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[st
                 [
                     "salary policy=strict — missing/unverified compensation rejected",
                     info.label,
+                    *fx_notes,
                 ],
             )
         return (
@@ -74,54 +145,109 @@ def _salary_verdict(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[st
             [
                 "salary policy=flexible — missing pay accepted with warning",
                 info.label,
+                *fx_notes,
             ],
         )
 
-    # Re-evaluate below-floor with optional FX when currencies differ from floors.
     currency = (info.currency or "").upper() or None
+    # Range semantics: compare the high end (candidate can negotiate within band).
     high = info.salary_max if info.salary_max is not None else info.salary_min
-    if high is not None and floors:
-        cad_floor = floors.get("CAD") or floors.get("cad")
-        usd_floor = floors.get("USD") or floors.get("usd")
-        try:
-            high_f = float(high)
-            if currency == "USD" and cad_floor is not None and usd_floor is None:
-                cad_equiv = high_f * fx_f
-                if cad_equiv < float(cad_floor):
-                    return (
-                        "FAIL",
-                        [
-                            f"Salary below preference after FX: USD {int(high_f):,} "
-                            f"≈ CAD {int(cad_equiv):,} at usd_to_cad={fx_f} "
-                            f"(CAD floor {int(float(cad_floor)):,})",
-                            "USD amounts are never treated as CAD 1:1",
-                        ],
-                    )
-                return (
-                    "PASS",
-                    [
-                        f"Verified salary: USD {int(high_f):,} "
-                        f"(≈ CAD {int(cad_equiv):,} at usd_to_cad={fx_f})",
-                    ],
-                )
-            if currency == "CAD" and usd_floor is not None and cad_floor is None:
-                usd_equiv = high_f / fx_f if fx_f else high_f
-                if usd_equiv < float(usd_floor):
-                    return (
-                        "FAIL",
-                        [
-                            f"Salary below preference after FX: CAD {int(high_f):,} "
-                            f"≈ USD {int(usd_equiv):,} at usd_to_cad={fx_f} "
-                            f"(USD floor {int(float(usd_floor)):,})",
-                        ],
-                    )
-        except (TypeError, ValueError):
-            pass
+    if high is None or not floors or currency not in ("CAD", "USD"):
+        if info.confidence == "below_floor":
+            return "FAIL", [info.label, *info.reasons, *fx_notes]
+        return "PASS", [info.label, *info.reasons, *fx_notes]
 
-    if info.confidence == "below_floor":
-        return "FAIL", [info.label, *info.reasons]
+    try:
+        high_f = float(high)
+    except (TypeError, ValueError):
+        return "PASS", [info.label, *info.reasons, *fx_notes]
 
-    return "PASS", [info.label, *info.reasons]
+    # Advanced: independent per-currency floors (no cross-conversion).
+    if floors_independent:
+        native_floor = _floor_for(floors, currency)
+        if native_floor is None:
+            return "PASS", [
+                f"Verified salary: {currency} {int(high_f):,} "
+                f"(no {currency} floor under floors_independent)",
+                *fx_notes,
+            ]
+        if high_f < native_floor:
+            return (
+                "FAIL",
+                [
+                    f"Salary below preference: {currency} {int(high_f):,} "
+                    f"(floor {int(native_floor):,}; floors_independent)",
+                    *fx_notes,
+                ],
+            )
+        return (
+            "PASS",
+            [
+                f"Verified salary: {currency} {int(high_f):,} "
+                f"(meets {currency} floor {int(native_floor):,}; floors_independent)",
+                *fx_notes,
+            ],
+        )
+
+    # Default: convert into preferred currency, compare against preferred floor only.
+    if preferred is None:
+        if info.confidence == "below_floor":
+            return "FAIL", [info.label, *info.reasons, *fx_notes]
+        return "PASS", [info.label, *info.reasons, *fx_notes]
+
+    pref_floor = _floor_for(floors, preferred)
+    if pref_floor is None:
+        return "PASS", [info.label, *info.reasons, *fx_notes]
+
+    converted = _convert_to_preferred(high_f, currency, preferred, fx_f)
+    # Stable display rounding; comparison uses full float precision.
+    converted_disp = int(round(converted))
+    high_disp = int(round(high_f))
+    floor_disp = int(round(pref_floor))
+
+    if currency != preferred:
+        note = (
+            f"{currency} {high_disp:,} ≈ {preferred} {converted_disp:,} "
+            f"at usd_to_cad={fx_f}"
+        )
+        never_1to1 = "USD amounts are never treated as CAD 1:1"
+        if converted < pref_floor:
+            return (
+                "FAIL",
+                [
+                    f"Salary below preference after FX: {note} "
+                    f"({preferred} floor {floor_disp:,})",
+                    never_1to1,
+                    *fx_notes,
+                ],
+            )
+        return (
+            "PASS",
+            [
+                f"Verified salary after FX: {note} "
+                f"(meets {preferred} floor {floor_disp:,})",
+                never_1to1,
+                *fx_notes,
+            ],
+        )
+
+    if high_f < pref_floor:
+        return (
+            "FAIL",
+            [
+                f"Salary below preference: {preferred} {high_disp:,} "
+                f"(floor {floor_disp:,})",
+                *fx_notes,
+            ],
+        )
+    return (
+        "PASS",
+        [
+            f"Verified salary: {preferred} {high_disp:,} "
+            f"(meets floor {floor_disp:,})",
+            *fx_notes,
+        ],
+    )
 
 
 def evaluate_location(job: dict[str, Any], search_cfg: dict[str, Any]) -> tuple[str, list[str], list[str]]:

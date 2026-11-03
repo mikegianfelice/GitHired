@@ -180,6 +180,7 @@ _FULL_TIME_OFFICE = re.compile(
 _NORTH_AMERICA = re.compile(r"\bnorth\s+america\b|\bnamer\b", re.I)
 
 # Clear non-Canada geographic anchors in the location field.
+# Prefer country / region / major-city patterns over fragile one-off city lists.
 _OVERSEAS_LOCATION = re.compile(
     r"""
     \b(?:
@@ -192,22 +193,72 @@ _OVERSEAS_LOCATION = re.compile(
         australia | sydney | melbourne | japan | tokyo | singapore |
         brazil | sao\s+paulo | mexico\s+city |
         poland | warsaw | israel | tel\s+aviv |
-        philippines | manila | kenya | nairobi
+        philippines | manila | quezon\s+city | lapu[\s-]?lapu | cebu | makati | davao |
+        kenya | nairobi |
+        # Greater China / East & SE Asia
+        china | hong\s+kong | taiwan | macau | macao |
+        sichuan | chengdu | shanghai | beijing | shenzhen | guangzhou | hangzhou | wuhan |
+        south\s+korea | korea | seoul | vietnam | thailand | bangkok | indonesia | jakarta |
+        malaysia | kuala\s+lumpur | pakistan | karachi | lahore | bangladesh | dhaka |
+        nigeria | lagos | south\s+africa | johannesburg | cape\s+town |
+        argentina | buenos\s+aires | chile | santiago | colombia | bogot[aá] |
+        romania | bucharest | czech | prague | hungary | budapest | italy | rome | milan |
+        switzerland | zurich | sweden | stockholm | norway | oslo | denmark | copenhagen |
+        finland | helsinki | austria | vienna | belgium | brussels | uae | dubai |
+        new\s+zealand | auckland | wellington
     )\b
     """,
     re.I | re.X,
 )
 
 # US city / state patterns commonly appearing alone in location_raw.
+# Full state names + unambiguous state codes in "City, ST" form (avoid ON/OR/IN/ME/OK).
 _US_LOCATION_HINT = re.compile(
     r"""
     \b(?:
         san\s+francisco | new\s+york | nyc | seattle | austin | boston | chicago |
         los\s+angeles | denver | atlanta | miami | portland | philadelphia |
         washington,?\s*d\.?c\.? | bay\s+area | silicon\s+valley |
-        california | texas | washington\s+state | massachusetts | colorado |
-        \bCA\b | \bNY\b | \bWA\b | \bTX\b | \bMA\b
-    )\b
+        mount\s+laurel | jersey\s+city | hoboken | brooklyn | manhattan |
+        # Full US state / district names (not Canadian provinces)
+        alabama | alaska | arizona | arkansas | california | colorado | connecticut |
+        delaware | florida | georgia | hawaii | idaho | illinois | indiana | iowa |
+        kansas | kentucky | louisiana | maryland | massachusetts | michigan |
+        minnesota | mississippi | missouri | montana | nebraska | nevada |
+        new\s+hampshire | new\s+jersey | new\s+mexico | new\s+york\s+state |
+        north\s+carolina | north\s+dakota | ohio | oklahoma | oregon |
+        pennsylvania | rhode\s+island | south\s+carolina | south\s+dakota |
+        tennessee | texas | utah | vermont | virginia | washington\s+state |
+        west\s+virginia | wisconsin | wyoming | district\s+of\s+columbia |
+        # Unambiguous postal codes (exclude OR/IN/ME/OK/OH which collide with English)
+        \b(?:AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|KS|KY|LA|MD|MA|MI|MN|MS|MO|
+           MT|NE|NV|NH|NJ|NM|NY|NC|ND|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC)\b
+    )
+    """,
+    re.I | re.X,
+)
+
+# "City, ST" / "City, State, USA" — structured US office signal.
+_US_CITY_STATE = re.compile(
+    r"""
+    (?:^|[\s,;/|(\-–—])
+    [A-Za-z][A-Za-z .'-]{1,40}
+    ,\s*
+    (?:
+        AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|KS|KY|LA|MD|MA|MI|MN|MS|MO|
+        MT|NE|NV|NH|NJ|NM|NY|NC|ND|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC|
+        Alabama|Alaska|Arizona|Arkansas|California|Colorado|Connecticut|
+        Delaware|Florida|Georgia|Hawaii|Idaho|Illinois|Indiana|Iowa|
+        Kansas|Kentucky|Louisiana|Maryland|Massachusetts|Michigan|
+        Minnesota|Mississippi|Missouri|Montana|Nebraska|Nevada|
+        New\s+Hampshire|New\s+Jersey|New\s+Mexico|New\s+York|
+        North\s+Carolina|North\s+Dakota|Ohio|Oklahoma|Oregon|
+        Pennsylvania|Rhode\s+Island|South\s+Carolina|South\s+Dakota|
+        Tennessee|Texas|Utah|Vermont|Virginia|Washington|
+        West\s+Virginia|Wisconsin|Wyoming
+    )
+    (?:\s*,\s*(?:USA|U\.S\.A\.?|United\s+States))?
+    (?:$|[\s,;/)|\-–—])
     """,
     re.I | re.X,
 )
@@ -360,7 +411,7 @@ def _part_is_clearly_foreign(part: str) -> bool:
         return False
     if _OVERSEAS_LOCATION.search(part):
         return True
-    if _US_GEO.search(part) or _US_LOCATION_HINT.search(part):
+    if _US_GEO.search(part) or _US_LOCATION_HINT.search(part) or _US_CITY_STATE.search(part):
         return True
     return False
 
@@ -598,6 +649,7 @@ def _apply_arrangement_gate(
             f"modes are {sorted(modes) or ['(none)']}"
         )
         return "INELIGIBLE", "FAIL", reasons, evidence
+    reasons.append("uncertainty_code=work_arrangement_unspecified")
     reasons.append(
         f"work arrangement not evidenced (unknown); cannot confirm against modes "
         f"{sorted(modes) or ['(none)']}"
@@ -868,7 +920,11 @@ def _classify_canada_level(
     loc_onsite = bool(_ONSITE.search(location))
     loc_na = bool(_NORTH_AMERICA.search(location))
     loc_overseas = _location_has_overseas(location)
-    loc_us = bool(_US_GEO.search(location) or _US_LOCATION_HINT.search(location))
+    loc_us = bool(
+        _US_GEO.search(location)
+        or _US_LOCATION_HINT.search(location)
+        or _US_CITY_STATE.search(location)
+    )
 
     desc_hire = _CANADA_HIRE.search(description)
     desc_wfa = _WORLDWIDE_REMOTE.search(description) or _WORLDWIDE_REMOTE.search(location)
@@ -882,45 +938,34 @@ def _classify_canada_level(
 
     # --- Structured location decisions ---
 
-    # Clear overseas on-site (London UK, Gurugram, etc.) without Canada option.
-    # Remote-US without explicit "US only" stays UNCERTAIN later — not invented ELIGIBLE.
-    overseas_onsite = bool(
+    # Clear non-Canadian location (overseas city/country OR US city/state/country)
+    # with no Canadian option → INELIGIBLE. Unknown/unfamiliar cities stay UNCERTAIN
+    # unless foreign evidence is sufficient (_part_is_clearly_foreign).
+    foreign_only = bool(
         location
         and foreign_parts
         and not canadian_parts
         and not loc_canada
         and not loc_province
         and not loc_city
-        and _OVERSEAS_LOCATION.search(location)
-        and not loc_remote
+        and not desc_hire
+        and not desc_wfa
     )
-    if overseas_onsite and not desc_hire and not desc_wfa:
+    if foreign_only and (
+        _OVERSEAS_LOCATION.search(location) or loc_us or bool(foreign_parts)
+    ):
         evidence.append(foreign_parts[0])
+        if loc_remote or desc_remote:
+            return (
+                "INELIGIBLE",
+                "FAIL",
+                ["non-Canadian location without Canadian hiring evidence"],
+                evidence,
+            )
         return (
             "INELIGIBLE",
             "FAIL",
             ["on-site / office location outside Canada"],
-            evidence,
-        )
-    # Remote + explicit overseas city/country (e.g. "London, UK" or "Remote, London")
-    # without Canada hire evidence → INELIGIBLE (not a Canada role).
-    if (
-        location
-        and foreign_parts
-        and not canadian_parts
-        and not loc_canada
-        and not loc_province
-        and not loc_city
-        and _OVERSEAS_LOCATION.search(location)
-        and (loc_remote or desc_remote)
-        and not desc_hire
-        and not desc_wfa
-    ):
-        evidence.append(foreign_parts[0])
-        return (
-            "INELIGIBLE",
-            "FAIL",
-            ["overseas / non-Canada location without Canadian hiring evidence"],
             evidence,
         )
 
@@ -989,8 +1034,8 @@ def _classify_canada_level(
             evidence.append(desc_wfa.group(0))
             evidence.append(location or (foreign_parts[0] if foreign_parts else "non-Canada location"))
             return (
-                "UNCERTAIN",
-                "FLAG",
+                "INELIGIBLE",
+                "FAIL",
                 [
                     "work-from-anywhere language present but structured location "
                     "is US/overseas without Canada"
@@ -1011,24 +1056,23 @@ def _classify_canada_level(
             evidence,
         )
 
-    # US-primary location without Canada evidence
+    # US-primary / foreign location without Canada evidence → INELIGIBLE.
+    # Ambiguous remote with no country signal stays UNCERTAIN below.
     if (loc_us or (foreign_parts and not canadian_parts)) and not loc_canada:
+        evidence.append(location or (foreign_parts[0] if foreign_parts else "US/overseas"))
         if loc_onsite or (desc_onsite and not loc_remote and not desc_remote):
-            evidence.append(location or (foreign_parts[0] if foreign_parts else "US/overseas"))
             return (
                 "INELIGIBLE",
                 "FAIL",
                 ["on-site / in-office outside Canada"],
                 evidence,
             )
-        if loc_remote or desc_remote or loc_us:
-            evidence.append(location or "US remote")
-            return (
-                "UNCERTAIN",
-                "FLAG",
-                ["US-primary remote without explicit Canadian eligibility"],
-                evidence,
-            )
+        return (
+            "INELIGIBLE",
+            "FAIL",
+            ["non-Canadian location without Canadian hiring evidence"],
+            evidence,
+        )
 
     if loc_remote or desc_remote:
         return (

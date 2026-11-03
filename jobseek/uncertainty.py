@@ -6,6 +6,46 @@ from typing import Any
 
 from jobseek.shortlist import parse_hard_filter
 
+# Structured codes optionally emitted by the geographic classifier / arrangement gate.
+# Prefer these over fragile substring heuristics when present.
+_REASON_CODE_RE = __import__("re").compile(
+    r"uncertainty_code=(?P<code>[a-z0-9_]+)",
+    __import__("re").I,
+)
+
+_SUMMARIES = {
+    "missing_incomplete_description": (
+        "Full job description is missing or too short to verify Canada eligibility."
+    ),
+    "geographic_ambiguity": (
+        "Location text does not clearly evidence Canadian eligibility."
+    ),
+    "remote_eligibility_ambiguity": (
+        "Remote/hybrid arrangement is ambiguous for a Canadian candidate."
+    ),
+    "work_arrangement_unspecified": (
+        "Canadian location confirmed, but work arrangement is unspecified. "
+        "Cannot verify compatibility with your remote/hybrid preferences."
+    ),
+    "province_or_city_restriction": (
+        "City/province evidence does not match this candidate's location policy."
+    ),
+    "us_primary_without_canada_evidence": (
+        "US-primary remote posting without explicit Canadian eligibility."
+    ),
+    "apply_url": "Application URL is not confirmed-actionable (e.g. affiliate).",
+    "other": "Hard filters left geographic eligibility unverified.",
+}
+
+
+def _codes_from_reasons(reasons: list[str]) -> list[str]:
+    codes: list[str] = []
+    for r in reasons:
+        m = _REASON_CODE_RE.search(r)
+        if m:
+            codes.append(m.group("code").casefold())
+    return codes
+
 
 def classify_uncertainty(
     row: dict[str, Any],
@@ -14,14 +54,8 @@ def classify_uncertainty(
 ) -> dict[str, Any]:
     """Return a structured uncertainty diagnosis for CLI / digests.
 
-    Categories:
-      - missing_incomplete_description
-      - geographic_ambiguity
-      - remote_eligibility_ambiguity
-      - province_or_city_restriction
-      - us_primary_without_canada_evidence
-      - apply_url
-      - other
+    Categories reflect the hard-filter reasons — never invent a province mismatch
+    when the classifier actually recorded an unspecified work arrangement.
     """
     hf = hard_filter if hard_filter is not None else parse_hard_filter(row)
     elig = str(hf.get("eligibility") or "").upper()
@@ -38,31 +72,41 @@ def classify_uncertainty(
     loc = str(row.get("location_raw") or "").casefold()
     complete = bool(int(row.get("description_complete") or 0))
     dlen = len(str(row.get("description") or ""))
+    codes = _codes_from_reasons(reasons)
 
     category = "other"
     if not complete or dlen < 120:
         category = "missing_incomplete_description"
-    elif "us-primary remote without explicit canadian" in blob:
+    elif "work_arrangement_unspecified" in codes or "work arrangement not evidenced" in blob:
+        category = "work_arrangement_unspecified"
+    elif (
+        "us_primary_without_canada_evidence" in codes
+        or "us-primary remote without explicit canadian" in blob
+        or "non-canadian location without canadian hiring" in blob
+    ):
         category = "us_primary_without_canada_evidence"
-    elif any(
+    elif "province_or_city_restriction" in codes or any(
         x in blob
         for x in (
-            "hub-remote",
-            "city match alone",
-            "off-city",
-            "province",
-            "candidate city",
+            "hub-remote city",
+            "outside candidate city",
+            "outside candidate provinces",
+            "incompatible with candidate cities",
+            "incompatible with candidate provinces",
+            "province-restricted hybrid/on-site",
+            "city+canada without remote is not remote-canada",
         )
     ):
         category = "province_or_city_restriction"
     elif any(
         x in blob
         for x in (
-            "work arrangement not evidenced",
             "remote role; canada eligibility not evidenced",
             "north america",
             "namer",
             "work-from-anywhere",
+            "canadian city mentioned alongside non-canada",
+            "canadian province mentioned alongside us",
         )
     ):
         category = "remote_eligibility_ambiguity"
@@ -71,12 +115,13 @@ def classify_uncertainty(
         for x in (
             "location/canada eligibility not evidenced",
             "location not evidenced",
-            "unknown",
         )
     ) or not loc.strip():
         category = "geographic_ambiguity"
     elif "application url" in blob or "affiliate" in blob:
         category = "apply_url"
+    elif "unknown" in blob:
+        category = "geographic_ambiguity"
 
     # Enrichment can help when the listing lacks a body or is a multi-location stub.
     multi_stub = bool(__import__("re").match(r"^\d+\s+locations?$", loc.strip()))
@@ -88,38 +133,27 @@ def classify_uncertainty(
     # Already-complete US-primary postings will not become ELIGIBLE via re-fetch alone.
     if category == "us_primary_without_canada_evidence" and complete:
         enrichable = False
+    # Work-arrangement uncertainty on a complete Canadian city posting needs a
+    # human read of hybrid/remote/onsite — re-fetch alone rarely helps.
+    if category == "work_arrangement_unspecified" and complete:
+        enrichable = False
 
-    summaries = {
-        "missing_incomplete_description": (
-            "Full job description is missing or too short to verify Canada eligibility."
-        ),
-        "geographic_ambiguity": (
-            "Location text does not clearly evidence Canadian eligibility."
-        ),
-        "remote_eligibility_ambiguity": (
-            "Remote/hybrid arrangement is ambiguous for a Canadian candidate."
-        ),
-        "province_or_city_restriction": (
-            "City/province evidence does not match this candidate's location policy."
-        ),
-        "us_primary_without_canada_evidence": (
-            "US-primary remote posting without explicit Canadian eligibility."
-        ),
-        "apply_url": "Application URL is not confirmed-actionable (e.g. affiliate).",
-        "other": "Hard filters left geographic eligibility unverified.",
-    }
     next_action = (
         "Run `githired enrich` then `githired rank` — description may resolve geography."
         if enrichable
         else (
             "Enrichment is unlikely to help; Canada eligibility is not evidenced in the posting."
             if category == "us_primary_without_canada_evidence"
-            else "Review the posting manually or broaden location modes if appropriate."
+            else (
+                "Confirm whether the role is remote, hybrid, or on-site before applying."
+                if category == "work_arrangement_unspecified"
+                else "Review the posting manually or broaden location modes if appropriate."
+            )
         )
     )
     return {
         "category": category,
-        "summary": summaries.get(category, summaries["other"]),
+        "summary": _SUMMARIES.get(category, _SUMMARIES["other"]),
         "enrichable": enrichable,
         "next_action": next_action,
         "reasons": reasons,

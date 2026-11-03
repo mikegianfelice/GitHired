@@ -202,13 +202,26 @@ class EligibilityTests(unittest.TestCase):
         elig, verdict, _, _ = classify_canada_eligibility(
             {
                 "title": "AI Engineer",
+                "location_raw": "Remote",
+                "description": "Fully remote team. Python. Offices in several regions.",
+            },
+            SEARCH,
+        )
+        # Bare remote without country evidence stays UNCERTAIN (not invented ELIGIBLE).
+        self.assertEqual(elig, "UNCERTAIN")
+        self.assertEqual(verdict, "FLAG")
+
+        elig, verdict, _, _ = classify_canada_eligibility(
+            {
+                "title": "AI Engineer",
                 "location_raw": "Remote, United States",
                 "description": "US remote team. Offices in NYC.",
             },
             SEARCH,
         )
-        self.assertEqual(elig, "UNCERTAIN")
-        self.assertEqual(verdict, "FLAG")
+        # Clear US-only remote without Canada evidence → INELIGIBLE.
+        self.assertEqual(elig, "INELIGIBLE")
+        self.assertEqual(verdict, "FAIL")
 
         elig, verdict, _, _ = classify_canada_eligibility(
             {
@@ -311,8 +324,8 @@ class UncertainPenaltyTests(unittest.TestCase):
         uncertain = score_deterministic(
             {
                 "title": "Senior AI Engineer",
-                "location_raw": "Remote, United States",
-                "description": "US remote. Python. Offices in NYC.",
+                "location_raw": "Remote",
+                "description": "Fully remote. Python. Country not specified.",
                 "first_seen": "2026-10-01T00:00:00Z",
             },
             search_cfg=SEARCH,
