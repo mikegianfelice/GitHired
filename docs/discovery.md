@@ -46,7 +46,7 @@ Resume drafting and application submission stay behind explicit approval (`githi
 
 **Fresh install:** you do **not** need to hand-maintain a company list. Builtin boards + `companies discover` expand the registry automatically. Core path needs no paid APIs or LLM keys.
 
-**Coverage note (2026-11):** builtin registry includes Canadian-heavy boards such as Ada (Toronto AI), Arctic Wolf (Waterloo cybersecurity), Magnet Forensics (Waterloo), and Wave (Toronto fintech), validated live before merge. Many UNCERTAIN scores are US-primary remotes that already have full descriptions — enrichment cannot invent Canadian eligibility for those.
+**Coverage note (2026-11):** builtin [`config/companies.yaml`](../config/companies.yaml) holds **136** ATS profiles (**113** enabled). The 2026-11-03 expansion added 50 Greenhouse/Lever/Ashby boards (e.g. Tailscale, Tenstorrent, Grafana Labs, Fullscript, Arc'teryx); **29** of those are enabled after live list-endpoint validation showed Canadian locations in structured `location` fields. Boards with no Canadian location evidence remain in the registry **disabled** — description keyword hits alone do not enable a source. Canadian-heavy examples also include Ada (Toronto AI), Arctic Wolf (Waterloo cybersecurity), Magnet Forensics (Waterloo), and Wave (Toronto fintech). Many UNCERTAIN scores are US-primary remotes or unspecified work arrangements — enrichment cannot invent Canadian eligibility for US-only boards.
 
 ### Enrichment status values
 
