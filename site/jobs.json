@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-04T12:01:08Z",
+  "generated_at": "2026-11-04T18:01:55Z",
   "source": "githired-public-shortlist",
   "limit": 300,
   "count": 226,
@@ -201,10 +201,10 @@
       "remote_scope": "unspecified",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 145000.0,
+      "salary_max": 190000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/7shifts/33c7a313-53bf-4950-8372-af9388db7cb6/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -212,7 +212,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 190000.0
     },
     {
       "id": "cb8b531336711be7",
@@ -224,10 +224,10 @@
       "remote_scope": "unspecified",
       "seniority": null,
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 95000.0,
+      "salary_max": 135000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/7shifts/6e6645bc-d133-4c08-bab4-0204284a1bc7/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -235,7 +235,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 135000.0
     },
     {
       "id": "51713f7f968daeec",
@@ -247,10 +247,10 @@
       "remote_scope": "unspecified",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 130000.0,
+      "salary_max": 180000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/acquird/86cc022a-3cd7-4f08-9a9e-57145cc1a2f9/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -261,7 +261,7 @@
         "React"
       ],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 180000.0
     },
     {
       "id": "601d7fa4c327507b",
@@ -273,10 +273,10 @@
       "remote_scope": "unspecified",
       "seniority": "senior",
       "track": "platform_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 130000.0,
+      "salary_max": 180000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/acquird/f5fd39c9-b76b-404d-8097-0c99d5980d14/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -286,7 +286,7 @@
         "Python"
       ],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 180000.0
     },
     {
       "id": "1102fed7b0fd53d1",
@@ -298,10 +298,10 @@
       "remote_scope": "unspecified",
       "seniority": "senior",
       "track": "devops_sre",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 130000.0,
+      "salary_max": 180000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/acquird/9b7cebad-9fdc-42d3-b3e9-97818cecc8d0/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -309,7 +309,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 180000.0
     },
     {
       "id": "91462e5e85539daf",
@@ -321,10 +321,10 @@
       "remote_scope": "canada",
       "seniority": "staff",
       "track": "platform_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 200000.0,
+      "salary_max": 250000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/acquird/baf9e192-3467-4e30-9992-39485ba07463/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -332,7 +332,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 250000.0
     },
     {
       "id": "bab13bf9886ee9d5",
@@ -1609,10 +1609,10 @@
       "remote_scope": "canada",
       "seniority": "lead",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 250000.0,
+      "salary_max": 370000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/ashby/5ccfc540-35d4-4fc8-aeb6-7f11b2ad8258/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -1620,7 +1620,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 370000.0
     },
     {
       "id": "e73b9986859fb4ab",
@@ -1632,10 +1632,10 @@
       "remote_scope": "province",
       "seniority": "senior",
       "track": "data_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 137800.0,
+      "salary_max": 178080.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/benevity/28313220-d133-4698-ab81-e7143a03a2d0/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -1643,7 +1643,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 178080.0
     },
     {
       "id": "d35d403669ee94b2",
@@ -1678,10 +1678,10 @@
       "remote_scope": "canada",
       "seniority": "lead",
       "track": "platform_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 187000.0,
+      "salary_max": 237000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/blackpoint%20cyber/3f56d7ed-71b2-48cf-8f02-1827754be5b1/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -1689,7 +1689,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 237000.0
     },
     {
       "id": "298f8bbb6e1efbfb",
@@ -1701,10 +1701,10 @@
       "remote_scope": "canada",
       "seniority": null,
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 128000.0,
+      "salary_max": 158000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/blackpoint%20cyber/3e14cd73-940b-4d50-a72f-4a3e26ce375b/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -1712,7 +1712,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 158000.0
     },
     {
       "id": "ae95b3e43de59466",
@@ -1724,10 +1724,10 @@
       "remote_scope": "canada",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 131400.0,
+      "salary_max": 175200.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/blackpoint%20cyber/f968c332-a6ca-446b-b8bc-a49a2daf3acf/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -1735,7 +1735,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 175200.0
     },
     {
       "id": "f547865d2fb881aa",
@@ -1747,10 +1747,10 @@
       "remote_scope": "canada",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 150000.0,
+      "salary_max": 180000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/blackpoint%20cyber/ecbcbd96-b5b7-49f9-b6b5-ddcb96e55ebf/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -1758,7 +1758,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 180000.0
     },
     {
       "id": "372cb6bf584a6187",
@@ -1770,10 +1770,10 @@
       "remote_scope": "canada",
       "seniority": "staff",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 147500.0,
+      "salary_max": 215000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/blackpoint%20cyber/9dadec76-3ee5-4452-afa3-f97689afb488/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -1781,7 +1781,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 215000.0
     },
     {
       "id": "a372d357d8537eef",
@@ -1931,10 +1931,10 @@
       "remote_scope": "canada",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 150000.0,
+      "salary_max": 230000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/clickhouse/2fdde21b-48de-419f-96e6-b0016c7133e1/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -1942,7 +1942,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 230000.0
     },
     {
       "id": "a05c8eb967052ac9",
@@ -1954,10 +1954,10 @@
       "remote_scope": "unspecified",
       "seniority": "lead",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 300000.0,
+      "salary_max": 375000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/dca93d1a-9ab8-442b-aa76-950595e8b9c3/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -1965,7 +1965,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 375000.0
     },
     {
       "id": "2b1c3ca521984523",
@@ -1977,10 +1977,10 @@
       "remote_scope": "unspecified",
       "seniority": "lead",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 320000.0,
+      "salary_max": 385000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/e906188a-e089-4b86-85b9-aad0d4413c68/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -1988,7 +1988,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 385000.0
     },
     {
       "id": "e450eb9882ba17f8",
@@ -2000,10 +2000,10 @@
       "remote_scope": "canada",
       "seniority": "lead",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 320000.0,
+      "salary_max": 385000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/6a6120d5-5e02-4811-99d9-6baf0b910e37/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -2011,7 +2011,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 385000.0
     },
     {
       "id": "5793983b159516ea",
@@ -2023,10 +2023,10 @@
       "remote_scope": "unspecified",
       "seniority": null,
       "track": "forward_deployed",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 175000.0,
+      "salary_max": 385000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/be48aafc-9610-4ebd-8414-a0722a3cd59a/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -2034,7 +2034,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 385000.0
     },
     {
       "id": "6a7ac27d65453d9c",
@@ -2046,10 +2046,10 @@
       "remote_scope": "unspecified",
       "seniority": null,
       "track": "forward_deployed",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 215000.0,
+      "salary_max": 385000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/52a2b83b-7537-4e88-af7b-e4e9630a96e0/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -2057,7 +2057,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 385000.0
     },
     {
       "id": "466c1da93282a568",
@@ -2069,10 +2069,10 @@
       "remote_scope": "unspecified",
       "seniority": null,
       "track": "forward_deployed",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 175000.0,
+      "salary_max": 385000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/556467eb-3dc8-46e2-b015-277872210997/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -2080,7 +2080,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 385000.0
     },
     {
       "id": "5245a858b502de62",
@@ -2092,10 +2092,10 @@
       "remote_scope": "unspecified",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 230000.0,
+      "salary_max": 295000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/7e0e08ed-4b12-4aaa-8dda-ad6292992061/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -2103,7 +2103,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 295000.0
     },
     {
       "id": "93dc0c2f7e462775",
@@ -2115,10 +2115,10 @@
       "remote_scope": "unspecified",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 215000.0,
+      "salary_max": 295000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/7133d205-5421-4336-a8e2-6037b5f55073/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -2126,7 +2126,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 295000.0
     },
     {
       "id": "b664efc9719e89ec",
@@ -2138,10 +2138,10 @@
       "remote_scope": "unspecified",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 215000.0,
+      "salary_max": 295000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/c12e3636-ed16-47e7-ba1f-82860f88d340/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -2149,7 +2149,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 295000.0
     },
     {
       "id": "82d4aa797f949b4f",
@@ -2161,10 +2161,10 @@
       "remote_scope": "unspecified",
       "seniority": "senior",
       "track": "data_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 275000.0,
+      "salary_max": 450000.0,
+      "salary_currency": "USD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/4ef5101e-b083-49cd-808a-54c754d159e5/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -2172,7 +2172,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 607500.0
     },
     {
       "id": "2ea162981e37f7e8",
@@ -2184,10 +2184,10 @@
       "remote_scope": "canada",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 205000.0,
+      "salary_max": 315000.0,
+      "salary_currency": "USD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/14aef6d9-763e-4f56-a498-206fb31dd0c6/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -2195,7 +2195,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 425250.0
     },
     {
       "id": "b1d3cbaef1ca5fb8",
@@ -2207,10 +2207,10 @@
       "remote_scope": "unspecified",
       "seniority": null,
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 180000.0,
+      "salary_max": 325000.0,
+      "salary_currency": "USD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/a10a96b5-f772-466d-9297-f021f78ca9c0/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -2218,7 +2218,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 438750.0
     },
     {
       "id": "8a17ba4b084ee1d7",
@@ -2230,10 +2230,10 @@
       "remote_scope": "unspecified",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 240000.0,
+      "salary_max": 360000.0,
+      "salary_currency": "USD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/cohere/529b2dd6-4be3-49db-97cd-781f4897540b/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -2241,7 +2241,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 486000.00000000006
     },
     {
       "id": "bb729ae1c265a672",
@@ -2993,10 +2993,10 @@
       "remote_scope": "unspecified",
       "seniority": "lead",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 196800.0,
+      "salary_max": 270600.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/harvey/e2976ecf-f785-4524-8545-bbd519ffdaae/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -3004,7 +3004,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 270600.0
     },
     {
       "id": "b2a4bd27c679d8a6",
@@ -3177,10 +3177,10 @@
       "remote_scope": "province",
       "seniority": null,
       "track": "data_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 103500.0,
+      "salary_max": 140000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/loopio/22176975-076d-48f4-aa35-96be7daf1889/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -3188,7 +3188,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 140000.0
     },
     {
       "id": "5c9690618aae42f3",
@@ -4040,10 +4040,10 @@
       "remote_scope": "canada",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 236000.0,
+      "salary_max": 295000.0,
+      "salary_currency": "USD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/render/8f22a06f-9ea3-4c71-a52a-e0ea2282769f/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -4051,7 +4051,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 398250.0
     },
     {
       "id": "1c5d2c8f0baa2f67",
@@ -4063,10 +4063,10 @@
       "remote_scope": "canada",
       "seniority": "senior",
       "track": "analytics_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 195000.0,
+      "salary_max": 268000.0,
+      "salary_currency": "USD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/render/68a1d88b-6cc4-4303-b2c6-5405a22bb48b/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -4074,7 +4074,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 361800.0
     },
     {
       "id": "48f41ac64ec7ca68",
@@ -4362,10 +4362,10 @@
       "remote_scope": "canada",
       "seniority": null,
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 163000.0,
+      "salary_max": 200000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/sentry/1c34ea48-ab62-4b71-a7d7-d0ac9eb07bba/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -4373,7 +4373,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 200000.0
     },
     {
       "id": "448b211b2a3ce5bf",
@@ -4845,10 +4845,10 @@
       "remote_scope": "province",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 130000.0,
+      "salary_max": 200000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/trulioo/d542c936-6840-4be3-a29c-8131d0f08a78/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -4856,7 +4856,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 200000.0
     },
     {
       "id": "4282e87782a0aa2a",
@@ -4937,10 +4937,10 @@
       "remote_scope": "canada",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 195000.0,
+      "salary_max": 229000.0,
+      "salary_currency": "USD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/vanta/adcc38ca-79e9-4788-893d-bcdf03db10b2/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -4948,7 +4948,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 309150.0
     },
     {
       "id": "490244434e2d1c1d",
@@ -4960,10 +4960,10 @@
       "remote_scope": "canada",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 195000.0,
+      "salary_max": 229000.0,
+      "salary_currency": "USD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/vanta/bcdcc8fc-a277-43c3-98f5-2b0e536f28b2/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -4971,7 +4971,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 309150.0
     },
     {
       "id": "c250ea250ad8c553",
@@ -4983,10 +4983,10 @@
       "remote_scope": "canada",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 195000.0,
+      "salary_max": 229000.0,
+      "salary_currency": "USD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/vanta/62945aae-55b0-4598-977a-b2dd00ec9081/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -4994,7 +4994,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 309150.0
     },
     {
       "id": "7b0d2b89c483a2d3",
@@ -5029,10 +5029,10 @@
       "remote_scope": "canada",
       "seniority": "staff",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 260000.0,
+      "salary_max": 306000.0,
+      "salary_currency": "USD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/vanta/e8ed04e4-28ab-4108-95da-6282e9d6bf86/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -5040,7 +5040,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 413100.0
     },
     {
       "id": "3b80f78e8dfa061c",
@@ -5144,10 +5144,10 @@
       "remote_scope": "canada",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 151200.0,
+      "salary_max": 189000.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/wealthsimple/3ab0ddb6-7eda-4ae0-bcfe-28dffa254d42/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -5155,7 +5155,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 189000.0
     },
     {
       "id": "6adc02c4e2eb243b",
@@ -5213,10 +5213,10 @@
       "remote_scope": "canada",
       "seniority": "senior",
       "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
+      "salary_min": 174000.0,
+      "salary_max": 267100.0,
+      "salary_currency": "USD",
+      "salary_available": true,
       "apply_url": "https://jobs.ashbyhq.com/wrapbook/99aff2fb-7785-471e-92e1-aa4a6c15b632/application",
       "verified": true,
       "first_seen": "2026-11-03",
@@ -5224,7 +5224,7 @@
       "discovered_today": false,
       "technologies": [],
       "source": "ashby",
-      "salary_max_cad": null
+      "salary_max_cad": 360585.0
     }
   ],
   "usd_to_cad": 1.35

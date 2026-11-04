@@ -8,6 +8,13 @@ from jobseek.adapters.base import AdapterResult
 from jobseek.http_client import RateLimitedClient
 from jobseek.models import RawJob
 
+# Official Public Job Posting API:
+# GET .../posting-api/job-board/{board}?includeCompensation=true
+# Compensation lives under jobs[].compensation with summaryComponents and
+# compensationTiers[].components — never treat equity/bonus/commission as base.
+_ANNUAL_INTERVALS = frozenset({"1 YEAR"})
+_BASE_SALARY_TYPE = "Salary"
+
 
 def _location(job: dict[str, Any]) -> str | None:
     loc = job.get("location")
@@ -29,27 +36,155 @@ def _location(job: dict[str, Any]) -> str | None:
     return None
 
 
-def _salary(job: dict[str, Any]) -> tuple[str | None, float | None, float | None, str | None]:
-    comp = job.get("compensation") or job.get("salary") or {}
-    if not isinstance(comp, dict):
-        # Ashby sometimes nests under compensationTier
-        tiers = job.get("compensationTier") or []
-        if isinstance(tiers, list) and tiers and isinstance(tiers[0], dict):
-            comp = tiers[0]
-        else:
-            return None, None, None, None
-    amin = comp.get("minValue") or comp.get("min")
-    amax = comp.get("maxValue") or comp.get("max")
-    currency = comp.get("currencyCode") or comp.get("currency")
-    raw = None
-    if amin is not None or amax is not None:
-        raw = f"{currency or ''} {amin or ''}-{amax or ''}".strip()
+def _as_float(value: Any) -> float | None:
+    if value is None:
+        return None
     try:
-        smin = float(amin) if amin is not None else None
-        smax = float(amax) if amax is not None else None
+        return float(value)
     except (TypeError, ValueError):
-        smin, smax = None, None
-    return raw, smin, smax, str(currency) if currency else None
+        return None
+
+
+def _is_annual_base_salary(component: dict[str, Any]) -> bool:
+    """True only for annual Salary components — never equity/bonus/commission/hourly."""
+    if not isinstance(component, dict):
+        return False
+    if str(component.get("compensationType") or "").strip() != _BASE_SALARY_TYPE:
+        return False
+    interval = str(component.get("interval") or "").strip().upper()
+    return interval in _ANNUAL_INTERVALS
+
+
+def _salary_from_components(
+    components: list[Any],
+) -> tuple[str | None, float | None, float | None, str | None]:
+    """Extract annual base salary from Ashby compensation components.
+
+    Multiple Salary components are accepted only when they share one currency.
+    In that case we take the employer-published envelope (min of mins, max of
+    maxes) — the same aggregation Ashby puts in ``summaryComponents`` / the
+    scrapeable salary summary. Mixed currencies are refused (no invented FX).
+    """
+    salaries: list[tuple[float | None, float | None, str]] = []
+    for raw in components:
+        if not isinstance(raw, dict) or not _is_annual_base_salary(raw):
+            continue
+        currency = str(raw.get("currencyCode") or raw.get("currency") or "").strip().upper()
+        if currency not in ("CAD", "USD"):
+            continue
+        amin = _as_float(raw.get("minValue") if "minValue" in raw else raw.get("min"))
+        amax = _as_float(raw.get("maxValue") if "maxValue" in raw else raw.get("max"))
+        if amin is None and amax is None:
+            continue
+        salaries.append((amin, amax, currency))
+
+    if not salaries:
+        return None, None, None, None
+
+    currencies = {c for _, _, c in salaries}
+    if len(currencies) != 1:
+        # Do not invent a cross-currency range.
+        return None, None, None, None
+
+    currency = next(iter(currencies))
+    mins = [v for v, _, _ in salaries if v is not None]
+    maxs = [v for _, v, _ in salaries if v is not None]
+    smin = min(mins) if mins else None
+    smax = max(maxs) if maxs else None
+    if smin is None and smax is None:
+        return None, None, None, None
+    if smin is None:
+        smin = smax
+    if smax is None:
+        smax = smin
+    raw = f"{currency} {smin:g}-{smax:g}"
+    return raw, smin, smax, currency
+
+
+def _collect_tier_components(compensation: dict[str, Any]) -> list[Any]:
+    tiers = compensation.get("compensationTiers") or []
+    out: list[Any] = []
+    if not isinstance(tiers, list):
+        return out
+    for tier in tiers:
+        if not isinstance(tier, dict):
+            continue
+        comps = tier.get("components") or []
+        if isinstance(comps, list):
+            out.extend(comps)
+    return out
+
+
+def _salary(job: dict[str, Any]) -> tuple[str | None, float | None, float | None, str | None]:
+    """Parse advertised annual base salary from an Ashby job posting payload."""
+    compensation = job.get("compensation")
+    if isinstance(compensation, dict):
+        # Prefer Ashby's published summary (already envelope-aggregated).
+        summary = compensation.get("summaryComponents")
+        if isinstance(summary, list) and summary:
+            parsed = _salary_from_components(summary)
+            if parsed[1] is not None or parsed[2] is not None:
+                return parsed
+
+        tier_comps = _collect_tier_components(compensation)
+        if tier_comps:
+            parsed = _salary_from_components(tier_comps)
+            if parsed[1] is not None or parsed[2] is not None:
+                return parsed
+
+        # Legacy flat shape (minValue directly on compensation).
+        if any(k in compensation for k in ("minValue", "maxValue", "min", "max")):
+            return _salary_from_components(
+                [
+                    {
+                        "compensationType": _BASE_SALARY_TYPE,
+                        "interval": "1 YEAR",
+                        "currencyCode": compensation.get("currencyCode")
+                        or compensation.get("currency"),
+                        "minValue": compensation.get("minValue", compensation.get("min")),
+                        "maxValue": compensation.get("maxValue", compensation.get("max")),
+                    }
+                ]
+            )
+
+    # Rare: tiers at job root (older fixtures / partner feeds).
+    root_tiers = job.get("compensationTiers")
+    if isinstance(root_tiers, list) and root_tiers:
+        comps: list[Any] = []
+        for tier in root_tiers:
+            if isinstance(tier, dict):
+                tier_comps = tier.get("components") or []
+                if isinstance(tier_comps, list):
+                    comps.extend(tier_comps)
+                elif any(k in tier for k in ("minValue", "maxValue")):
+                    # Mis-shaped tier used as a salary blob
+                    comps.append(
+                        {
+                            "compensationType": _BASE_SALARY_TYPE,
+                            "interval": "1 YEAR",
+                            "currencyCode": tier.get("currencyCode") or tier.get("currency"),
+                            "minValue": tier.get("minValue", tier.get("min")),
+                            "maxValue": tier.get("maxValue", tier.get("max")),
+                        }
+                    )
+        return _salary_from_components(comps)
+
+    # Legacy: job.salary flat object
+    salary = job.get("salary")
+    if isinstance(salary, dict):
+        return _salary_from_components(
+            [
+                {
+                    "compensationType": _BASE_SALARY_TYPE,
+                    "interval": "1 YEAR",
+                    "currencyCode": salary.get("currencyCode") or salary.get("currency"),
+                    "minValue": salary.get("minValue", salary.get("min")),
+                    "maxValue": salary.get("maxValue", salary.get("max")),
+                }
+            ]
+        )
+
+    return None, None, None, None
 
 
 class AshbyAdapter:
@@ -62,7 +197,11 @@ class AshbyAdapter:
         board = (company.get("board_token") or company.get("site_slug") or "").strip()
         if not board:
             return AdapterResult(errors=[f"ashby: missing board_token for {company.get('name')}"])
-        url = f"https://api.ashbyhq.com/posting-api/job-board/{board}"
+        # Compensation is omitted unless includeCompensation=true (Ashby docs).
+        url = (
+            f"https://api.ashbyhq.com/posting-api/job-board/{board}"
+            f"?includeCompensation=true"
+        )
         result = AdapterResult(request_key=f"ashby:{board}")
         try:
             resp = self.client.get(url)
@@ -79,6 +218,9 @@ class AshbyAdapter:
             company_name = company.get("name") or board
             for item in jobs:
                 if not isinstance(item, dict):
+                    continue
+                # Unpublished / unlisted postings occasionally appear; skip them.
+                if item.get("isListed") is False:
                     continue
                 title = (item.get("title") or item.get("name") or "").strip()
                 job_url = (

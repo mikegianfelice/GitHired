@@ -53,6 +53,11 @@ class AshbyAdapterTests(unittest.TestCase):
         result = adapter.fetch_company({"name": "Example", "board_token": "example"})
         self.assertEqual(len(result.jobs), 2)
         self.assertEqual(result.jobs[0].ats_provider, "ashby")
+        called = adapter.client.get.call_args[0][0]
+        self.assertIn("includeCompensation=true", called)
+        self.assertEqual(result.jobs[1].salary_currency, "USD")
+        self.assertEqual(result.jobs[1].salary_min, 150000.0)
+        self.assertEqual(result.jobs[1].salary_max, 180000.0)
 
 
 class DetectorTests(unittest.TestCase):
