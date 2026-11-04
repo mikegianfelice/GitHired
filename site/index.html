@@ -76,24 +76,66 @@
         </div>
 
         <div class="filter-row">
-          <label>
-            <span>Province</span>
-            <select id="filter-province"><option value="">All</option></select>
-          </label>
-          <label>
-            <span>Arrangement</span>
-            <select id="filter-arrangement">
-              <option value="">All</option>
-              <option value="remote">Remote</option>
-              <option value="hybrid">Hybrid</option>
-              <option value="onsite">On-site</option>
-              <option value="unspecified">Unspecified</option>
-            </select>
-          </label>
-          <label>
-            <span>Seniority</span>
-            <select id="filter-seniority"><option value="">All</option></select>
-          </label>
+          <div class="multi-filter" data-filter="province">
+            <span class="multi-filter-label" id="label-province">Province</span>
+            <button
+              type="button"
+              class="multi-filter-toggle"
+              id="filter-province-toggle"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-controls="filter-province-panel"
+              aria-labelledby="label-province"
+            >All</button>
+            <div
+              class="multi-filter-panel"
+              id="filter-province-panel"
+              role="listbox"
+              aria-multiselectable="true"
+              aria-labelledby="label-province"
+              hidden
+            ></div>
+          </div>
+          <div class="multi-filter" data-filter="arrangement">
+            <span class="multi-filter-label" id="label-arrangement">Arrangement</span>
+            <button
+              type="button"
+              class="multi-filter-toggle"
+              id="filter-arrangement-toggle"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-controls="filter-arrangement-panel"
+              aria-labelledby="label-arrangement"
+            >All</button>
+            <div
+              class="multi-filter-panel"
+              id="filter-arrangement-panel"
+              role="listbox"
+              aria-multiselectable="true"
+              aria-labelledby="label-arrangement"
+              hidden
+            ></div>
+          </div>
+          <div class="multi-filter" data-filter="seniority">
+            <span class="multi-filter-label" id="label-seniority">Seniority</span>
+            <button
+              type="button"
+              class="multi-filter-toggle"
+              id="filter-seniority-toggle"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-controls="filter-seniority-panel"
+              aria-labelledby="label-seniority"
+            >All</button>
+            <div
+              class="multi-filter-panel"
+              id="filter-seniority-panel"
+              role="listbox"
+              aria-multiselectable="true"
+              aria-labelledby="label-seniority"
+              hidden
+            ></div>
+          </div>
           <label>
             <span>Sort</span>
             <select id="filter-sort">

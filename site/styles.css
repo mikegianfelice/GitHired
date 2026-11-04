@@ -345,6 +345,91 @@ button {
   color: var(--muted);
 }
 
+.multi-filter {
+  position: relative;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.multi-filter-label {
+  display: block;
+}
+
+.multi-filter-toggle {
+  width: 100%;
+  border: 1px solid var(--card-border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 0.8rem 2rem 0.8rem 0.95rem;
+  font: inherit;
+  text-align: left;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.multi-filter-toggle::after {
+  content: "";
+  position: absolute;
+  right: 0.9rem;
+  top: 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-65%) rotate(45deg);
+}
+
+.multi-filter.is-open .multi-filter-toggle {
+  outline: 2px solid rgba(34, 211, 238, 0.45);
+  outline-offset: 1px;
+}
+
+.multi-filter-panel {
+  position: absolute;
+  z-index: 12;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  max-height: 14rem;
+  overflow: auto;
+  padding: 0.45rem;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow);
+}
+
+.multi-filter-panel[hidden] {
+  display: none !important;
+}
+
+.multi-filter-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.multi-filter-option:hover,
+.multi-filter-option:focus-within {
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.multi-filter-option input {
+  margin-top: 0.15rem;
+  accent-color: var(--green);
+  flex-shrink: 0;
+}
+
 .result-count {
   margin: 0.85rem 0 0;
   color: var(--muted);

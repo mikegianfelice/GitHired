@@ -12,9 +12,9 @@
     error: document.getElementById("error-state"),
     count: document.getElementById("result-count"),
     search: document.getElementById("search"),
-    province: document.getElementById("filter-province"),
-    arrangement: document.getElementById("filter-arrangement"),
-    seniority: document.getElementById("filter-seniority"),
+    provincePanel: document.getElementById("filter-province-panel"),
+    arrangementPanel: document.getElementById("filter-arrangement-panel"),
+    seniorityPanel: document.getElementById("filter-seniority-panel"),
     sort: document.getElementById("filter-sort"),
     salaryMin: document.getElementById("salary-min"),
     salaryDisplay: document.getElementById("salary-min-display"),
@@ -83,29 +83,107 @@
     return job.last_verified ? `Verified ${job.last_verified}` : "Verified";
   }
 
-  function fillSelect(select, values, placeholder) {
-    const current = select.value;
-    select.innerHTML = "";
-    const all = document.createElement("option");
-    all.value = "";
-    all.textContent = placeholder;
-    select.appendChild(all);
-    for (const value of values) {
-      const opt = document.createElement("option");
-      opt.value = value;
-      opt.textContent = value;
-      select.appendChild(opt);
+  const ARRANGEMENT_OPTIONS = [
+    { value: "remote", label: "Remote" },
+    { value: "hybrid", label: "Hybrid" },
+    { value: "onsite", label: "On-site" },
+    { value: "unspecified", label: "Unspecified" },
+  ];
+
+  function selectedValues(panel) {
+    if (!panel) return [];
+    return [...panel.querySelectorAll('input[type="checkbox"]:checked')].map((el) => el.value);
+  }
+
+  function updateMultiFilterSummary(root) {
+    const panel = root.querySelector(".multi-filter-panel");
+    const toggle = root.querySelector(".multi-filter-toggle");
+    if (!panel || !toggle) return;
+    const selected = selectedValues(panel);
+    if (!selected.length) {
+      toggle.textContent = "All";
+      return;
     }
-    if ([...select.options].some((o) => o.value === current)) {
-      select.value = current;
+    const labels = selected.map((value) => {
+      const input = [...panel.querySelectorAll("input")].find((el) => el.value === value);
+      const text = input && input.parentElement ? input.parentElement.textContent.trim() : value;
+      return text;
+    });
+    toggle.textContent =
+      labels.length <= 2 ? labels.join(", ") : `${labels.length} selected`;
+  }
+
+  function fillMultiFilter(panel, options, { preserve = true } = {}) {
+    const prev = preserve ? new Set(selectedValues(panel)) : new Set();
+    panel.innerHTML = "";
+    for (const opt of options) {
+      const value = typeof opt === "string" ? opt : opt.value;
+      const label = typeof opt === "string" ? opt : opt.label;
+      const row = document.createElement("label");
+      row.className = "multi-filter-option";
+      row.setAttribute("role", "option");
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = value;
+      input.checked = prev.has(value);
+      input.addEventListener("change", () => {
+        updateMultiFilterSummary(panel.closest(".multi-filter"));
+        renderBrowse();
+      });
+      row.appendChild(input);
+      row.appendChild(document.createTextNode(` ${label}`));
+      panel.appendChild(row);
     }
+    updateMultiFilterSummary(panel.closest(".multi-filter"));
+  }
+
+  function setMultiFilterOpen(root, open) {
+    const panel = root.querySelector(".multi-filter-panel");
+    const toggle = root.querySelector(".multi-filter-toggle");
+    if (!panel || !toggle) return;
+    panel.hidden = !open;
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    root.classList.toggle("is-open", open);
+  }
+
+  function closeAllMultiFilters(except) {
+    document.querySelectorAll(".multi-filter").forEach((root) => {
+      if (root !== except) setMultiFilterOpen(root, false);
+    });
+  }
+
+  function bindMultiFilters() {
+    document.querySelectorAll(".multi-filter").forEach((root) => {
+      const toggle = root.querySelector(".multi-filter-toggle");
+      if (!toggle || toggle.dataset.bound === "1") return;
+      toggle.dataset.bound = "1";
+      toggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const willOpen = root.querySelector(".multi-filter-panel").hidden;
+        closeAllMultiFilters(root);
+        setMultiFilterOpen(root, willOpen);
+      });
+    });
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".multi-filter")) closeAllMultiFilters();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeAllMultiFilters();
+    });
   }
 
   function populateFilters(data) {
     const provinces = [...new Set(data.map((j) => j.province).filter(Boolean))].sort();
     const seniorities = [...new Set(data.map((j) => j.seniority).filter(Boolean))].sort();
-    fillSelect(els.province, provinces, "All");
-    fillSelect(els.seniority, seniorities, "All");
+    fillMultiFilter(els.provincePanel, provinces);
+    fillMultiFilter(els.arrangementPanel, ARRANGEMENT_OPTIONS);
+    fillMultiFilter(
+      els.seniorityPanel,
+      seniorities.map((s) => ({
+        value: s,
+        label: s.charAt(0).toUpperCase() + s.slice(1),
+      }))
+    );
   }
 
   function updateSalaryDisplay() {
@@ -117,9 +195,9 @@
   function browseFilters() {
     return {
       query: els.search.value.trim(),
-      province: els.province.value,
-      arrangement: els.arrangement.value,
-      seniority: els.seniority.value,
+      provinces: selectedValues(els.provincePanel),
+      arrangements: selectedValues(els.arrangementPanel),
+      seniorities: selectedValues(els.seniorityPanel),
       minimum_salary_cad: Number(els.salaryMin.value) || 0,
       include_undisclosed_salary: els.includeUndisclosed.checked,
       sort: els.sort.value,
@@ -453,15 +531,9 @@
     });
   });
 
-  for (const el of [
-    els.search,
-    els.province,
-    els.arrangement,
-    els.seniority,
-    els.sort,
-    els.salaryMin,
-    els.includeUndisclosed,
-  ]) {
+  bindMultiFilters();
+
+  for (const el of [els.search, els.sort, els.salaryMin, els.includeUndisclosed]) {
     el.addEventListener("input", () => {
       if (el === els.salaryMin) updateSalaryDisplay();
       renderBrowse();

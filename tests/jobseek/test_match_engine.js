@@ -214,4 +214,37 @@ describe("filterBrowseJobs", () => {
     const out = M.filterBrowseJobs(jobs, { sort: "salary", minimum_salary_cad: 0 }, 1.35);
     assert.equal(out[0].job.company, "High");
   });
+
+  it("supports multi-select province / arrangement / seniority", () => {
+    const jobs = [
+      job({ company: "A", province: "ON", work_arrangement: "remote", seniority: "senior" }),
+      job({ company: "B", province: "BC", work_arrangement: "hybrid", seniority: "mid" }),
+      job({ company: "C", province: "AB", work_arrangement: "onsite", seniority: "junior" }),
+    ];
+    const out = M.filterBrowseJobs(
+      jobs,
+      {
+        provinces: ["ON", "BC"],
+        arrangements: ["remote", "hybrid"],
+        seniorities: ["senior", "mid"],
+        minimum_salary_cad: 0,
+        sort: "company",
+      },
+      1.35
+    );
+    assert.deepEqual(
+      out.map((r) => r.job.company),
+      ["A", "B"]
+    );
+  });
+
+  it("keeps legacy single-string filters working", () => {
+    const jobs = [
+      job({ company: "A", province: "ON" }),
+      job({ company: "B", province: "BC" }),
+    ];
+    const out = M.filterBrowseJobs(jobs, { province: "BC", minimum_salary_cad: 0 }, 1.35);
+    assert.equal(out.length, 1);
+    assert.equal(out[0].job.company, "B");
+  });
 });

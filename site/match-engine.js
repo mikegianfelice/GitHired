@@ -500,11 +500,22 @@
     return results.slice(0, limit);
   }
 
+  function asFilterList(value) {
+    if (Array.isArray(value)) return value.map(String).filter(Boolean);
+    if (value == null || value === "") return [];
+    return [String(value)];
+  }
+
   function filterBrowseJobs(jobs, filters, fx) {
     const q = String(filters.query || "").trim().toLowerCase();
-    const province = filters.province || "";
-    const arrangement = filters.arrangement || "";
-    const seniority = filters.seniority || "";
+    // Accept plural arrays (preferred) or legacy single strings.
+    const provinces = asFilterList(filters.provinces != null ? filters.provinces : filters.province);
+    const arrangements = asFilterList(
+      filters.arrangements != null ? filters.arrangements : filters.arrangement
+    );
+    const seniorities = asFilterList(
+      filters.seniorities != null ? filters.seniorities : filters.seniority
+    );
     const minSal = Number(filters.minimum_salary_cad) || 0;
     const includeUndisclosed = filters.include_undisclosed_salary !== false;
     const sort = filters.sort || "salary";
@@ -516,9 +527,9 @@
           .toLowerCase();
         if (!q.split(/\s+/).filter(Boolean).every((tok) => hay.includes(tok))) return false;
       }
-      if (province && job.province !== province) return false;
-      if (arrangement && job.work_arrangement !== arrangement) return false;
-      if (seniority && job.seniority !== seniority) return false;
+      if (provinces.length && !provinces.includes(job.province)) return false;
+      if (arrangements.length && !arrangements.includes(job.work_arrangement)) return false;
+      if (seniorities.length && !seniorities.includes(job.seniority)) return false;
       const sal = salaryFilterPass(job, minSal, includeUndisclosed, fx);
       return sal.pass;
     });
@@ -557,5 +568,6 @@
     scoreJob,
     matchJobs,
     filterBrowseJobs,
+    asFilterList,
   };
 });

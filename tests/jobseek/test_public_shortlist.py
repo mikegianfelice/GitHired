@@ -244,6 +244,20 @@ class PublicSiteStaticTests(unittest.TestCase):
         self.assertIn("match-engine.js", html)
         self.assertIn("resume.js", html)
 
+    def test_browse_filters_are_multiselect(self):
+        html = (SITE / "index.html").read_text(encoding="utf-8")
+        js = (SITE / "app.js").read_text(encoding="utf-8")
+        for name in ("province", "arrangement", "seniority"):
+            self.assertIn(f'data-filter="{name}"', html)
+            self.assertIn(f"filter-{name}-panel", html)
+            self.assertIn('aria-multiselectable="true"', html)
+        self.assertIn("provinces:", js)
+        self.assertIn("arrangements:", js)
+        self.assertIn("seniorities:", js)
+        self.assertNotIn('id="filter-province"', html)
+        self.assertNotIn('id="filter-arrangement"', html)
+        self.assertNotIn('id="filter-seniority"', html)
+
     def test_relative_assets_for_github_pages_base_path(self):
         html = (SITE / "index.html").read_text(encoding="utf-8")
         js = (SITE / "app.js").read_text(encoding="utf-8")
