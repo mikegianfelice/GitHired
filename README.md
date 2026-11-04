@@ -70,7 +70,7 @@ cd site && python3 -m http.server 8080
 
 <p align="center"><img src="assets/showcase/top-paying-jobs.svg" alt="Top 5 high-paying Canada-eligible engineering jobs discovered by GitHired" width="880" /></p>
 
-**Apply directly:** [1. PointClickCare ↗](https://jobs.lever.co/pointclickcare/c705af74-d0ed-4cbc-bdfb-3ac8f99fcea6/apply) · [2. Wattpad ↗](https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply) · [3. PointClickCare ↗](https://jobs.lever.co/pointclickcare/ccdecc93-aef2-4b2b-a981-6843f3c16221/apply) · [4. PointClickCare ↗](https://jobs.lever.co/pointclickcare/dc0d44ce-bc2a-4577-bb0b-a38250bfc971/apply) · [5. Wattpad ↗](https://jobs.lever.co/wattpad/da811487-88c8-440b-b6c2-5da90eb80ca1/apply)
+**Apply directly:** [1. Cohere ↗](https://jobs.ashbyhq.com/cohere/4ef5101e-b083-49cd-808a-54c754d159e5/application) · [2. Dropbox ↗](https://jobs.dropbox.com/listing/8261911?gh_jid=8261911) · [3. Cohere ↗](https://jobs.ashbyhq.com/cohere/529b2dd6-4be3-49db-97cd-781f4897540b/application) · [4. Cohere ↗](https://jobs.ashbyhq.com/cohere/a10a96b5-f772-466d-9297-f021f78ca9c0/application) · [5. Samsara ↗](https://www.samsara.com/company/careers/roles/7266357?gh_jid=7266357)
 
 <p align="center"><strong>Discovered and verified by GitHired · Open Source</strong></p>
 
@@ -81,7 +81,7 @@ cd site && python3 -m http.server 8080
 
 Rank by advertised annual base salary high end, converted to CAD for sorting only (USD×1.35; other currencies excluded). Display the employer-stated currency and range unchanged. No estimates for undisclosed pay.
 
-- Snapshot refreshed: **2026-11-03 20:22 UTC** (preserved on failure — never backdated).
+- Snapshot refreshed: **2026-11-04 18:19 UTC** (preserved on failure — never backdated).
 - Blue ✓ marks listings confirmed against a direct employer career / ATS URL.
 - SVG cards are visual only on GitHub; use **Apply directly** links below the image (order matches card numbers 1–N).
 - **Discovered Today** is shown only when the job’s `first_seen` date is today; otherwise the card shows the last verified date.
