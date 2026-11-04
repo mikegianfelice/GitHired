@@ -103,6 +103,17 @@ class GreenhouseSalaryRegexRegressionTests(unittest.TestCase):
         self.assertEqual(result.jobs[0].salary_min, 95000.0)
         self.assertEqual(result.jobs[0].salary_max, 135000.0)
 
+    def test_affirm_style_base_pay_with_equity_elsewhere(self):
+        text = (
+            "The base pay range for this position is $181,000 - $241,000 CAD. "
+            "#Li-Remote Affirm is proud to offer equity and benefits."
+        )
+        info = extract_salary_from_text(text)
+        self.assertEqual(info.confidence, "verified")
+        self.assertEqual(info.salary_min, 181000.0)
+        self.assertEqual(info.salary_max, 241000.0)
+        self.assertEqual(info.currency, "CAD")
+
 
 if __name__ == "__main__":
     unittest.main()

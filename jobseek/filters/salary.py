@@ -67,8 +67,16 @@ _EQUITY_BONUS = re.compile(
     r"total\s+compensation|total\s+comp|TCC)\b",
     re.I,
 )
-_BASE = re.compile(r"\b(?:base\s+salary|annual\s+(?:base\s+)?salary|salary\s+range)\b", re.I)
+_BASE = re.compile(
+    r"\b(?:base\s+(?:pay|salary)|annual\s+(?:base\s+)?(?:pay|salary)|"
+    r"salary\s+range|pay\s+range|compensation\s+range)\b",
+    re.I,
+)
 _ANNUAL_CUE = re.compile(r"\b(?:per\s+year|annually|/?\s*year|annual)\b", re.I)
+_OTE_ONLY = re.compile(
+    r"\b(?:OTE|on[\s-]?target\s+earnings|total\s+compensation|total\s+comp|TCC)\b",
+    re.I,
+)
 
 MIN_ANNUAL = 30_000.0
 MAX_ANNUAL = 800_000.0
@@ -335,10 +343,6 @@ def extract_salary_from_text(text: str, *, currency_hint: str | None = None) -> 
 
     currency = currency_hint if (currency_hint or "").upper() in ("CAD", "USD") else None
     currency = currency or _detect_currency(blob)
-    kind = "base"
-    if _EQUITY_BONUS.search(blob) and not _BASE.search(blob):
-        kind = "total_comp"
-        reasons.append("compensation text mentions equity/bonus/OTE — not pure base")
 
     amin = amax = None
     raw = ""
@@ -391,6 +395,21 @@ def extract_salary_from_text(text: str, *, currency_hint: str | None = None) -> 
             reasons + ["numeric value outside plausible annual base range"],
             source="employer_description",
         )
+
+    # Equity/bonus elsewhere in a posting is common; only reject when the matched
+    # snippet itself is OTE/total-comp, or when there is no base/pay-range cue and
+    # the only compensation language is equity/OTE.
+    kind = "base"
+    window = blob
+    if raw and raw in blob:
+        idx = blob.find(raw)
+        window = blob[max(0, idx - 80) : idx + len(raw) + 80]
+    if _OTE_ONLY.search(raw) or _OTE_ONLY.search(window):
+        kind = "total_comp"
+        reasons.append("matched compensation looks like OTE/total comp — not base")
+    elif _EQUITY_BONUS.search(blob) and not _BASE.search(blob) and not currency:
+        kind = "total_comp"
+        reasons.append("compensation text mentions equity/bonus/OTE without base cues")
 
     if kind != "base":
         return SalaryInfo(
