@@ -185,6 +185,162 @@ def _detect_currency(text: str, structured: str | None = None) -> str | None:
     return None
 
 
+# Canadian geo tokens strong enough to hint CAD for bare `$` salary bands.
+_CAD_LOCATION = re.compile(
+    r"""
+    \bcanada\b | \bcanadian\b |
+    \b(?:ontario|quebec|alberta|manitoba|saskatchewan|
+       newfoundland|labrador|nova\s+scotia|new\s+brunswick|
+       prince\s+edward|british\s+columbia|yukon|nunavut|
+       northwest\s+territories)\b |
+    # Workday-style "Toronto, ON, CAN" — require province/country codes near a comma
+    # or as a trailing ISO code so bare English words ("on", "can") do not match.
+    (?:,\s*|\b)(?:ON|QC|AB|MB|SK|NL|NS|NB|PE|BC|YT|NU|NT|CAN)\b |
+    \b(?:toronto|vancouver|montreal|ottawa|calgary|edmonton|
+       winnipeg|halifax|victoria|mississauga|brampton|hamilton|
+       kitchener|waterloo|quebec\s+city|gatineau)\b
+    """,
+    re.I | re.X,
+)
+_USD_LOCATION = re.compile(
+    r"""
+    \b(?:united\s+states|u\.?s\.?a?\.?|usa)\b |
+    \b(?:remote[,\s-]+(?:usa|u\.?s\.?a?\.?)|(?:usa|u\.?s\.?a?\.?)[,\s-]+remote)\b |
+    \b(?:new\s+york|san\s+francisco|seattle|austin|boston|chicago|
+       denver|atlanta|miami|los\s+angeles|washington)\b |
+    \b(?:ny|ca|wa|tx|ma|il|co|ga|fl|dc)\b
+    """,
+    re.I | re.X,
+)
+# US city/zone labels that must not be treated as a Canadian job's pay band.
+_US_CITY_BAND = re.compile(
+    r"""
+    \b(?:menlo\s+park|new\s+york|bellevue|washington|denver|westlake|
+       chicago|lake\s+mary|clearwater|gainesville|san\s+francisco|
+       seattle|austin|boston|atlanta|miami|los\s+angeles)\b |
+    \b(?:,\s*(?:NY|CA|WA|TX|IL|CO|FL|DC|MA|GA)\b)
+    """,
+    re.I | re.X,
+)
+_CAD_CITY_BAND = re.compile(
+    r"""
+    \b(?:toronto|vancouver|montreal|ottawa|calgary|edmonton|winnipeg|
+       halifax|victoria|mississauga|canada|canadian)\b |
+    \b(?:,\s*(?:ON|QC|AB|BC|MB|SK|NS|NB|PE|NL)\b) |
+    \bCAD\b | \bCA\$ | \bC\$
+    """,
+    re.I | re.X,
+)
+
+
+def currency_hint_from_location(location: str | None) -> str | None:
+    """Infer CAD/USD from a job's structured location — never invent amounts."""
+    loc = (location or "").strip()
+    if not loc:
+        return None
+    cad = bool(_CAD_LOCATION.search(loc))
+    usd = bool(_USD_LOCATION.search(loc))
+    if cad and not usd:
+        return "CAD"
+    if usd and not cad:
+        return "USD"
+    # Ambiguous dual-geo location: do not guess currency.
+    return None
+
+
+def _range_matches(blob: str) -> list[re.Match[str]]:
+    """All non-overlapping annual range matches in text order."""
+    matches: list[re.Match[str]] = []
+    for pattern in (_RANGE, _RANGE_STUCK):
+        for m in pattern.finditer(blob):
+            if any(m.start() < prev.end() and m.end() > prev.start() for prev in matches):
+                continue
+            matches.append(m)
+    matches.sort(key=lambda m: m.start())
+    return matches
+
+
+def _band_context(blob: str, match: re.Match[str], *, before: int = 220, after: int = 24) -> str:
+    """Location labels almost always precede the pay figures — bias lookbehind."""
+    return blob[max(0, match.start() - before) : match.end() + after]
+
+
+def _match_currency(match: re.Match[str]) -> str | None:
+    """Currency evidenced on the matched salary snippet itself."""
+    raw = match.group(0)
+    tokens = [raw]
+    for g in ("cur_lead", "cur_mid", "cur_trail"):
+        if match.groupdict().get(g):
+            tokens.append(match.group(g))
+    for tok in tokens:
+        if re.search(r"CA\$|C\$|\bCAD\b|\bCDN\b", tok or "", re.I):
+            return "CAD"
+        if re.search(r"US\$|\bUSD\b", tok or "", re.I):
+            return "USD"
+    return _detect_currency(raw)
+
+
+def _select_location_band(
+    blob: str,
+    matches: list[re.Match[str]],
+    *,
+    location_hint: str | None,
+) -> re.Match[str] | None:
+    """Pick the salary band that applies to the job's eligible location.
+
+    Multi-geo postings often list several city/zone bands. Prefer the band whose
+    nearby label matches the job location; refuse US-city-only bands for a
+    Canadian location (and vice versa when CAD bands exist).
+    """
+    if not matches:
+        return None
+    if len(matches) == 1:
+        return matches[0]
+
+    loc = (location_hint or "").strip()
+    loc_cad = bool(loc and _CAD_LOCATION.search(loc))
+    loc_usd = bool(loc and _USD_LOCATION.search(loc) and not loc_cad)
+    preferred_cur = currency_hint_from_location(loc)
+
+    scored: list[tuple[int, re.Match[str]]] = []
+    for m in matches:
+        ctx = _band_context(blob, m)
+        band_cur = _match_currency(m)
+        score = 0
+        if preferred_cur and band_cur == preferred_cur:
+            score += 12
+        elif preferred_cur and band_cur and band_cur != preferred_cur:
+            score -= 12
+        if loc:
+            # Token overlap between location hint and preceding band label.
+            for token in re.findall(r"[A-Za-z]{3,}", loc):
+                if token.casefold() in {"remote", "hybrid", "onsite", "office"}:
+                    continue
+                if re.search(rf"\b{re.escape(token)}\b", ctx, re.I):
+                    score += 4
+        if loc_cad and _CAD_CITY_BAND.search(ctx):
+            score += 5
+        if loc_usd and _US_CITY_BAND.search(ctx):
+            score += 5
+        if loc_cad and _US_CITY_BAND.search(ctx) and not _CAD_CITY_BAND.search(ctx):
+            score -= 8
+        if loc_usd and _CAD_CITY_BAND.search(ctx) and not _US_CITY_BAND.search(ctx):
+            score -= 8
+        scored.append((score, m))
+
+    scored.sort(key=lambda pair: (-pair[0], pair[1].start()))
+    best_score, best = scored[0]
+    if loc_cad and best_score < 0:
+        # Canadian job, only US-city / USD bands → do not publish as Canadian pay.
+        return None
+    if best_score > 0 or not loc:
+        return best
+    # No location match among multi-bands: refuse rather than invent.
+    if loc and len(matches) > 1:
+        return None
+    return best
+
+
 def normalize_interval(interval: str | None) -> str:
     """Map ATS interval tokens to annual | hourly | monthly | unknown."""
     if not interval:
@@ -320,8 +476,17 @@ def from_structured(
     )
 
 
-def extract_salary_from_text(text: str, *, currency_hint: str | None = None) -> SalaryInfo:
-    """Extract employer-advertised annual base when evidence is clear; else undisclosed."""
+def extract_salary_from_text(
+    text: str,
+    *,
+    currency_hint: str | None = None,
+    location_hint: str | None = None,
+) -> SalaryInfo:
+    """Extract employer-advertised annual base when evidence is clear; else undisclosed.
+
+    When multiple geographic pay bands appear, select only the band that matches
+    ``location_hint`` (Canadian location must not inherit a US-city USD band).
+    """
     blob = strip_html(text or "")
     reasons: list[str] = []
     if not blob.strip():
@@ -341,13 +506,27 @@ def extract_salary_from_text(text: str, *, currency_hint: str | None = None) -> 
             source="employer_description",
         )
 
+    loc_hint = currency_hint_from_location(location_hint)
     currency = currency_hint if (currency_hint or "").upper() in ("CAD", "USD") else None
+    currency = currency or loc_hint
     currency = currency or _detect_currency(blob)
 
     amin = amax = None
     raw = ""
     matched_currency_tokens: list[str] = []
-    m = _RANGE.search(blob) or _RANGE_STUCK.search(blob)
+    range_matches = _range_matches(blob)
+    m = _select_location_band(blob, range_matches, location_hint=location_hint)
+    if range_matches and m is None:
+        return SalaryInfo(
+            None, None, currency, "unknown", "undisclosed", "undisclosed",
+            "Salary undisclosed / unverified", "",
+            reasons
+            + [
+                "multiple geographic salary bands found; none match job location "
+                "(refusing to publish a non-applicable band)"
+            ],
+            source="employer_description",
+        )
     if m:
         amin = _parse_amount(m.group("a"))
         amax = _parse_amount(m.group("b"))
@@ -357,6 +536,10 @@ def extract_salary_from_text(text: str, *, currency_hint: str | None = None) -> 
                 matched_currency_tokens.append(m.group(g))
         # Stuck form embeds currency in a/b tokens
         matched_currency_tokens.extend([m.group("a"), m.group("b")])
+        # Prefer currency token adjacent to the selected band over whole-doc scan.
+        band_cur = _detect_currency(_band_context(blob, m), None)
+        if band_cur:
+            currency = band_cur
     else:
         m2 = _SINGLE.search(blob)
         if m2:
@@ -378,7 +561,7 @@ def extract_salary_from_text(text: str, *, currency_hint: str | None = None) -> 
             currency = mapped
             break
     if currency is None:
-        currency = _detect_currency(blob, currency_hint)
+        currency = _detect_currency(blob, currency_hint) or loc_hint
 
     if amin is None and amax is None:
         return SalaryInfo(
@@ -490,7 +673,11 @@ def enrich_job_salary(job: dict[str, Any]) -> dict[str, Any]:
     blob = " ".join(
         x for x in (raw, str(job.get("description") or ""), str(job.get("title") or "")) if x
     )
-    info = extract_salary_from_text(blob, currency_hint=currency)
+    loc = str(job.get("location_raw") or "") or None
+    hint = currency or currency_hint_from_location(loc)
+    info = extract_salary_from_text(
+        blob, currency_hint=hint, location_hint=loc
+    )
     out["salary_confidence"] = info.confidence
     out["salary_label"] = info.label
     out["salary_period"] = info.period

@@ -15,6 +15,7 @@ from typing import Any
 from jobseek.adapters.base import AdapterResult
 from jobseek.filters.salary import (
     apply_salary_info_to_raw,
+    currency_hint_from_location,
     extract_salary_from_text,
     from_structured,
     strip_html,
@@ -70,7 +71,11 @@ def salary_from_workable_detail(detail: dict[str, Any]) -> tuple[str | None, flo
     desc = detail.get("description") or ""
     if isinstance(desc, dict):
         desc = desc.get("text") or desc.get("html") or ""
-    info = extract_salary_from_text(strip_html(str(desc)))
+    loc = _location(detail)
+    hint = currency_hint_from_location(loc)
+    info = extract_salary_from_text(
+        strip_html(str(desc)), currency_hint=hint, location_hint=loc
+    )
     return apply_salary_info_to_raw(info=info)
 
 
@@ -145,9 +150,15 @@ class WorkableAdapter:
                 if isinstance(description, dict):
                     description = description.get("text") or description.get("html") or ""
                 desc_s = str(description) if description else ""
+                location_raw = _location(item)
                 salary_raw = smin = smax = scur = None
                 if desc_s.strip():
-                    info = extract_salary_from_text(strip_html(desc_s))
+                    hint = currency_hint_from_location(location_raw)
+                    info = extract_salary_from_text(
+                        strip_html(desc_s),
+                        currency_hint=hint,
+                        location_hint=location_raw,
+                    )
                     salary_raw, smin, smax, scur = apply_salary_info_to_raw(info=info)
                 result.jobs.append(
                     RawJob(
@@ -158,7 +169,7 @@ class WorkableAdapter:
                         source="workable",
                         ats_provider="workable",
                         ats_job_id=shortcode or None,
-                        location_raw=_location(item),
+                        location_raw=location_raw,
                         description=desc_s or None,
                         salary_raw=salary_raw,
                         salary_min=smin,

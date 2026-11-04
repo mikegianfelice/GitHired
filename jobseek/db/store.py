@@ -175,6 +175,12 @@ class Database:
             )
 
     def find_existing_job_id(self, identity: JobIdentity) -> int | None:
+        """Locate an existing row for this posting.
+
+        Prefer ATS id / URL / canonical_key. Never collapse distinct ATS
+        postings that share company+title (multi-geo twins) via the soft
+        company_norm+title_norm fallback — that produced Canada false positives.
+        """
         cur = self._conn.cursor()
         if identity.ats_provider and identity.ats_job_id:
             row = cur.execute(
@@ -194,20 +200,26 @@ class Database:
             if row:
                 return int(row["id"])
         row = cur.execute(
-            """
-            SELECT id FROM jobs
-            WHERE company_norm = ? AND title_norm = ?
-            LIMIT 1
-            """,
-            (identity.company_norm, identity.title_norm),
-        ).fetchone()
-        if row:
-            return int(row["id"])
-        row = cur.execute(
             "SELECT id FROM jobs WHERE canonical_key = ? LIMIT 1",
             (identity.canonical_key,),
         ).fetchone()
-        return int(row["id"]) if row else None
+        if row:
+            return int(row["id"])
+        # Soft company+title match only when the incoming posting has no ATS id
+        # (portal scrapes / RSS). Distinct ATS jobs with the same title must not merge.
+        if not identity.ats_job_id:
+            row = cur.execute(
+                """
+                SELECT id FROM jobs
+                WHERE company_norm = ? AND title_norm = ?
+                  AND (ats_job_id IS NULL OR ats_job_id = '')
+                LIMIT 1
+                """,
+                (identity.company_norm, identity.title_norm),
+            ).fetchone()
+            if row:
+                return int(row["id"])
+        return None
 
     def upsert_job(self, job: RawJob, *, seen_at: str | None = None) -> tuple[int, bool]:
         """Insert or update a job. Returns (job_id, is_new).
@@ -331,7 +343,8 @@ class Database:
         """Apply update rules for an existing job row. Caller holds the write lock."""
         existing = self._conn.execute(
             "SELECT description, description_hash, description_complete, "
-            "description_fetched_at, location_raw, enrichment_status FROM jobs WHERE id = ?",
+            "description_fetched_at, location_raw, enrichment_status, "
+            "salary_min, salary_max, salary_currency, salary_raw FROM jobs WHERE id = ?",
             (existing_id,),
         ).fetchone()
         old_complete = bool(existing["description_complete"]) if existing else False
@@ -370,24 +383,47 @@ class Database:
         # Listing refresh of an already-complete Workday job keeps complete;
         # if TTL caller marks stale separately via mark_enrichment_stale.
 
-        # Prefer richer location when listing was a multi-location stub.
-        location = job.location_raw
-        if (
-            location
-            and existing
-            and existing["location_raw"]
-            and len(str(location)) < len(str(existing["location_raw"]))
-            and old_complete
-        ):
-            location = existing["location_raw"]
+        # ATS location is authoritative when present. Never keep a longer stale
+        # string (e.g. twin-merge "Remote or Mississauga" over "Remote, USA").
+        location = job.location_raw if (job.location_raw or "").strip() else None
+        old_location = (existing["location_raw"] if existing else None) or ""
+        location_changed = bool(
+            location and old_location and str(location).strip() != str(old_location).strip()
+        )
 
+        salary_changed = False
+        if existing is not None and (
+            job.salary_min is not None
+            or job.salary_max is not None
+            or (job.salary_currency or "").strip()
+            or (job.salary_raw or "").strip()
+        ):
+            salary_changed = (
+                (job.salary_min is not None and job.salary_min != existing["salary_min"])
+                or (job.salary_max is not None and job.salary_max != existing["salary_max"])
+                or (
+                    (job.salary_currency or "").strip()
+                    and (job.salary_currency or "").strip().upper()
+                    != ((existing["salary_currency"] or "").strip().upper())
+                )
+                or (
+                    (job.salary_raw or "").strip()
+                    and (job.salary_raw or "").strip()
+                    != ((existing["salary_raw"] or "").strip())
+                )
+            )
+
+        # Keep canonical_key / ats identity aligned with the current posting so
+        # rediscovery does not re-collapse twins under a legacy company+title key.
         self._conn.execute(
             """
             UPDATE jobs SET
                 last_seen = ?,
                 removed_at = NULL,
+                canonical_key = ?,
                 location_raw = COALESCE(?, location_raw),
                 apply_url = COALESCE(?, apply_url),
+                url = COALESCE(?, url),
                 description = ?,
                 description_hash = ?,
                 description_complete = ?,
@@ -405,8 +441,10 @@ class Database:
             """,
             (
                 now,
+                identity.canonical_key,
                 location,
                 job.apply_url,
+                identity.url or None,
                 desc,
                 desc_hash,
                 complete_flag,
@@ -422,6 +460,12 @@ class Database:
                 existing_id,
             ),
         )
+        # Location/pay drive hard-filter eligibility; description_hash alone would
+        # leave stale ELIGIBLE scores on the shortlist after a geo correction.
+        if location_changed or salary_changed:
+            self._conn.execute(
+                "DELETE FROM job_scores WHERE job_id = ?", (existing_id,)
+            )
         return existing_id
 
     def mark_missing_removed(

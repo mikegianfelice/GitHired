@@ -11,13 +11,51 @@ from jobseek.models import RawJob
 
 
 def _location(job: dict[str, Any]) -> str | None:
+    """Job-specific location — never company HQ.
+
+    Append Lever ``country`` when the location text lacks an explicit country
+    signal so US-only remote is not mistaken for Canada-eligible remote.
+    """
     cats = job.get("categories") or {}
+    loc = None
     if isinstance(cats, dict):
         loc = cats.get("location")
         if loc:
-            return str(loc)
-    loc = job.get("location")
-    return str(loc) if loc else None
+            loc = str(loc).strip()
+    if not loc:
+        raw = job.get("location")
+        loc = str(raw).strip() if raw else None
+    if not loc:
+        return None
+
+    country = str(job.get("country") or "").strip().upper()
+    if not country:
+        return loc
+
+    loc_u = loc.upper()
+    # Already names a country / US / Canada — leave employer text intact.
+    if any(
+        token in loc_u
+        for token in (
+            "USA",
+            "U.S",
+            "UNITED STATES",
+            "CANADA",
+            "CANADIAN",
+            " UK",
+            "U.K",
+            "UNITED KINGDOM",
+        )
+    ) or loc_u.endswith(" US") or loc_u.startswith("US ") or ", US" in loc_u:
+        return loc
+
+    country_label = {
+        "US": "USA",
+        "USA": "USA",
+        "CA": "Canada",
+        "CAN": "Canada",
+    }.get(country, country)
+    return f"{loc}, {country_label}"
 
 
 def _salary(job: dict[str, Any]) -> tuple[str | None, float | None, float | None, str | None]:

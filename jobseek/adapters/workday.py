@@ -304,6 +304,7 @@ def normalize_workday_job(
     # List-only discovery typically has no description — extraction runs when enrich hydrates.
     from jobseek.filters.salary import (
         apply_salary_info_to_raw,
+        currency_hint_from_location,
         extract_salary_from_text,
         from_structured,
         strip_html,
@@ -313,12 +314,13 @@ def normalize_workday_job(
     structured_min = info.get("salaryMin") or info.get("minimumSalary") or info.get("payMin")
     structured_max = info.get("salaryMax") or info.get("maximumSalary") or info.get("payMax")
     structured_cur = info.get("currency") or info.get("salaryCurrency") or info.get("payCurrency")
+    pay_hint = currency_hint_from_location(location_raw)
     if structured_min is not None or structured_max is not None:
         try:
             info_sal = from_structured(
                 amin=float(structured_min) if structured_min is not None else None,
                 amax=float(structured_max) if structured_max is not None else None,
-                currency=str(structured_cur) if structured_cur else None,
+                currency=str(structured_cur) if structured_cur else pay_hint,
                 interval="year",
                 raw=None,
                 source="structured_ats",
@@ -327,7 +329,11 @@ def normalize_workday_job(
         except (TypeError, ValueError):
             pass
     if smin is None and description:
-        info_sal = extract_salary_from_text(strip_html(description))
+        info_sal = extract_salary_from_text(
+            strip_html(description),
+            currency_hint=pay_hint,
+            location_hint=location_raw,
+        )
         salary_raw, smin, smax, scur = apply_salary_info_to_raw(info=info_sal)
 
     return RawJob(

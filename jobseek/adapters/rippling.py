@@ -12,6 +12,7 @@ from typing import Any
 from jobseek.adapters.base import AdapterResult
 from jobseek.filters.salary import (
     apply_salary_info_to_raw,
+    currency_hint_from_location,
     extract_salary_from_text,
     from_structured,
     strip_html,
@@ -111,7 +112,13 @@ def salary_from_rippling_detail(detail: dict[str, Any]) -> tuple[str | None, flo
     elif isinstance(desc, str):
         text = desc
     if text.strip():
-        return apply_salary_info_to_raw(info=extract_salary_from_text(strip_html(text)))
+        loc = _location(detail)
+        hint = currency_hint_from_location(loc)
+        return apply_salary_info_to_raw(
+            info=extract_salary_from_text(
+                strip_html(text), currency_hint=hint, location_hint=loc
+            )
+        )
     return None, None, None, None
 
 
@@ -180,9 +187,15 @@ class RipplingAdapter:
                 if not title or not absolute:
                     continue
                 description = item.get("description") or item.get("jobDescription") or None
+                location_raw = _location(item)
                 salary_raw = smin = smax = scur = None
                 if description:
-                    info = extract_salary_from_text(strip_html(str(description)))
+                    hint = currency_hint_from_location(location_raw)
+                    info = extract_salary_from_text(
+                        strip_html(str(description)),
+                        currency_hint=hint,
+                        location_hint=location_raw,
+                    )
                     salary_raw, smin, smax, scur = apply_salary_info_to_raw(info=info)
                 result.jobs.append(
                     RawJob(
@@ -193,7 +206,7 @@ class RipplingAdapter:
                         source="rippling",
                         ats_provider="rippling",
                         ats_job_id=job_id or None,
-                        location_raw=_location(item),
+                        location_raw=location_raw,
                         description=description,
                         salary_raw=salary_raw,
                         salary_min=smin,

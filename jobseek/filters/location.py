@@ -141,7 +141,13 @@ _US_ONLY = re.compile(
     \bus\s+work\s+authorization\s+required\b |
     \bmust\s+be\s+eligible\s+to\s+work\s+in\s+(?:the\s+)?(?:united\s+states|u\.?s\.?)\b |
     \bremote\s+within\s+(?:the\s+)?(?:united\s+states|u\.?s\.?)\s+only\b |
-    \bonly\s+(?:open\s+to|hiring)\s+(?:candidates\s+in\s+)?(?:the\s+)?(?:united\s+states|u\.?s\.?)\b
+    \bonly\s+(?:open\s+to|hiring)\s+(?:candidates\s+in\s+)?(?:the\s+)?(?:united\s+states|u\.?s\.?)\b |
+    # Exclusive US remote — require USA / U.S.A. / United States (not bare "US"
+    # which also appears in dual "Remote US & Canada" location strings).
+    \bremote[,\s\-–—]+(?:only\s+)?(?:in\s+)?(?:the\s+)?(?:united\s+states|u\.s\.a\.?|usa)\b |
+    \bremote,\s*u\.?s\.?\s*$ |
+    \b(?:united\s+states|u\.s\.a\.?|usa)[,\s\-–—]+remote\b |
+    \bremote\s+(?:role|position|job)\s*(?:[-–—:,]|\s+in\s+)\s*(?:the\s+)?(?:united\s+states|u\.s\.a\.?|usa)\b
     """,
     re.I | re.X,
 )
@@ -890,13 +896,20 @@ def _classify_canada_level(
 
     us_only_hit = _US_ONLY.search(blob_for_exclusions)
     if us_only_hit and reject_us_only:
-        evidence.append(us_only_hit.group(0))
-        return (
-            "INELIGIBLE",
-            "FAIL",
-            ["US-only remote / US work-authorization requirement"],
-            evidence,
+        # Dual-country structured locations ("Remote US & Canada") are not US-only.
+        dual_country_location = bool(
+            location
+            and _CANADA_WORD.search(location)
+            and _US_GEO.search(location)
         )
+        if not dual_country_location:
+            evidence.append(us_only_hit.group(0))
+            return (
+                "INELIGIBLE",
+                "FAIL",
+                ["US-only remote / US work-authorization requirement"],
+                evidence,
+            )
 
     # Preferred Canada phrases — location field first, then hire phrases in description.
     for phrase in loc_cfg.get("preferred") or []:

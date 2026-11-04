@@ -24,8 +24,19 @@ def _location(job: dict[str, Any]) -> str | None:
     return None
 
 
-def _salary_from_job(item: dict[str, Any], description: str) -> tuple[str | None, float | None, float | None, str | None]:
-    """Prefer structured Greenhouse metadata; fall back to description text."""
+def _salary_from_job(
+    item: dict[str, Any],
+    description: str,
+    *,
+    location_raw: str | None = None,
+) -> tuple[str | None, float | None, float | None, str | None]:
+    """Prefer structured Greenhouse metadata; fall back to description text.
+
+    Multi-zone pay tables (e.g. Robinhood) select the band matching ``location_raw``.
+    """
+    from jobseek.filters.salary import currency_hint_from_location
+
+    hint = currency_hint_from_location(location_raw)
     salary_raw = None
     metadata = item.get("metadata") or []
     if isinstance(metadata, list):
@@ -57,7 +68,9 @@ def _salary_from_job(item: dict[str, Any], description: str) -> tuple[str | None
                 break
 
     if salary_raw:
-        info = extract_salary_from_text(salary_raw)
+        info = extract_salary_from_text(
+            salary_raw, currency_hint=hint, location_hint=location_raw
+        )
         if info.confidence == "verified":
             return apply_salary_info_to_raw(info=info)
         # Keep raw even when unverified
@@ -68,7 +81,9 @@ def _salary_from_job(item: dict[str, Any], description: str) -> tuple[str | None
     # Description fallback (HTML content)
     plain = strip_html(description or "")
     if plain:
-        info = extract_salary_from_text(plain)
+        info = extract_salary_from_text(
+            plain, currency_hint=hint, location_hint=location_raw
+        )
         return apply_salary_info_to_raw(info=info)
     return None, None, None, None
 
@@ -104,7 +119,10 @@ class GreenhouseAdapter:
                     continue
                 content = item.get("content") or ""
                 description = content
-                salary_raw, smin, smax, scur = _salary_from_job(item, description)
+                location_raw = _location(item)
+                salary_raw, smin, smax, scur = _salary_from_job(
+                    item, description, location_raw=location_raw
+                )
                 result.jobs.append(
                     RawJob(
                         company=company_name,
@@ -113,7 +131,7 @@ class GreenhouseAdapter:
                         source="greenhouse",
                         ats_provider="greenhouse",
                         ats_job_id=job_id,
-                        location_raw=_location(item),
+                        location_raw=location_raw,
                         apply_url=absolute,
                         description=description,
                         salary_raw=salary_raw,
