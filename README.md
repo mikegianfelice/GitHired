@@ -37,8 +37,6 @@ After GitHub Pages is enabled for this repository, the public shortlist is publi
 
 **https://mikegianfelice.github.io/GitHired/**
 
-(Until the first successful Actions deploy, that URL may 404 — see [docs/public-shortlist.md](docs/public-shortlist.md) for enablement steps.)
-
 | Public site | Personalized CLI |
 | ----------- | ---------------- |
 | Confirmed Canada-eligible engineering listings | Your tracks, city, salary floor, digests |
