@@ -1,11 +1,11 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "generated_at": "2026-11-04T12:01:08Z",
   "source": "githired-public-shortlist",
   "limit": 300,
   "count": 226,
   "repo_url": "https://github.com/mikegianfelice/GitHired",
-  "disclaimer": "Public Canada-eligible engineering listings from employer ATS boards. Not personalized ranks. Salaries shown only when employers advertise them. Province-restricted remote is labeled as such — never implied Canada-wide.",
+  "disclaimer": "Public Canada-eligible engineering listings from employer ATS boards. Not personalized ranks. Salaries shown only when employers advertise them. Province-restricted remote is labeled as such — never implied Canada-wide. Client-side Find My Matches uses deterministic relevance scoring — not an LLM.",
   "jobs": [
     {
       "id": "0f98d0cbf1b40507",
@@ -27,7 +27,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": 280000.0
     },
     {
       "id": "7cf858ace497de3c",
@@ -49,7 +50,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": 326700.0
     },
     {
       "id": "5d8c68c3494c2e82",
@@ -71,7 +73,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": 224000.0
     },
     {
       "id": "52aa84c45b437649",
@@ -93,7 +96,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": 180000.0
     },
     {
       "id": "17723c228947aa7f",
@@ -115,7 +119,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": 188865.0
     },
     {
       "id": "ec799bf72a0ea03b",
@@ -137,7 +142,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": 92000.0
     },
     {
       "id": "1fc7ec2af1a763ed",
@@ -159,7 +165,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": 80000.0
     },
     {
       "id": "b566685ec05fa69e",
@@ -181,7 +188,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "0a9527bd8aa907b1",
@@ -203,7 +211,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "cb8b531336711be7",
@@ -225,7 +234,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "51713f7f968daeec",
@@ -250,7 +260,8 @@
         "Python",
         "React"
       ],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "601d7fa4c327507b",
@@ -274,7 +285,8 @@
       "technologies": [
         "Python"
       ],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "1102fed7b0fd53d1",
@@ -296,7 +308,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "91462e5e85539daf",
@@ -318,7 +331,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "bab13bf9886ee9d5",
@@ -340,7 +354,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "319e0682d178c904",
@@ -362,7 +377,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "6bb22f7e8171ff0d",
@@ -384,7 +400,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "fd44b5f4ac08ce69",
@@ -406,7 +423,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "b3a34fec8abe45a1",
@@ -428,7 +446,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "a9eafe11fa75adb5",
@@ -450,7 +469,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "805264e780fcafe7",
@@ -472,7 +492,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "75d1a06e9cbc1172",
@@ -494,7 +515,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "b044f1a884abc9e6",
@@ -516,7 +538,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "676a3c30daf05cce",
@@ -538,7 +561,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "25920a6a1d145c80",
@@ -560,7 +584,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "f9a4b22fe7e5e748",
@@ -582,7 +607,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "72c508594c7a95ca",
@@ -604,7 +630,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "723af2dfc892d8a1",
@@ -626,7 +653,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "1cb7eabe1faa0640",
@@ -648,7 +676,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "523e1fc7b7343215",
@@ -670,7 +699,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "5a49805fdb273129",
@@ -692,7 +722,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "74e9cda568877e46",
@@ -714,7 +745,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "140b58a68de9fc12",
@@ -736,7 +768,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "d74efe83e4db38a2",
@@ -758,7 +791,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "520f0a23be02d97a",
@@ -780,7 +814,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "94b797aaa363aac6",
@@ -802,7 +837,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "6a4fa2b79cf7f749",
@@ -824,7 +860,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "9304bfdfdab2cc4d",
@@ -846,7 +883,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "dae46b7b26a10780",
@@ -868,7 +906,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "def026282381f397",
@@ -890,7 +929,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "67e3f6c3e3f44f9c",
@@ -912,7 +952,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "26f918eb2a063a21",
@@ -934,7 +975,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "fb2ff5a4ae252399",
@@ -956,7 +998,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "70762ed2af9b6cca",
@@ -978,7 +1021,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "ce907b6b6003c7d1",
@@ -1000,7 +1044,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "405c364930502b9e",
@@ -1022,7 +1067,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "7dd3f1f1a96739b0",
@@ -1044,7 +1090,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "d2bc79436d891eff",
@@ -1066,7 +1113,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "2b6ebf54aabdaa5d",
@@ -1088,7 +1136,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "0734b8018a2482fb",
@@ -1110,7 +1159,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "e10d1cb21aac00e1",
@@ -1132,7 +1182,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "2abef5bbf54425d7",
@@ -1154,7 +1205,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "e6621b56298df80c",
@@ -1176,7 +1228,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "5c9039db923ee33a",
@@ -1198,7 +1251,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "dd62138343a1edab",
@@ -1220,7 +1274,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "d447c6eae7f2cd4d",
@@ -1242,7 +1297,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "e55203ef46fede87",
@@ -1264,7 +1320,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "357255160ffeff41",
@@ -1286,7 +1343,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "14461718a1b5a1ca",
@@ -1308,7 +1366,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "7378ddb846e15022",
@@ -1330,7 +1389,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "6f7dae9f1af62c14",
@@ -1352,7 +1412,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "eafe8a76042f14f5",
@@ -1374,7 +1435,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "c0a07ad9ec5803e1",
@@ -1396,7 +1458,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "bc6dbb0bf039562d",
@@ -1418,7 +1481,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "fda2442176397c9e",
@@ -1440,7 +1504,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "0cb6e5dd89b5a9c5",
@@ -1462,7 +1527,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "0372347d8b5ae0ac",
@@ -1484,7 +1550,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "92891255eaaf5e5f",
@@ -1506,7 +1573,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "65fa9b9542e21a07",
@@ -1528,7 +1596,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "022e3feb52c68013",
@@ -1550,7 +1619,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "e73b9986859fb4ab",
@@ -1572,7 +1642,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "d35d403669ee94b2",
@@ -1594,7 +1665,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "113e2e2e394bf409",
@@ -1616,7 +1688,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "298f8bbb6e1efbfb",
@@ -1638,7 +1711,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "ae95b3e43de59466",
@@ -1660,7 +1734,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "f547865d2fb881aa",
@@ -1682,7 +1757,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "372cb6bf584a6187",
@@ -1704,7 +1780,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "a372d357d8537eef",
@@ -1726,7 +1803,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "5ba6f121946cf6d5",
@@ -1748,7 +1826,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "6a3c8c313cc44a1a",
@@ -1770,7 +1849,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "e38e538117f840b7",
@@ -1792,7 +1872,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "dbc6d83e7a50d8b6",
@@ -1814,7 +1895,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "0a0470017f4f26b5",
@@ -1836,7 +1918,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "5fe0a7691bb744e5",
@@ -1858,7 +1941,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "a05c8eb967052ac9",
@@ -1880,7 +1964,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "2b1c3ca521984523",
@@ -1902,7 +1987,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "e450eb9882ba17f8",
@@ -1924,7 +2010,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "5793983b159516ea",
@@ -1946,7 +2033,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "6a7ac27d65453d9c",
@@ -1968,7 +2056,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "466c1da93282a568",
@@ -1990,7 +2079,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "5245a858b502de62",
@@ -2012,7 +2102,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "93dc0c2f7e462775",
@@ -2034,7 +2125,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "b664efc9719e89ec",
@@ -2056,7 +2148,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "82d4aa797f949b4f",
@@ -2078,7 +2171,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "2ea162981e37f7e8",
@@ -2100,7 +2194,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "b1d3cbaef1ca5fb8",
@@ -2122,7 +2217,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "8a17ba4b084ee1d7",
@@ -2144,7 +2240,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "bb729ae1c265a672",
@@ -2166,7 +2263,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "00c8ecddaa012ab5",
@@ -2188,7 +2286,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "d0cd8072460e34d9",
@@ -2210,7 +2309,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "68d63e2e534394b4",
@@ -2232,7 +2332,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "84eb7dc126b2165e",
@@ -2254,7 +2355,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "d68601009a83ac84",
@@ -2276,7 +2378,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "5912dedb57cbb6aa",
@@ -2298,7 +2401,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "de2be5c513041e2f",
@@ -2320,7 +2424,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "e7c76c29f193d7cd",
@@ -2342,7 +2447,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "8107d609d7c85dcf",
@@ -2364,7 +2470,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "a0a520649273ad03",
@@ -2386,7 +2493,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "b1e49d2037e2362f",
@@ -2408,7 +2516,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "46f6429831a22c49",
@@ -2430,7 +2539,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "a2fe8dc4cadd0a2d",
@@ -2452,7 +2562,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "6f2b4f723001ab23",
@@ -2474,7 +2585,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "49e0ff246a2092e3",
@@ -2496,7 +2608,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "e740159e9b971d8d",
@@ -2518,7 +2631,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "5de6758c7c773ffa",
@@ -2542,7 +2656,8 @@
       "technologies": [
         "Python"
       ],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "cb15017fb590b8f1",
@@ -2564,7 +2679,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "d54c87f9640d8a3c",
@@ -2588,7 +2704,8 @@
       "technologies": [
         "TypeScript"
       ],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "6ab26d525e83975a",
@@ -2610,7 +2727,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "62b5293770a54c84",
@@ -2632,7 +2750,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "5c28e044062b8b76",
@@ -2654,7 +2773,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "a09a3d2b9fa34420",
@@ -2676,7 +2796,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "b87579b50fff7b51",
@@ -2698,7 +2819,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "a9a1a5608dae6945",
@@ -2720,7 +2842,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "f6d14b56f98fa506",
@@ -2742,7 +2865,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "3a4609b88a8cd39b",
@@ -2764,7 +2888,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "b0071168b093a4b0",
@@ -2786,7 +2911,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "44ce388d45c5e342",
@@ -2808,7 +2934,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "be7ab670dc1884cd",
@@ -2830,7 +2957,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "5e21d097f3044087",
@@ -2852,7 +2980,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "9096be0bf9cbcaac",
@@ -2874,7 +3003,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "b2a4bd27c679d8a6",
@@ -2896,7 +3026,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "45abffcc22240c65",
@@ -2918,7 +3049,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "2247400a72708874",
@@ -2940,7 +3072,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "efce210f2c752782",
@@ -2962,7 +3095,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "a597096215947988",
@@ -2984,7 +3118,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "fdf7a3a5d1579b49",
@@ -3006,7 +3141,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "1fc6b0817466622c",
@@ -3028,7 +3164,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "9a364d8fef5972a0",
@@ -3050,7 +3187,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "5c9690618aae42f3",
@@ -3074,7 +3212,8 @@
       "technologies": [
         "Python"
       ],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "3c5a52b962d9bd7d",
@@ -3098,7 +3237,8 @@
       "technologies": [
         "Python"
       ],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "399c4bea414682aa",
@@ -3122,7 +3262,8 @@
       "technologies": [
         "Python"
       ],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "e62911795c248e17",
@@ -3146,7 +3287,8 @@
       "technologies": [
         "Python"
       ],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "f2f82d89538a906a",
@@ -3170,7 +3312,8 @@
       "technologies": [
         "Python"
       ],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "58b0e631c1be2ea3",
@@ -3194,7 +3337,8 @@
       "technologies": [
         "Python"
       ],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "89715cab6d1f5d18",
@@ -3216,7 +3360,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "3dc70e6835c941a8",
@@ -3238,7 +3383,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "72dddacdac5a57f7",
@@ -3260,7 +3406,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "f5a4ed14fe09ec2c",
@@ -3282,7 +3429,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "e6ba2c62582a13a8",
@@ -3304,7 +3452,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "fcdf7680ebb02781",
@@ -3326,7 +3475,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "fd1a8b180cf33492",
@@ -3348,7 +3498,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "24e979df735bd53f",
@@ -3370,7 +3521,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "8b40fe198e71bbae",
@@ -3392,7 +3544,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "2d89d79f6fe64e11",
@@ -3414,7 +3567,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "ef6bfbeab0cd5b74",
@@ -3436,7 +3590,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "c1e9b7fe3176a1dc",
@@ -3458,7 +3613,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "acf3f3137339bcd1",
@@ -3480,7 +3636,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "ce11c2012ce62cb5",
@@ -3502,7 +3659,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "8f94f606ad9aedd6",
@@ -3524,7 +3682,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "73c5a21d14e54d1c",
@@ -3546,7 +3705,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "472f7c3ea160c245",
@@ -3568,7 +3728,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "b828fc28544ac721",
@@ -3590,7 +3751,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "a69c12c1d07fff9a",
@@ -3612,7 +3774,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "365ee2c9985e6067",
@@ -3634,7 +3797,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "53f48a2bfc5761a9",
@@ -3656,7 +3820,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "92e90a97d05d9794",
@@ -3678,7 +3843,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "9149e59319af1844",
@@ -3700,7 +3866,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "bda708ca407a3cca",
@@ -3722,7 +3889,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "a15b4a5c03234589",
@@ -3744,7 +3912,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "692654a8ac07b92c",
@@ -3766,7 +3935,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "2bcbe6879a9f9fd5",
@@ -3788,7 +3958,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "51ff0b90c05f6396",
@@ -3810,7 +3981,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "4ce8d306079abf33",
@@ -3832,7 +4004,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "962533118a4e1515",
@@ -3854,7 +4027,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "5c8a353863ba8b5d",
@@ -3876,7 +4050,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "1c5d2c8f0baa2f67",
@@ -3898,7 +4073,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "48f41ac64ec7ca68",
@@ -3920,7 +4096,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "a1fcdf2d236f4895",
@@ -3942,7 +4119,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "78bdac5447eca518",
@@ -3964,7 +4142,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "4f0db0edbbc2d4c9",
@@ -3986,7 +4165,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "0ae4ad799cdafd74",
@@ -4008,7 +4188,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "4898e8f424cbbd74",
@@ -4030,7 +4211,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "21d314d0922dfc37",
@@ -4052,7 +4234,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "d8ded181b89dcf89",
@@ -4074,7 +4257,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "55e1f809335fbffe",
@@ -4096,7 +4280,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "6dda9f9b44c3a9c0",
@@ -4118,7 +4303,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "e664e41ca05fc189",
@@ -4140,7 +4326,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "b9fa5f140bb4d273",
@@ -4162,7 +4349,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "aa7716751e315c33",
@@ -4184,7 +4372,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "448b211b2a3ce5bf",
@@ -4206,7 +4395,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "df9bbf036c72d981",
@@ -4228,7 +4418,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "bf84aaa91e189246",
@@ -4250,7 +4441,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "ef23ba0302be4453",
@@ -4272,7 +4464,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "3eb71e6a8c5c3291",
@@ -4294,7 +4487,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "1ae0a591454bd1d5",
@@ -4316,7 +4510,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "773cc8546ac26be8",
@@ -4338,7 +4533,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "4890ab672aae589e",
@@ -4360,7 +4556,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "84ca2ff874a7182e",
@@ -4382,7 +4579,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "577986cdabcdfd47",
@@ -4404,7 +4602,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "8b905a6759cb6e8c",
@@ -4426,7 +4625,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "0938bac214fec003",
@@ -4448,7 +4648,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "39ebb3d3910ccf22",
@@ -4470,7 +4671,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "1f39d4844aadfa7d",
@@ -4492,7 +4694,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "beeba4b9a555fb9b",
@@ -4514,7 +4717,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "a92aabdfbbe60f9e",
@@ -4536,7 +4740,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "f645645cad09da8a",
@@ -4558,7 +4763,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "96098e0d25e93c9e",
@@ -4580,7 +4786,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "faeb8bc60f22cd35",
@@ -4602,7 +4809,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "af09f1bbbfe30b38",
@@ -4624,7 +4832,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "7b778546d8d4b58a",
@@ -4646,7 +4855,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "4282e87782a0aa2a",
@@ -4668,7 +4878,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "greenhouse"
+      "source": "greenhouse",
+      "salary_max_cad": null
     },
     {
       "id": "0da397297566cc98",
@@ -4690,7 +4901,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "b4c80a5b908df063",
@@ -4712,7 +4924,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "d9e43b2f9d591668",
@@ -4734,7 +4947,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "490244434e2d1c1d",
@@ -4756,7 +4970,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "c250ea250ad8c553",
@@ -4778,7 +4993,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "7b0d2b89c483a2d3",
@@ -4800,7 +5016,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "cf5181ae7b1d24b6",
@@ -4822,7 +5039,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "3b80f78e8dfa061c",
@@ -4844,7 +5062,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "38602fd6595ec446",
@@ -4866,7 +5085,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "0e026b1bc923a55b",
@@ -4888,7 +5108,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "036fa4186c6ea4d3",
@@ -4910,7 +5131,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "lever"
+      "source": "lever",
+      "salary_max_cad": null
     },
     {
       "id": "eef6e87311ddb9a0",
@@ -4932,7 +5154,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "6adc02c4e2eb243b",
@@ -4954,7 +5177,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "0e9d0f727ac991ac",
@@ -4976,7 +5200,8 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     },
     {
       "id": "8a311f8293ae13cf",
@@ -4998,7 +5223,9 @@
       "last_verified": "2026-11-03",
       "discovered_today": false,
       "technologies": [],
-      "source": "ashby"
+      "source": "ashby",
+      "salary_max_cad": null
     }
-  ]
+  ],
+  "usd_to_cad": 1.35
 }

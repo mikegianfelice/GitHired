@@ -170,11 +170,32 @@ class PublicShortlistSnapshotTests(unittest.TestCase):
     def test_snapshot_schema_and_privacy(self):
         selected = select_public_jobs([_job()], limit=5, now=NOW)
         snap = build_public_snapshot(selected, generated_at=NOW, limit=300)
-        self.assertEqual(snap["schema_version"], 1)
+        self.assertEqual(snap["schema_version"], 2)
         self.assertEqual(snap["count"], 1)
+        self.assertIn("salary_max_cad", snap["jobs"][0])
+        self.assertEqual(snap["jobs"][0]["salary_max_cad"], 180000.0)
         self.assertNotIn("description", snap["jobs"][0])
         self.assertNotIn("overall", snap["jobs"][0])
         assert_public_payload_safe(snap)
+
+    def test_usd_salary_max_cad_conversion(self):
+        selected = select_public_jobs(
+            [
+                _job(
+                    salary_min=100000,
+                    salary_max=120000,
+                    salary_currency="USD",
+                    url="https://boards.greenhouse.io/exampleco/jobs/888",
+                    apply_url="https://boards.greenhouse.io/exampleco/jobs/888",
+                )
+            ],
+            limit=5,
+            now=NOW,
+        )
+        self.assertEqual(len(selected), 1)
+        self.assertAlmostEqual(selected[0].salary_max_cad or 0, 120000 * 1.35)
+        snap = build_public_snapshot(selected, generated_at=NOW)
+        self.assertEqual(snap["usd_to_cad"], 1.35)
 
     def test_forbidden_fields_rejected(self):
         with self.assertRaises(ValueError):
@@ -204,8 +225,24 @@ class PublicShortlistSnapshotTests(unittest.TestCase):
 
 class PublicSiteStaticTests(unittest.TestCase):
     def test_site_files_exist(self):
-        for name in ("index.html", "styles.css", "app.js", "jobs.json", ".nojekyll"):
+        for name in (
+            "index.html",
+            "styles.css",
+            "app.js",
+            "match-engine.js",
+            "resume.js",
+            "jobs.json",
+            ".nojekyll",
+        ):
             self.assertTrue((SITE / name).is_file(), name)
+
+    def test_find_my_matches_nav_present(self):
+        html = (SITE / "index.html").read_text(encoding="utf-8")
+        self.assertIn("Find My Matches", html)
+        self.assertIn("Minimum Salary (CAD)", html)
+        self.assertIn("Your résumé stays in your browser", html)
+        self.assertIn("match-engine.js", html)
+        self.assertIn("resume.js", html)
 
     def test_relative_assets_for_github_pages_base_path(self):
         html = (SITE / "index.html").read_text(encoding="utf-8")

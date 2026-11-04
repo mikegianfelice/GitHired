@@ -42,9 +42,18 @@ After GitHub Pages is enabled for this repository, the public shortlist is publi
 | Public site | Personalized CLI |
 | ----------- | ---------------- |
 | Confirmed Canada-eligible engineering listings | Your tracks, city, salary floor, digests |
-| Search + filters in the browser | `githired discover` → `enrich` → `rank` → `jobs` |
-| Direct employer Apply links | Cursor `/apply` CV + cover letter (with your approval) |
-| Shared daily snapshot (not your private scores) | Private SQLite + profile on your machine |
+| Search, salary slider, and filters in the browser | `githired discover` → `enrich` → `rank` → `jobs` |
+| Optional **Find My Matches** (local résumé / profile) | Cursor `/apply` CV + cover letter (with your approval) |
+| Shared daily snapshot (not your private CLI scores) | Private SQLite + profile on your machine |
+
+### Public site features
+
+- **Browse Jobs** — client-side search, province / arrangement / seniority filters, sort (salary, recent, company).
+- **Minimum Salary (CAD)** — interactive slider ($0–$300k+, $10k steps). Uses advertised annual base; USD converted with the published FX (default ×1.35) for filtering only. Employer currency and range stay on the card. Undisclosed pay is optional via checkbox — never estimated.
+- **Find My Matches** — optional. Paste experience, enter preferences, or parse a PDF/DOCX/TXT **in the browser**. Deterministic relevance scoring (title, skills, seniority, discipline, preferences). Geography is a hard filter. Not an LLM and not a guarantee of fit.
+- **Privacy** — résumés are not uploaded to GitHub, Actions, or external AI. Saving a profile is explicit and uses `localStorage` only; **Clear My Profile** removes it. Clearing browser data also clears it.
+
+The website is a zero-install shortlist. The CLI remains the place for private digests, config-driven floors, and application drafting.
 
 Local preview of the static shell:
 

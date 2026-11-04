@@ -29,11 +29,12 @@ from jobseek.showcase.top_paying import (
     parse_iso_date,
 )
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 DEFAULT_LIMIT = 300
 DEFAULT_MAX_AGE_DAYS = 21
 MIN_ANNUAL = 30_000.0
 MAX_ANNUAL = 800_000.0
+DEFAULT_USD_TO_CAD = 1.35
 
 # Forbidden keys — never appear in public JSON (defense in depth).
 _FORBIDDEN_SUBSTRINGS = (
@@ -74,11 +75,15 @@ _TECH_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
         ("Ruby", r"\bruby\b|\brails\b"),
         ("Scala", r"\bscala\b"),
         ("Swift", r"\bswift\b"),
-        ("SQL", r"\bsql\b"),
-        ("Spark", r"\bspark\b"),
+        ("SQL", r"\b(?:sql|postgres(?:ql)?|mysql|snowflake)\b"),
+        ("PostgreSQL", r"\bpostgres(?:ql)?\b"),
+        ("Spark", r"\b(?:spark|pyspark)\b"),
         ("Kafka", r"\bkafka\b"),
         ("Airflow", r"\bairflow\b"),
         ("dbt", r"\bdbt\b"),
+        ("Databricks", r"\bdatabricks\b"),
+        ("Snowflake", r"\bsnowflake\b"),
+        ("Docker", r"\bdocker\b"),
         ("Kubernetes", r"\bkubernetes\b|\bk8s\b"),
         ("AWS", r"\baws\b|\bamazon web services\b"),
         ("GCP", r"\bgcp\b|\bgoogle cloud\b"),
@@ -89,6 +94,7 @@ _TECH_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
         ("PyTorch", r"\bpytorch\b"),
         ("TensorFlow", r"\btensorflow\b"),
         ("LLM", r"\bllm\b|\blarge language model\b"),
+        ("Security", r"\b(?:security|appsec|devsecops)\b"),
     )
 ]
 
@@ -123,6 +129,7 @@ class PublicJob:
     salary_max: float | None
     salary_currency: str | None
     salary_available: bool
+    salary_max_cad: float | None
     apply_url: str
     verified: bool
     first_seen: str
@@ -140,12 +147,29 @@ def _stable_id(company: str, title: str, apply_url: str) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 
-def _extract_technologies(title: str) -> list[str]:
+def _extract_technologies(*texts: str) -> list[str]:
+    blob = " ".join(t for t in texts if t)
     found: list[str] = []
     for label, pattern in _TECH_PATTERNS:
-        if pattern.search(title) and label not in found:
+        if pattern.search(blob) and label not in found:
             found.append(label)
     return found
+
+
+def _salary_max_cad(
+    salary_max: float | None,
+    currency: str | None,
+    *,
+    fx_usd_cad: float = DEFAULT_USD_TO_CAD,
+) -> float | None:
+    if salary_max is None or not currency:
+        return None
+    cur = currency.upper()
+    if cur == "CAD":
+        return float(salary_max)
+    if cur == "USD":
+        return float(salary_max) * float(fx_usd_cad)
+    return None
 
 
 def _province_code(location: str) -> str | None:
@@ -282,11 +306,14 @@ def select_public_jobs(
             pass  # explicit province scope kept
 
         lo, hi, currency, salary_ok = _salary_fields(job)
+        max_cad = _salary_max_cad(hi, currency) if salary_ok else None
         first_seen_dt = parse_iso_date(job.get("first_seen")) or last_seen
         first_seen = first_seen_dt.astimezone(timezone.utc).date().isoformat()
         last_verified = last_seen.astimezone(timezone.utc).date().isoformat()
         discovered_today = first_seen_dt.astimezone(timezone.utc).date() == today
         clean_url = apply_url.split("?")[0] if "utm_" in apply_url.casefold() else apply_url
+        # Title + location only — never export description text for public matching hints.
+        tech = _extract_technologies(title, location)
 
         out.append(
             PublicJob(
@@ -303,12 +330,13 @@ def select_public_jobs(
                 salary_max=hi,
                 salary_currency=currency,
                 salary_available=salary_ok,
+                salary_max_cad=max_cad,
                 apply_url=clean_url,
                 verified=True,  # only after hard PASS + ELIGIBLE + direct posting URL + complete
                 first_seen=first_seen,
                 last_verified=last_verified,
                 discovered_today=bool(discovered_today),
-                technologies=_extract_technologies(title),
+                technologies=tech,
                 source=str(job.get("source") or job.get("ats_provider") or ""),
             )
         )
@@ -348,11 +376,13 @@ def build_public_snapshot(
         "source": "githired-public-shortlist",
         "limit": int(limit),
         "count": len(jobs),
+        "usd_to_cad": DEFAULT_USD_TO_CAD,
         "repo_url": repo_url,
         "disclaimer": (
             "Public Canada-eligible engineering listings from employer ATS boards. "
             "Not personalized ranks. Salaries shown only when employers advertise them. "
-            "Province-restricted remote is labeled as such — never implied Canada-wide."
+            "Province-restricted remote is labeled as such — never implied Canada-wide. "
+            "Client-side Find My Matches uses deterministic relevance scoring — not an LLM."
         ),
         "jobs": [j.to_dict() for j in jobs],
     }

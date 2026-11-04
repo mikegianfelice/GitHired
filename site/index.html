@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="GitHired — browse verified Canadian engineering jobs without installing anything." />
+  <meta name="description" content="GitHired — browse verified Canadian engineering jobs or match them to your experience in-browser. Your résumé never leaves your device." />
   <title>GitHired — Jobs Without the Noise</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,10 +11,10 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <a class="skip-link" href="#jobs">Skip to jobs</a>
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="wrap header-inner">
-      <a class="brand" href="./" aria-label="GitHired home">
+      <a class="brand" href="./" aria-label="GitHired home" data-nav="browse">
         <span class="brand-mark" aria-hidden="true">GH</span>
         <span class="brand-text">
           <span class="brand-name">GitHired</span>
@@ -22,72 +22,225 @@
         </span>
       </a>
       <nav class="header-nav" aria-label="Primary">
+        <button type="button" class="nav-link is-active" data-nav="browse">Browse Jobs</button>
+        <button type="button" class="nav-link" data-nav="match">Find My Matches</button>
         <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
-        <a href="https://github.com/mikegianfelice/GitHired#quick-start">CLI setup</a>
       </nav>
     </div>
   </header>
 
-  <main>
+  <main id="main">
     <section class="hero wrap">
       <p class="eyebrow">Canada-first · Public ATS boards · No account</p>
-      <h1>Verified Canadian engineering jobs</h1>
+      <h1>Find Canadian tech jobs that actually fit</h1>
       <p class="lede">
-        Browse confirmed Canada-eligible software, AI, data, and cloud roles.
-        Apply on the employer’s own career page — no install, no login, no noise.
+        Browse verified opportunities, or let GitHired score listings against your experience —
+        entirely in your browser. No install, no login, no résumé upload to our servers.
       </p>
+      <div class="hero-actions">
+        <button type="button" class="btn-primary" data-nav="browse">Browse Jobs</button>
+        <button type="button" class="btn-secondary" data-nav="match">Find My Matches</button>
+      </div>
       <p class="snapshot-meta" id="snapshot-meta" aria-live="polite">Loading shortlist…</p>
     </section>
 
-    <section class="controls wrap" aria-label="Search and filters">
-      <label class="search-field">
-        <span class="sr-only">Search</span>
-        <input id="search" type="search" placeholder="Search title, company, or technology" autocomplete="off" />
-      </label>
-      <div class="filter-row">
-        <label>
-          <span>Province</span>
-          <select id="filter-province">
-            <option value="">All</option>
-          </select>
+    <!-- BROWSE VIEW -->
+    <section id="view-browse" class="view wrap" aria-label="Browse jobs">
+      <section class="controls" aria-label="Search and filters">
+        <label class="search-field">
+          <span class="sr-only">Search</span>
+          <input id="search" type="search" placeholder="Search title, company, or technology" autocomplete="off" />
         </label>
-        <label>
-          <span>Arrangement</span>
-          <select id="filter-arrangement">
-            <option value="">All</option>
-            <option value="remote">Remote</option>
-            <option value="hybrid">Hybrid</option>
-            <option value="onsite">On-site</option>
-            <option value="unspecified">Unspecified</option>
-          </select>
-        </label>
-        <label>
-          <span>Seniority</span>
-          <select id="filter-seniority">
-            <option value="">All</option>
-          </select>
-        </label>
-        <label>
-          <span>Salary</span>
-          <select id="filter-salary">
-            <option value="">All</option>
-            <option value="listed">Advertised</option>
-            <option value="hidden">Not listed</option>
-          </select>
-        </label>
-      </div>
-      <p class="result-count" id="result-count"></p>
-    </section>
 
-    <section class="wrap" id="jobs" aria-live="polite">
+        <div class="salary-panel">
+          <div class="salary-panel-head">
+            <label for="salary-min">Minimum Salary (CAD)</label>
+            <output id="salary-min-display" for="salary-min" class="salary-display">$0</output>
+          </div>
+          <input
+            id="salary-min"
+            type="range"
+            min="0"
+            max="300000"
+            step="10000"
+            value="0"
+            aria-valuemin="0"
+            aria-valuemax="300000"
+            aria-valuenow="0"
+          />
+          <div class="salary-scale" aria-hidden="true"><span>$0</span><span>$150k</span><span>$300k+</span></div>
+          <label class="check-row">
+            <input id="include-undisclosed" type="checkbox" checked />
+            <span>Include jobs without advertised salaries</span>
+          </label>
+        </div>
+
+        <div class="filter-row">
+          <label>
+            <span>Province</span>
+            <select id="filter-province"><option value="">All</option></select>
+          </label>
+          <label>
+            <span>Arrangement</span>
+            <select id="filter-arrangement">
+              <option value="">All</option>
+              <option value="remote">Remote</option>
+              <option value="hybrid">Hybrid</option>
+              <option value="onsite">On-site</option>
+              <option value="unspecified">Unspecified</option>
+            </select>
+          </label>
+          <label>
+            <span>Seniority</span>
+            <select id="filter-seniority"><option value="">All</option></select>
+          </label>
+          <label>
+            <span>Sort</span>
+            <select id="filter-sort">
+              <option value="salary">Highest advertised salary</option>
+              <option value="recent">Recently discovered</option>
+              <option value="company">Company A–Z</option>
+            </select>
+          </label>
+        </div>
+        <p class="result-count" id="result-count"></p>
+      </section>
+
       <div id="job-list" class="job-list"></div>
       <div id="empty-state" class="empty-state" hidden>
         <h2>No matching jobs</h2>
-        <p>Try clearing filters, or check back after the next daily refresh.</p>
+        <p>Try lowering the salary floor or clearing filters.</p>
       </div>
       <div id="error-state" class="empty-state" hidden>
         <h2>Shortlist unavailable</h2>
-        <p>Could not load <code>jobs.json</code>. If you opened this file locally, serve the <code>site/</code> folder over HTTP.</p>
+        <p>Could not load <code>jobs.json</code>. Serve the <code>site/</code> folder over HTTP for local preview.</p>
+      </div>
+    </section>
+
+    <!-- MATCH VIEW -->
+    <section id="view-match" class="view wrap" hidden aria-label="Find my matches">
+      <div class="match-intro">
+        <h2>Find My Matches</h2>
+        <p>
+          Deterministic relevance scoring against the public shortlist — not an AI model.
+          Geography remains a hard filter. Your résumé stays in this browser.
+        </p>
+        <p class="privacy-banner" role="note">
+          Your résumé stays in your browser. We don't upload or store it on our servers.
+        </p>
+      </div>
+
+      <div class="match-steps" id="match-step-input">
+        <div class="tab-row" role="tablist" aria-label="Experience input">
+          <button type="button" class="tab is-active" data-tab="upload" role="tab" aria-selected="true">Upload résumé</button>
+          <button type="button" class="tab" data-tab="paste" role="tab" aria-selected="false">Paste text</button>
+          <button type="button" class="tab" data-tab="manual" role="tab" aria-selected="false">Enter manually</button>
+        </div>
+
+        <div id="tab-upload" class="tab-panel">
+          <label class="file-drop">
+            <input id="resume-file" type="file" accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+            <span>Drop PDF, DOCX, or TXT (max 5&nbsp;MB)</span>
+          </label>
+          <p id="resume-status" class="hint" aria-live="polite"></p>
+        </div>
+
+        <div id="tab-paste" class="tab-panel" hidden>
+          <label class="stack">
+            <span>Paste résumé or experience</span>
+            <textarea id="resume-paste" rows="10" placeholder="Paste text here…"></textarea>
+          </label>
+        </div>
+
+        <div id="tab-manual" class="tab-panel" hidden>
+          <div class="manual-grid">
+            <label class="stack"><span>Current / desired title</span><input id="manual-title" type="text" placeholder="e.g. Senior Data Engineer" /></label>
+            <label class="stack"><span>Years of experience</span><input id="manual-years" type="number" min="0" max="50" placeholder="7" /></label>
+            <label class="stack full"><span>Skills (comma-separated)</span><input id="manual-skills" type="text" placeholder="Python, SQL, Spark, AWS" /></label>
+            <label class="stack"><span>Seniority</span>
+              <select id="manual-seniority" multiple size="5">
+                <option value="junior">junior</option>
+                <option value="mid" selected>mid</option>
+                <option value="senior" selected>senior</option>
+                <option value="staff">staff</option>
+                <option value="principal">principal</option>
+                <option value="lead">lead</option>
+              </select>
+            </label>
+            <label class="stack"><span>Disciplines</span>
+              <select id="manual-disciplines" multiple size="5">
+                <option value="software_engineering">Software Engineering</option>
+                <option value="data_engineering" selected>Data Engineering</option>
+                <option value="ml_engineering">AI / ML</option>
+                <option value="devops_sre">DevOps / SRE</option>
+                <option value="platform_engineering">Cloud / Platform</option>
+                <option value="security_engineering">Security</option>
+                <option value="analytics_engineering">Analytics Engineering</option>
+              </select>
+            </label>
+            <label class="stack"><span>Province preference</span>
+              <select id="manual-province">
+                <option value="">Any Canada</option>
+                <option value="ON">Ontario</option>
+                <option value="BC">British Columbia</option>
+                <option value="QC">Quebec</option>
+                <option value="AB">Alberta</option>
+                <option value="NS">Nova Scotia</option>
+              </select>
+            </label>
+            <label class="stack"><span>City (optional)</span><input id="manual-city" type="text" placeholder="Toronto" /></label>
+            <fieldset class="stack full">
+              <legend>Work arrangements</legend>
+              <label class="check-row"><input type="checkbox" name="manual-arr" value="remote" checked /> Remote</label>
+              <label class="check-row"><input type="checkbox" name="manual-arr" value="hybrid" checked /> Hybrid</label>
+              <label class="check-row"><input type="checkbox" name="manual-arr" value="onsite" /> On-site</label>
+            </fieldset>
+            <label class="stack"><span>Minimum salary (CAD)</span>
+              <input id="manual-salary" type="number" min="0" max="300000" step="10000" value="0" />
+            </label>
+          </div>
+        </div>
+
+        <div class="match-actions">
+          <button type="button" class="btn-primary" id="btn-extract">Continue to profile</button>
+        </div>
+      </div>
+
+      <div class="match-steps" id="match-step-profile" hidden>
+        <h3>Confirm your profile</h3>
+        <p class="hint">Edit anything that looks wrong before matching. Nothing is saved unless you choose Save.</p>
+        <div class="manual-grid" id="profile-editor">
+          <label class="stack"><span>Current title</span><input id="prof-title" type="text" /></label>
+          <label class="stack"><span>Years</span><input id="prof-years" type="number" min="0" max="50" /></label>
+          <label class="stack full"><span>Desired titles (comma-separated)</span><input id="prof-desired" type="text" /></label>
+          <label class="stack full"><span>Skills (comma-separated)</span><input id="prof-skills" type="text" /></label>
+          <label class="stack"><span>Seniority (comma-separated)</span><input id="prof-seniority" type="text" placeholder="mid, senior" /></label>
+          <label class="stack"><span>Disciplines (ids, comma-separated)</span><input id="prof-disciplines" type="text" placeholder="data_engineering" /></label>
+          <label class="stack"><span>Preferred locations</span><input id="prof-locations" type="text" placeholder="ON, Toronto, Canada" /></label>
+          <label class="stack"><span>Arrangements</span><input id="prof-arrangements" type="text" placeholder="remote, hybrid" /></label>
+          <label class="stack"><span>Minimum salary (CAD)</span><input id="prof-salary" type="number" min="0" max="300000" step="10000" /></label>
+          <label class="check-row full"><input id="prof-include-undisclosed" type="checkbox" checked /> Include jobs without advertised salaries</label>
+        </div>
+        <div class="match-actions">
+          <button type="button" class="btn-secondary" id="btn-back-input">Back</button>
+          <button type="button" class="btn-secondary" id="btn-save-profile">Save profile in this browser</button>
+          <button type="button" class="btn-primary" id="btn-run-match">Find My Matches</button>
+        </div>
+        <p class="hint">Clearing browser data removes a saved profile. <button type="button" class="linkish" id="btn-clear-profile">Clear My Profile</button></p>
+      </div>
+
+      <div class="match-steps" id="match-step-results" hidden>
+        <h3>Your Top Matches</h3>
+        <p id="match-summary" class="result-count"></p>
+        <div id="match-list" class="job-list"></div>
+        <div id="match-empty" class="empty-state" hidden>
+          <h2>No matches yet</h2>
+          <p>Try broadening salary, arrangements, or location preferences.</p>
+        </div>
+        <div class="match-actions">
+          <button type="button" class="btn-secondary" id="btn-edit-profile">Edit profile</button>
+          <button type="button" class="btn-secondary" data-nav="browse">Back to Browse</button>
+        </div>
       </div>
     </section>
   </main>
@@ -95,16 +248,21 @@
   <footer class="site-footer">
     <div class="wrap footer-inner">
       <p>
-        Public browsing shows Canada-eligible engineering listings only.
-        For a <strong>personalized</strong> ranked shortlist, salary floors, and digests, use the
+        Public browsing and Find My Matches use the shared Canada-eligible shortlist.
+        Matching is <strong>deterministic relevance scoring</strong>, not generative AI.
+        For private digests and salary floors on your machine, use the
         <a href="https://github.com/mikegianfelice/GitHired#quick-start">GitHired CLI</a>.
       </p>
       <p class="footer-note">
         Salaries appear only when employers advertise them — never estimated.
         Province-restricted remote is labeled as province scope, not Canada-wide.
+        Résumés are parsed locally and are never sent to GitHired servers.
       </p>
     </div>
   </footer>
+
+  <script src="match-engine.js"></script>
+  <script src="resume.js"></script>
   <script src="app.js" defer></script>
 </body>
 </html>
