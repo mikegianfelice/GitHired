@@ -1,0 +1,173 @@
+# Build and publish the zero-install public job shortlist to GitHub Pages.
+#
+# Safety:
+# - Never uploads profiles, credentials, or SQLite databases.
+# - Skips Pages deploy when the export is empty (preserves the last good site).
+# - Uses deterministic hard filters only (no LLM).
+# - Least-privilege tokens; persist-credentials: false on checkout.
+
+name: Public shortlist (GitHub Pages)
+
+on:
+  schedule:
+    # Off-peak UTC minute (11:17)
+    - cron: "17 11 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: public-shortlist-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Discover → enrich → export site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    outputs:
+      deployable: ${{ steps.gate.outputs.deployable }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install GitHired
+        run: python -m pip install -e .
+
+      - name: Non-interactive public export profile
+        run: |
+          githired setup --non-interactive \
+            --tracks software_engineering ai_engineering ml_engineering \
+              data_engineering analytics_engineering platform_engineering \
+              cloud_engineering devops_sre forward_deployed \
+            --modes remote_canada hybrid onsite remote_province \
+            --province ON --city Toronto \
+            --salary-cad 100000 \
+            --skills Python TypeScript Go \
+            --years 5 --name "GitHired Public" \
+            --seniority-include junior mid senior staff principal lead
+
+      - name: Configure sources for Actions budgets
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import yaml
+          p = Path("config/search.yaml")
+          data = yaml.safe_load(p.read_text()) or {}
+          sources = dict(data.get("sources") or {})
+          sources["workday"] = True
+          sources["freehire"] = False
+          sources["linkedin_guest"] = False
+          sources["linkedin_search_index"] = False
+          sources["linkedin_alert_import"] = False
+          sources["company_concurrency"] = 4
+          sources["workday_company_concurrency"] = 2
+          sources["workday_list_budget_s"] = 90
+          sources["workday_detail_budget_s"] = 60
+          sources["enrich_budget_s"] = 240
+          sources["enrich_batch_size"] = 120
+          sources["enrich_concurrency"] = 3
+          data["sources"] = sources
+          salary = dict(data.get("salary") or {})
+          salary["policy"] = "none"
+          data["salary"] = salary
+          p.write_text(yaml.dump(data, sort_keys=False), encoding="utf-8")
+          print("sources configured for public shortlist export")
+          PY
+
+      - name: Discover (list-only)
+        continue-on-error: true
+        run: githired discover --mode standard
+
+      - name: Enrich (bounded)
+        continue-on-error: true
+        run: githired enrich --mode standard
+
+      - name: Export public shortlist
+        id: export
+        run: |
+          set +e
+          python scripts/export_public_shortlist.py --site-dir site --limit 300 --max-age-days 21
+          code=$?
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" -eq 1 ]; then
+            exit 1
+          fi
+          exit 0
+
+      - name: Validate export for Pages
+        id: gate
+        run: |
+          python <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          site = Path("site")
+          required = ["index.html", "styles.css", "app.js", "jobs.json", ".nojekyll"]
+          missing = [n for n in required if not (site / n).is_file()]
+          assert not missing, f"missing site files: {missing}"
+
+          data = json.loads((site / "jobs.json").read_text(encoding="utf-8"))
+          count = int(data.get("count") or 0)
+          jobs = data.get("jobs") or []
+          assert isinstance(jobs, list)
+          assert count == len(jobs)
+          blocked = {
+              "password", "secret", "api_key", "email", "phone", "resume", "profile",
+              "hard_filter_json", "description", "overall", "salary_alignment",
+          }
+          def walk(obj):
+              if isinstance(obj, dict):
+                  for k, v in obj.items():
+                      assert str(k).casefold() not in blocked, k
+                      walk(v)
+              elif isinstance(obj, list):
+                  for item in obj:
+                      walk(item)
+          walk(data)
+          for job in jobs:
+              url = job.get("apply_url") or ""
+              assert url.startswith("http"), url
+              assert job.get("verified") is True
+
+          deployable = "true" if count > 0 else "false"
+          print(f"count={count} deployable={deployable}")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"deployable={deployable}\n")
+              fh.write(f"count={count}\n")
+          if count == 0:
+              print("::warning::Empty public shortlist — skipping Pages deploy to preserve prior site.")
+          PY
+
+      - name: Configure Pages
+        if: steps.gate.outputs.deployable == 'true'
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c40390888457 # v5.0.0
+
+      - name: Upload Pages artifact
+        if: steps.gate.outputs.deployable == 'true'
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        with:
+          path: site
+
+  deploy:
+    name: Deploy GitHub Pages
+    needs: build
+    if: needs.build.outputs.deployable == 'true'
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

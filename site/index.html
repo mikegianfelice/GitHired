@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="GitHired — browse verified Canadian engineering jobs without installing anything." />
+  <title>GitHired — Jobs Without the Noise</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <a class="skip-link" href="#jobs">Skip to jobs</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="./" aria-label="GitHired home">
+        <span class="brand-mark" aria-hidden="true">GH</span>
+        <span class="brand-text">
+          <span class="brand-name">GitHired</span>
+          <span class="brand-tag">Jobs Without the Noise</span>
+        </span>
+      </a>
+      <nav class="header-nav" aria-label="Primary">
+        <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
+        <a href="https://github.com/mikegianfelice/GitHired#quick-start">CLI setup</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <p class="eyebrow">Canada-first · Public ATS boards · No account</p>
+      <h1>Verified Canadian engineering jobs</h1>
+      <p class="lede">
+        Browse confirmed Canada-eligible software, AI, data, and cloud roles.
+        Apply on the employer’s own career page — no install, no login, no noise.
+      </p>
+      <p class="snapshot-meta" id="snapshot-meta" aria-live="polite">Loading shortlist…</p>
+    </section>
+
+    <section class="controls wrap" aria-label="Search and filters">
+      <label class="search-field">
+        <span class="sr-only">Search</span>
+        <input id="search" type="search" placeholder="Search title, company, or technology" autocomplete="off" />
+      </label>
+      <div class="filter-row">
+        <label>
+          <span>Province</span>
+          <select id="filter-province">
+            <option value="">All</option>
+          </select>
+        </label>
+        <label>
+          <span>Arrangement</span>
+          <select id="filter-arrangement">
+            <option value="">All</option>
+            <option value="remote">Remote</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="onsite">On-site</option>
+            <option value="unspecified">Unspecified</option>
+          </select>
+        </label>
+        <label>
+          <span>Seniority</span>
+          <select id="filter-seniority">
+            <option value="">All</option>
+          </select>
+        </label>
+        <label>
+          <span>Salary</span>
+          <select id="filter-salary">
+            <option value="">All</option>
+            <option value="listed">Advertised</option>
+            <option value="hidden">Not listed</option>
+          </select>
+        </label>
+      </div>
+      <p class="result-count" id="result-count"></p>
+    </section>
+
+    <section class="wrap" id="jobs" aria-live="polite">
+      <div id="job-list" class="job-list"></div>
+      <div id="empty-state" class="empty-state" hidden>
+        <h2>No matching jobs</h2>
+        <p>Try clearing filters, or check back after the next daily refresh.</p>
+      </div>
+      <div id="error-state" class="empty-state" hidden>
+        <h2>Shortlist unavailable</h2>
+        <p>Could not load <code>jobs.json</code>. If you opened this file locally, serve the <code>site/</code> folder over HTTP.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>
+        Public browsing shows Canada-eligible engineering listings only.
+        For a <strong>personalized</strong> ranked shortlist, salary floors, and digests, use the
+        <a href="https://github.com/mikegianfelice/GitHired#quick-start">GitHired CLI</a>.
+      </p>
+      <p class="footer-note">
+        Salaries appear only when employers advertise them — never estimated.
+        Province-restricted remote is labeled as province scope, not Canada-wide.
+      </p>
+    </div>
+  </footer>
+  <script src="app.js" defer></script>
+</body>
+</html>

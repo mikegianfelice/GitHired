@@ -18,13 +18,40 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start"><strong>Install</strong></a> ·
+  <a href="#browse-jobs-online"><strong>Browse Jobs Online</strong></a> ·
+  <a href="#quick-start"><strong>Install CLI</strong></a> ·
   <a href="#demo"><strong>Demo</strong></a> ·
   <a href="#top-5-high-paying-jobs-discovered-today"><strong>Top salaries</strong></a> ·
   <a href="SETUP.md">Setup guide</a> ·
   <a href="docs/discovery.md">Discovery docs</a> ·
   <a href="docs/showcase/ARCHITECTURE.md">Showcase architecture</a>
 </p>
+
+---
+
+## Browse Jobs Online
+
+**No install. No account. No API key.**
+
+After GitHub Pages is enabled for this repository, the public shortlist is published at:
+
+**https://mikegianfelice.github.io/GitHired/**
+
+(Until the first successful Actions deploy, that URL may 404 — see [docs/public-shortlist.md](docs/public-shortlist.md) for enablement steps.)
+
+| Public site | Personalized CLI |
+| ----------- | ---------------- |
+| Confirmed Canada-eligible engineering listings | Your tracks, city, salary floor, digests |
+| Search + filters in the browser | `githired discover` → `enrich` → `rank` → `jobs` |
+| Direct employer Apply links | Cursor `/apply` CV + cover letter (with your approval) |
+| Shared daily snapshot (not your private scores) | Private SQLite + profile on your machine |
+
+Local preview of the static shell:
+
+```bash
+cd site && python3 -m http.server 8080
+# open http://127.0.0.1:8080/
+```
 
 ---
 
