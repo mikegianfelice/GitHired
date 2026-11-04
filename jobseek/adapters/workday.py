@@ -299,6 +299,37 @@ def normalize_workday_job(
     fetched_at = (
         datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") if complete else None
     )
+
+    # Salary: prefer rare structured CXS fields; else parse explicit description text.
+    # List-only discovery typically has no description — extraction runs when enrich hydrates.
+    from jobseek.filters.salary import (
+        apply_salary_info_to_raw,
+        extract_salary_from_text,
+        from_structured,
+        strip_html,
+    )
+
+    salary_raw = smin = smax = scur = None
+    structured_min = info.get("salaryMin") or info.get("minimumSalary") or info.get("payMin")
+    structured_max = info.get("salaryMax") or info.get("maximumSalary") or info.get("payMax")
+    structured_cur = info.get("currency") or info.get("salaryCurrency") or info.get("payCurrency")
+    if structured_min is not None or structured_max is not None:
+        try:
+            info_sal = from_structured(
+                amin=float(structured_min) if structured_min is not None else None,
+                amax=float(structured_max) if structured_max is not None else None,
+                currency=str(structured_cur) if structured_cur else None,
+                interval="year",
+                raw=None,
+                source="structured_ats",
+            )
+            salary_raw, smin, smax, scur = apply_salary_info_to_raw(info=info_sal)
+        except (TypeError, ValueError):
+            pass
+    if smin is None and description:
+        info_sal = extract_salary_from_text(strip_html(description))
+        salary_raw, smin, smax, scur = apply_salary_info_to_raw(info=info_sal)
+
     return RawJob(
         company=company_name,
         title=title,
@@ -309,6 +340,10 @@ def normalize_workday_job(
         ats_job_id=job_id,
         location_raw=location_raw,
         description=description,
+        salary_raw=salary_raw,
+        salary_min=smin,
+        salary_max=smax,
+        salary_currency=scur,
         posted_date=posted,
         raw_payload=payload,
         description_complete=complete,

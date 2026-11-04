@@ -1,10 +1,24 @@
-"""Workable public widget API adapter."""
+"""Workable public widget API adapter.
+
+The public widget list endpoint does **not** expose salary fields. Structured
+pay (`salary_from` / `salary_to` / `salary_currency_iso_code` / `salary_frequency`)
+is available on the public job detail endpoint
+``/api/v2/accounts/{token}/jobs/{shortcode}`` and is fetched by
+``fetch_job_salary`` during salary refresh / optional enrichment — never during
+list-only discovery for every posting.
+"""
 
 from __future__ import annotations
 
 from typing import Any
 
 from jobseek.adapters.base import AdapterResult
+from jobseek.filters.salary import (
+    apply_salary_info_to_raw,
+    extract_salary_from_text,
+    from_structured,
+    strip_html,
+)
 from jobseek.http_client import RateLimitedClient
 from jobseek.models import RawJob
 
@@ -30,17 +44,65 @@ def _location(job: dict[str, Any]) -> str | None:
     return None
 
 
+def salary_from_workable_detail(detail: dict[str, Any]) -> tuple[str | None, float | None, float | None, str | None]:
+    """Extract annual base from a Workable v2 job detail payload."""
+    amin = detail.get("salary_from")
+    amax = detail.get("salary_to")
+    currency = detail.get("salary_currency_iso_code") or detail.get("salary_currency")
+    frequency = detail.get("salary_frequency") or detail.get("salary_period")
+    if amin is not None or amax is not None:
+        try:
+            smin = float(amin) if amin is not None else None
+            smax = float(amax) if amax is not None else None
+        except (TypeError, ValueError):
+            smin = smax = None
+        info = from_structured(
+            amin=smin,
+            amax=smax,
+            currency=str(currency) if currency else None,
+            interval=str(frequency) if frequency else None,
+            raw=f"{currency or ''} {amin}-{amax}".strip(),
+            source="structured_ats",
+        )
+        return apply_salary_info_to_raw(info=info)
+
+    # Description fallback on detail payloads
+    desc = detail.get("description") or ""
+    if isinstance(desc, dict):
+        desc = desc.get("text") or desc.get("html") or ""
+    info = extract_salary_from_text(strip_html(str(desc)))
+    return apply_salary_info_to_raw(info=info)
+
+
 class WorkableAdapter:
     name = "workable"
 
     def __init__(self, client: RateLimitedClient | None = None) -> None:
         self.client = client or RateLimitedClient()
 
+    def fetch_job_salary(self, board_token: str, shortcode: str) -> tuple[str | None, float | None, float | None, str | None]:
+        """Public detail fetch for structured compensation (salary refresh only)."""
+        token = board_token.strip()
+        code = shortcode.strip()
+        if not token or not code:
+            return None, None, None, None
+        url = f"https://apply.workable.com/api/v2/accounts/{token}/jobs/{code}"
+        resp = self.client.get(url)
+        if resp.status_code != 200:
+            return None, None, None, None
+        try:
+            detail = resp.json()
+        except Exception:  # noqa: BLE001
+            return None, None, None, None
+        if not isinstance(detail, dict):
+            return None, None, None, None
+        return salary_from_workable_detail(detail)
+
     def fetch_company(self, company: dict) -> AdapterResult:
         token = (company.get("board_token") or company.get("site_slug") or "").strip()
         if not token:
             return AdapterResult(errors=[f"workable: missing board_token for {company.get('name')}"])
-        # Public widget API — no API key required
+        # Public widget API — no API key required; list has no salary fields.
         url = f"https://apply.workable.com/api/v1/widget/accounts/{token}"
         result = AdapterResult(request_key=f"workable:{token}")
         try:
@@ -59,7 +121,6 @@ class WorkableAdapter:
                 return result
             jobs = payload.get("jobs")
             if jobs is None:
-                # Some accounts nest under results
                 jobs = payload.get("results") or []
             if not isinstance(jobs, list):
                 result.errors.append(f"workable {token}: jobs is not a list")
@@ -83,6 +144,11 @@ class WorkableAdapter:
                 description = item.get("description") or item.get("full_description") or ""
                 if isinstance(description, dict):
                     description = description.get("text") or description.get("html") or ""
+                desc_s = str(description) if description else ""
+                salary_raw = smin = smax = scur = None
+                if desc_s.strip():
+                    info = extract_salary_from_text(strip_html(desc_s))
+                    salary_raw, smin, smax, scur = apply_salary_info_to_raw(info=info)
                 result.jobs.append(
                     RawJob(
                         company=str(company_name),
@@ -93,9 +159,14 @@ class WorkableAdapter:
                         ats_provider="workable",
                         ats_job_id=shortcode or None,
                         location_raw=_location(item),
-                        description=str(description) if description else None,
+                        description=desc_s or None,
+                        salary_raw=salary_raw,
+                        salary_min=smin,
+                        salary_max=smax,
+                        salary_currency=scur,
                         posted_date=(item.get("published_on") or item.get("created_at") or None),
                         raw_payload=item,
+                        description_complete=bool(desc_s.strip()),
                     )
                 )
             return result

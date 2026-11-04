@@ -1275,6 +1275,68 @@ def cmd_sources(args: argparse.Namespace) -> int:
         db.close()
 
 
+def cmd_salary_coverage(args: argparse.Namespace) -> int:
+    """Per-ATS verified / unverified / undisclosed salary coverage."""
+    load_dotenv()
+    settings = Settings.from_env()
+    from jobseek.salary_refresh import salary_coverage_report
+
+    db = Database(settings.db_path)
+    try:
+        report = salary_coverage_report(db)
+    finally:
+        db.close()
+    if args.json:
+        print(json.dumps(report, indent=2))
+        return 0
+    totals = report["totals"]
+    print(
+        f"Salary coverage — total={totals['total']} verified={totals['verified']} "
+        f"unverified={totals['unverified']} undisclosed={totals['undisclosed']}"
+    )
+    print(f"{'ATS':<16} {'total':>7} {'verified':>9} {'unverified':>11} {'undisclosed':>12} {'pct':>7}")
+    for row in report["providers"]:
+        print(
+            f"{row['ats']:<16} {row['total']:>7} {row['verified']:>9} "
+            f"{row['unverified']:>11} {row['undisclosed']:>12} {row['verified_pct']:>6.1f}%"
+        )
+    return 0
+
+
+def cmd_salary_refresh(args: argparse.Namespace) -> int:
+    """Backfill missing salaries from cached descriptions (optional ATS refetch)."""
+    load_dotenv()
+    settings = Settings.from_env()
+    from jobseek.salary_refresh import refresh_salaries
+
+    db = Database(settings.db_path)
+    try:
+        result = refresh_salaries(
+            db,
+            limit=int(args.limit),
+            refetch_structured=bool(args.refetch),
+            ats=args.ats,
+        )
+    finally:
+        db.close()
+    if args.json:
+        print(json.dumps(result, indent=2, default=str))
+    else:
+        print(
+            f"salary-refresh recovered={result['recovered']} "
+            f"reparsed={result['reparsed_from_description']} "
+            f"refetched={result['refetched_structured']} "
+            f"candidates={result['candidates']}"
+        )
+        before = result["coverage_before"]["totals"]
+        after = result["coverage_after"]["totals"]
+        print(
+            f"verified {before['verified']} → {after['verified']} "
+            f"(+{after['verified'] - before['verified']})"
+        )
+    return 0
+
+
 def cmd_doctor(args: argparse.Namespace) -> int:
     load_dotenv()
     settings = Settings.from_env()
@@ -1628,6 +1690,27 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     src = sub.add_parser("sources", help="Company registry + source enablement")
     src.add_argument("--json", action="store_true")
     src.set_defaults(func=cmd_sources)
+
+    sal_cov = sub.add_parser(
+        "salary-coverage",
+        help="Per-ATS verified / unverified / undisclosed salary coverage",
+    )
+    sal_cov.add_argument("--json", action="store_true")
+    sal_cov.set_defaults(func=cmd_salary_coverage)
+
+    sal_ref = sub.add_parser(
+        "salary-refresh",
+        help="Backfill missing salaries from descriptions (optional --refetch)",
+    )
+    sal_ref.add_argument("--limit", type=int, default=500)
+    sal_ref.add_argument(
+        "--refetch",
+        action="store_true",
+        help="Also hit Workable/Rippling detail APIs for structured pay (rate-limited)",
+    )
+    sal_ref.add_argument("--ats", default=None, help="Limit to one ats_provider")
+    sal_ref.add_argument("--json", action="store_true")
+    sal_ref.set_defaults(func=cmd_salary_refresh)
 
     doc = sub.add_parser("doctor", help="Environment and source-health diagnostics")
     doc.add_argument("--json", action="store_true")

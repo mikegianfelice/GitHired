@@ -2,40 +2,17 @@
 
 from __future__ import annotations
 
-import re
 from typing import Any
 
 from jobseek.adapters.base import AdapterResult
+from jobseek.filters.salary import (
+    apply_salary_info_to_raw,
+    extract_salary_from_text,
+    from_structured,
+    strip_html,
+)
 from jobseek.http_client import RateLimitedClient
 from jobseek.models import RawJob
-
-_SALARY = re.compile(
-    r"(?P<currency>\$|CAD|USD|C\$)?\s*(?P<min>\d{2,3}(?:,\d{3})?)(?:\s*[-–—to]+\s*(?P<max>\d{2,3}(?:,\d{3})?))?",
-    re.I,
-)
-
-
-def _parse_money(raw: str | None) -> tuple[float | None, float | None, str | None]:
-    if not raw:
-        return None, None, None
-    match = _SALARY.search(raw.replace(",", ""))
-    if not match:
-        return None, None, None
-    currency = match.group("currency")
-    if currency in ("$", "USD"):
-        currency = "USD"
-    elif currency in ("CAD", "C$"):
-        currency = "CAD"
-    else:
-        currency = None
-    amin = float(match.group("min")) if match.group("min") else None
-    amax = float(match.group("max")) if match.group("max") else amin
-    # Greenhouse often uses thousands without commas once stripped oddly — leave as-is
-    if amin and amin < 1000 and "k" in raw.lower():
-        amin *= 1000
-        if amax:
-            amax *= 1000
-    return amin, amax, currency
 
 
 def _location(job: dict[str, Any]) -> str | None:
@@ -45,6 +22,55 @@ def _location(job: dict[str, Any]) -> str | None:
     if isinstance(loc, str):
         return loc
     return None
+
+
+def _salary_from_job(item: dict[str, Any], description: str) -> tuple[str | None, float | None, float | None, str | None]:
+    """Prefer structured Greenhouse metadata; fall back to description text."""
+    salary_raw = None
+    metadata = item.get("metadata") or []
+    if isinstance(metadata, list):
+        for meta in metadata:
+            if not isinstance(meta, dict):
+                continue
+            name = (meta.get("name") or "").lower()
+            if "salary" in name or "compensation" in name or "pay" in name:
+                value = meta.get("value")
+                if value is None:
+                    continue
+                if isinstance(value, dict):
+                    # Rare structured shape: {min_value, max_value, unit}
+                    amin = value.get("min_value") or value.get("min")
+                    amax = value.get("max_value") or value.get("max")
+                    currency = value.get("unit") or value.get("currency")
+                    info = from_structured(
+                        amin=float(amin) if amin is not None else None,
+                        amax=float(amax) if amax is not None else None,
+                        currency=str(currency) if currency else None,
+                        interval="year",
+                        raw=str(value),
+                    )
+                    if info.confidence == "verified":
+                        return apply_salary_info_to_raw(info=info)
+                    salary_raw = str(value)
+                else:
+                    salary_raw = str(value)
+                break
+
+    if salary_raw:
+        info = extract_salary_from_text(salary_raw)
+        if info.confidence == "verified":
+            return apply_salary_info_to_raw(info=info)
+        # Keep raw even when unverified
+        raw, amin, amax, cur = apply_salary_info_to_raw(info=info)
+        if raw:
+            return raw, amin, amax, cur
+
+    # Description fallback (HTML content)
+    plain = strip_html(description or "")
+    if plain:
+        info = extract_salary_from_text(plain)
+        return apply_salary_info_to_raw(info=info)
+    return None, None, None, None
 
 
 class GreenhouseAdapter:
@@ -77,15 +103,8 @@ class GreenhouseAdapter:
                 if not title or not absolute:
                     continue
                 content = item.get("content") or ""
-                # Greenhouse content is often HTML-escaped
                 description = content
-                salary_raw = None
-                metadata = item.get("metadata") or []
-                if isinstance(metadata, list):
-                    for meta in metadata:
-                        if isinstance(meta, dict) and "salary" in (meta.get("name") or "").lower():
-                            salary_raw = str(meta.get("value") or "")
-                smin, smax, scur = _parse_money(salary_raw)
+                salary_raw, smin, smax, scur = _salary_from_job(item, description)
                 result.jobs.append(
                     RawJob(
                         company=company_name,

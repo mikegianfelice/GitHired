@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from jobseek.adapters.base import AdapterResult
+from jobseek.filters.salary import apply_salary_info_to_raw, from_structured
 from jobseek.http_client import RateLimitedClient
 from jobseek.models import RawJob
 
@@ -20,21 +21,45 @@ def _location(job: dict[str, Any]) -> str | None:
 
 
 def _salary(job: dict[str, Any]) -> tuple[str | None, float | None, float | None, str | None]:
+    """Parse Lever salaryRange with interval awareness.
+
+    Annual intervals populate salary_min/max. Hourly/monthly keep salary_raw only.
+    ``salaryDescriptionPlain`` is preserved in raw when structured amounts exist.
+    """
     salary = job.get("salaryRange") or job.get("salary") or {}
+    plain = job.get("salaryDescriptionPlain")
+    plain_s = str(plain).strip() if plain else ""
     if not isinstance(salary, dict):
-        return None, None, None, None
+        return (plain_s or None), None, None, None
+
     amin = salary.get("min")
     amax = salary.get("max")
     currency = salary.get("currency")
-    raw = None
-    if amin is not None or amax is not None:
-        raw = f"{currency or ''} {amin or ''}-{amax or ''}".strip()
+    interval = salary.get("interval")
+    if amin is None and amax is None:
+        return (plain_s or None), None, None, None
+
     try:
         smin = float(amin) if amin is not None else None
         smax = float(amax) if amax is not None else None
     except (TypeError, ValueError):
-        smin, smax = None, None
-    return raw, smin, smax, str(currency) if currency else None
+        return (plain_s or None), None, None, None
+
+    structured_raw = f"{currency or ''} {smin or ''}-{smax or ''}".strip()
+    raw = plain_s or structured_raw
+    info = from_structured(
+        amin=smin,
+        amax=smax,
+        currency=str(currency) if currency else None,
+        interval=str(interval) if interval else None,
+        raw=raw,
+        source="structured_ats",
+    )
+    out_raw, out_min, out_max, out_cur = apply_salary_info_to_raw(info=info)
+    # Always retain employer salary blurb when present.
+    if plain_s:
+        out_raw = plain_s
+    return out_raw, out_min, out_max, out_cur
 
 
 class LeverAdapter:

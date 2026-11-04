@@ -146,6 +146,11 @@ JOB_COLUMN_MIGRATIONS = [
     ("enrich_lease_token", "ALTER TABLE jobs ADD COLUMN enrich_lease_token TEXT"),
     ("enrich_next_retry_at", "ALTER TABLE jobs ADD COLUMN enrich_next_retry_at TEXT"),
     ("enrich_priority_fp", "ALTER TABLE jobs ADD COLUMN enrich_priority_fp TEXT"),
+    # Optional salary provenance (backwards compatible; adapters may leave NULL).
+    ("salary_confidence", "ALTER TABLE jobs ADD COLUMN salary_confidence TEXT"),
+    ("salary_period", "ALTER TABLE jobs ADD COLUMN salary_period TEXT"),
+    ("salary_source", "ALTER TABLE jobs ADD COLUMN salary_source TEXT"),
+    ("salary_interval", "ALTER TABLE jobs ADD COLUMN salary_interval TEXT"),
 ]
 
 SCORE_COLUMN_MIGRATIONS = [
