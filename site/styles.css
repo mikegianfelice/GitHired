@@ -548,6 +548,7 @@ button {
 }
 
 .file-drop {
+  position: relative;
   display: grid;
   place-items: center;
   min-height: 8rem;
