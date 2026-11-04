@@ -170,8 +170,15 @@
     els.viewBrowse.hidden = match;
     els.viewMatch.hidden = !match;
     document.querySelectorAll("[data-nav]").forEach((el) => {
-      if (el.tagName === "BUTTON" || el.classList.contains("nav-link")) {
-        el.classList.toggle("is-active", el.getAttribute("data-nav") === name);
+      const active = el.getAttribute("data-nav") === name;
+      if (el.classList.contains("nav-link")) {
+        el.classList.toggle("is-active", active);
+      }
+      // Hero (and other) primary/secondary CTAs: green fill marks the current view.
+      if (el.classList.contains("btn-primary") || el.classList.contains("btn-secondary")) {
+        el.classList.toggle("btn-primary", active);
+        el.classList.toggle("btn-secondary", !active);
+        el.setAttribute("aria-pressed", active ? "true" : "false");
       }
     });
     if (match) {
