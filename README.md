@@ -70,7 +70,7 @@ cd site && python3 -m http.server 8080
 
 <p align="center"><img src="assets/showcase/top-paying-jobs.svg" alt="Top 5 high-paying Canada-eligible engineering jobs discovered by GitHired" width="880" /></p>
 
-**Apply directly:** [1. Cohere ↗](https://jobs.ashbyhq.com/cohere/4ef5101e-b083-49cd-808a-54c754d159e5/application) · [2. Block ↗](http://block.xyz/careers/jobs/5196196008?gh_jid=5196196008) · [3. Block ↗](http://block.xyz/careers/jobs/5406251008?gh_jid=5406251008) · [4. Tenstorrent ↗](https://job-boards.greenhouse.io/tenstorrent/jobs/5260226007) · [5. Cohere ↗](https://jobs.ashbyhq.com/cohere/529b2dd6-4be3-49db-97cd-781f4897540b/application)
+**Apply directly:** [1. Cohere ↗](https://jobs.ashbyhq.com/cohere/4ef5101e-b083-49cd-808a-54c754d159e5/application) · [2. Ashby ↗](https://jobs.ashbyhq.com/Ashby/7f0f3837-3433-4ffe-8842-f3dbc3b621da/application) · [3. Block ↗](http://block.xyz/careers/jobs/5196196008?gh_jid=5196196008) · [4. Block ↗](http://block.xyz/careers/jobs/5406251008?gh_jid=5406251008) · [5. Tenstorrent ↗](https://job-boards.greenhouse.io/tenstorrent/jobs/5260226007)
 
 <p align="center"><strong>Discovered and verified by GitHired · Open Source</strong></p>
 
@@ -81,7 +81,7 @@ cd site && python3 -m http.server 8080
 
 Rank by advertised annual base salary high end, converted to CAD for sorting only (USD×1.35; other currencies excluded). Display the employer-stated currency and range unchanged. No estimates for undisclosed pay.
 
-- Snapshot refreshed: **2026-11-05 20:54 UTC** (preserved on failure — never backdated).
+- Snapshot refreshed: **2026-11-06 20:11 UTC** (preserved on failure — never backdated).
 - Blue ✓ marks listings confirmed against a direct employer career / ATS URL.
 - SVG cards are visual only on GitHub; use **Apply directly** links below the image (order matches card numbers 1–N).
 - **Discovered Today** is shown only when the job’s `first_seen` date is today; otherwise the card shows the last verified date.
