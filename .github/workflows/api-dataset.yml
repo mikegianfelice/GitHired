@@ -1,0 +1,83 @@
+name: API dataset sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    # After the public shortlist window (11:17 UTC) — refresh API snapshot daily.
+    - cron: "40 12 * * *"
+
+concurrency:
+  group: githired-api-dataset
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    name: Export + commit API snapshot
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install GitHired
+        run: python -m pip install -e .
+
+      - name: Non-interactive profile (public tracks)
+        run: |
+          githired setup --non-interactive \
+            --tracks software_engineering ai_engineering ml_engineering \
+              data_engineering analytics_engineering platform_engineering \
+              cloud_engineering devops_sre forward_deployed \
+            --modes remote_canada hybrid onsite remote_province \
+            --province ON --city Toronto \
+            --salary-cad 100000 \
+            --skills Python TypeScript Go \
+            --years 5 --name "GitHired Public" \
+            --email "public@githired.ca" || true
+
+      - name: Discover (budgeted)
+        run: githired discover --mode quick
+        continue-on-error: true
+
+      - name: Enrich (bounded)
+        run: githired enrich --mode standard
+        continue-on-error: true
+
+      - name: Export API snapshot
+        run: |
+          python scripts/export_api_snapshot.py --limit 300 --out api/data/jobs.snapshot.json
+          python -m pytest tests/jobseek/test_api_snapshot.py -q
+
+      - name: Validate snapshot non-empty
+        id: gate
+        run: |
+          python - <<'PY'
+          import json, pathlib, os
+          p = pathlib.Path("api/data/jobs.snapshot.json")
+          data = json.loads(p.read_text())
+          count = int(data.get("count") or 0)
+          print(f"count={count} dataset_id={data.get('dataset_id')}")
+          if count < 1:
+            raise SystemExit("Refusing to publish empty API snapshot")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write("deployable=true\n")
+          PY
+
+      - name: Commit snapshot when changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api/data/jobs.snapshot.json site/api-dataset.json
+          if git diff --staged --quiet; then
+            echo "No snapshot changes."
+          else
+            git commit -m "chore(api): refresh jobs snapshot"
+            git push
+          fi

@@ -1,0 +1,20 @@
+name = "githired-api"
+main = "src/index.ts"
+compatibility_date = "2025-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Snapshot JSON is bundled via TypeScript import (api/data/jobs.snapshot.json).
+# Optional R2 binding enables data-only updates without redeploying Worker code:
+#   [[r2_buckets]]
+#   binding = "DATA"
+#   bucket_name = "githired-api-data"
+
+[vars]
+DATASET_PATH = "jobs.snapshot.json"
+ENVIRONMENT = "development"
+RATE_LIMIT_PER_MINUTE = "120"
+STALE_AFTER_HOURS = "48"
+
+# After workers.dev verification, attach the custom domain in Cloudflare:
+#   routes = [{ pattern = "api.githired.ca/*", zone_name = "githired.ca" }]
+# Do not modify root githired.ca GitHub Pages DNS records.

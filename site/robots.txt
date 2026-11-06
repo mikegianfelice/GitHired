@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /developers
+Allow: /agents
+Allow: /llms.txt
+Allow: /openapi.json
+Allow: /api-dataset.json
+Allow: /jobs.json
+
+# Prefer the canonical marketing domain
+Host: https://githired.ca
+
+Sitemap: https://githired.ca/sitemap.xml

@@ -2,6 +2,12 @@
 node_modules
 bun.lock
 
+# Cloudflare Worker local artifacts
+api/.wrangler/
+api/.wrangler-logs/
+api/.dry-run-out/
+.wrangler/
+
 # Python
 __pycache__/
 *.pyc

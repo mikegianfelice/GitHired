@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GitHired Developers — Public REST API</title>
+  <meta name="description" content="Public read-only REST API for Canada-eligible technology jobs. No auth. Advertised salaries only." />
+  <link rel="canonical" href="https://githired.ca/developers" />
+  <link rel="stylesheet" href="../styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="../">
+        <span class="brand-mark" aria-hidden="true">GH</span>
+        <span class="brand-text">
+          <span class="brand-name">GitHired</span>
+          <span class="brand-tag">Developer API</span>
+        </span>
+      </a>
+      <nav class="header-nav" aria-label="Primary">
+        <a href="../">Job Search</a>
+        <a href="./">API</a>
+        <a href="../agents/">Agents</a>
+        <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap" style="padding: 2.5rem 1.25rem 4rem; max-width: 820px;">
+    <p class="eyebrow">Public · Read-only · No account</p>
+    <h1>GitHired REST API</h1>
+    <p class="lede">
+      Query Canada-eligible technology jobs discovered from employer ATS boards.
+      Free to use. No authentication for normal search traffic.
+    </p>
+
+    <section>
+      <h2>Base URL</h2>
+      <pre class="code-block"><code>https://api.githired.ca</code></pre>
+      <p>OpenAPI: <a href="../openapi.json">/openapi.json</a> · MCP: <a href="../agents/">/agents</a></p>
+    </section>
+
+    <section>
+      <h2>Endpoints</h2>
+      <ul>
+        <li><code>GET /api/v1/jobs</code> — search &amp; filter</li>
+        <li><code>GET /api/v1/jobs/{id}</code> — job detail + description excerpt</li>
+        <li><code>GET /api/v1/companies</code> — employers + active counts</li>
+        <li><code>GET /api/v1/stats</code> — dataset aggregates</li>
+        <li><code>GET /api/v1/health</code> — service + freshness</li>
+        <li><code>POST /api/v1/match</code> — deterministic profile match (not stored)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Example</h2>
+      <pre class="code-block"><code>curl -s 'https://api.githired.ca/api/v1/jobs?q=data%20engineer&amp;remote=true&amp;salary_min=150000&amp;limit=10' | jq .</code></pre>
+    </section>
+
+    <section>
+      <h2>Query parameters</h2>
+      <p><code>q</code>, <code>location</code>, <code>province</code>, <code>remote</code>, <code>work_mode</code>,
+        <code>salary_min</code>, <code>salary_max</code>, <code>salary_disclosed</code>,
+        <code>seniority</code>, <code>company</code>, <code>sort</code> (relevance|salary|freshness),
+        <code>limit</code> (max 50), <code>cursor</code>.</p>
+    </section>
+
+    <section>
+      <h2>Salary filtering</h2>
+      <p>
+        Filters apply to <strong>employer-advertised annual base pay only</strong> (CAD/USD).
+        USD amounts are converted with the snapshot <code>usd_to_cad</code> rate for comparison.
+        Missing or non-annual pay is treated as undisclosed — never estimated.
+      </p>
+    </section>
+
+    <section>
+      <h2>Rate limits</h2>
+      <p>Approximately 120 requests / minute / IP. Burst abuse may receive HTTP 429.</p>
+    </section>
+
+    <section>
+      <h2>Dataset freshness</h2>
+      <p>
+        Every response includes <code>dataset_id</code> and <code>generated_at</code>.
+        <code>/api/v1/health</code> reports whether the dataset is fresh or stale.
+        Jobs include <code>last_verified</code> timestamps.
+      </p>
+    </section>
+
+    <section>
+      <h2>MCP</h2>
+      <p>
+        Compatible AI clients can use the remote MCP server at
+        <code>https://api.githired.ca/mcp</code>. See <a href="../agents/">Agent docs</a>.
+      </p>
+    </section>
+  </main>
+  <style>
+    .code-block {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+    }
+    main h2 { margin-top: 2rem; }
+    main ul { line-height: 1.7; }
+  </style>
+</body>
+</html>

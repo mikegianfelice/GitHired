@@ -1,0 +1,52 @@
+# GitHired
+
+> Canada-first public job intelligence for technology roles — employer ATS data, not recruiter spam.
+
+## What GitHired is
+
+GitHired discovers, enriches, filters, and ranks Canadian technology jobs directly from employer career pages and applicant tracking systems (Greenhouse, Lever, Ashby, Workday, Workable, Rippling, and others).
+
+Website: https://githired.ca
+Source: https://github.com/mikegianfelice/GitHired
+REST API: https://api.githired.ca/api/v1/jobs
+MCP: https://api.githired.ca/mcp
+Developer docs: https://githired.ca/developers
+Agent docs: https://githired.ca/agents
+OpenAPI: https://githired.ca/openapi.json
+
+## Data methodology
+
+- Jobs are ingested from public employer ATS boards via scheduled discovery.
+- Geographic eligibility is deterministic and Canada-first. Confirmed ineligible roles (for example US-only remote) are excluded from the public API and website shortlist.
+- Province-restricted remote/hybrid is labeled as province-scoped — never implied Canada-wide.
+- Salaries are employer-advertised annual base pay only (CAD/USD). GitHired never invents or estimates compensation.
+- Application links are original employer posting URLs.
+- Dataset freshness is exposed via `generated_at` / `last_verified` fields and `/api/v1/health`.
+
+## Public API (no auth)
+
+- `GET /api/v1/jobs` — search/filter Canada-eligible jobs
+- `GET /api/v1/jobs/{id}` — job detail (includes description excerpt)
+- `GET /api/v1/companies` — tracked employers with active counts
+- `GET /api/v1/stats` — aggregate dataset statistics
+- `GET /api/v1/health` — service + dataset freshness
+- `POST /api/v1/match` — deterministic profile matching (no résumé storage)
+
+## MCP tools
+
+Remote MCP (Streamable HTTP) at `https://api.githired.ca/mcp`:
+
+- `search_jobs`
+- `get_job`
+- `match_profile`
+- `get_market_stats`
+
+Read-only. No authentication required for normal use. Rate limited. Profiles/résumés are not stored.
+
+## Important limitations
+
+- Not a complete Canadian labour-market census — only tracked employer ATS boards.
+- UNCERTAIN geography is excluded from the public confirmed set (precision over recall).
+- Match scores are deterministic relevance, not hiring decisions or LLM judgments.
+- Publishing an MCP server does not guarantee automatic discovery by ChatGPT/Claude.
+- Do not auto-apply to jobs via GitHired.

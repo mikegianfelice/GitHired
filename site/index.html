@@ -4,6 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="GitHired — browse verified Canadian engineering jobs or match them to your experience in-browser. Your résumé never leaves your device." />
+  <link rel="canonical" href="https://githired.ca/" />
+  <meta property="og:title" content="GitHired — Jobs Without the Noise" />
+  <meta property="og:url" content="https://githired.ca/" />
+  <meta property="og:description" content="Canada-first tech jobs from employer ATS boards. Public API and MCP for developers and AI agents." />
   <title>GitHired — Jobs Without the Noise</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -24,6 +28,8 @@
       <nav class="header-nav" aria-label="Primary">
         <button type="button" class="nav-link is-active" data-nav="browse">Browse Jobs</button>
         <button type="button" class="nav-link" data-nav="match">Find My Matches</button>
+        <a href="./developers/">API</a>
+        <a href="./agents/">Agents</a>
         <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
       </nav>
     </div>
@@ -42,6 +48,18 @@
         <button type="button" class="btn-secondary" data-nav="match" aria-pressed="false">Find My Matches</button>
       </div>
       <p class="snapshot-meta" id="snapshot-meta" aria-live="polite">Loading shortlist…</p>
+    </section>
+
+    <section class="dev-ai wrap" aria-label="Developers and AI agents">
+      <h2>Built for Developers. Accessible to AI.</h2>
+      <p>
+        Search Canadian tech jobs yourself, or connect GitHired to your AI assistant.
+      </p>
+      <div class="hero-actions" role="group" aria-label="Developer links">
+        <a class="btn-primary" href="./" data-nav="browse">Job Search</a>
+        <a class="btn-secondary" href="./developers/">Developer API</a>
+        <a class="btn-secondary" href="./agents/">Connect an AI Agent</a>
+      </div>
     </section>
 
     <!-- BROWSE VIEW -->

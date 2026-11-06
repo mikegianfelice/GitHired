@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GitHired Agents — Connect an AI assistant</title>
+  <meta name="description" content="Connect ChatGPT, Claude, Cursor, or other MCP-compatible clients to GitHired's Canadian tech job data." />
+  <link rel="canonical" href="https://githired.ca/agents" />
+  <link rel="stylesheet" href="../styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="../">
+        <span class="brand-mark" aria-hidden="true">GH</span>
+        <span class="brand-text">
+          <span class="brand-name">GitHired</span>
+          <span class="brand-tag">AI Agents</span>
+        </span>
+      </a>
+      <nav class="header-nav" aria-label="Primary">
+        <a href="../">Job Search</a>
+        <a href="../developers/">API</a>
+        <a href="./">Agents</a>
+        <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap" style="padding: 2.5rem 1.25rem 4rem; max-width: 820px;">
+    <p class="eyebrow">MCP · Read-only · No résumé upload</p>
+    <h1>Connect an AI agent</h1>
+    <p class="lede">
+      Point a compatible MCP client at GitHired to search real Canada-eligible tech jobs
+      with original employer apply links.
+    </p>
+
+    <section>
+      <h2>Three ways to use GitHired</h2>
+      <ol>
+        <li><strong>Website search</strong> — browse filters on <a href="../">githired.ca</a>.</li>
+        <li><strong>REST API</strong> — HTTP JSON for your own tools (<a href="../developers/">docs</a>).</li>
+        <li><strong>MCP</strong> — tool calling for AI assistants (this page).</li>
+      </ol>
+      <p>
+        Publishing an MCP server does <em>not</em> guarantee automatic discovery by ChatGPT or Claude.
+        You (or the product) must configure the connector URL.
+      </p>
+    </section>
+
+    <section>
+      <h2>MCP endpoint</h2>
+      <pre class="code-block"><code>https://api.githired.ca/mcp</code></pre>
+      <p>Transport: Streamable HTTP (JSON-RPC). No API key required for normal use.</p>
+    </section>
+
+    <section>
+      <h2>Tools</h2>
+      <ul>
+        <li><code>search_jobs</code> — keywords, location, province, remote, salary floor, seniority, company</li>
+        <li><code>get_job</code> — detail by GitHired id</li>
+        <li><code>match_profile</code> — deterministic skill/role matching (profiles are not stored)</li>
+        <li><code>get_market_stats</code> — aggregates for tracked employers only</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Cursor</h2>
+      <p>Add a remote MCP server entry pointing at the URL above (Streamable HTTP). Then ask:</p>
+      <pre class="code-block"><code>Find remote senior data engineering jobs in Canada paying at least CAD $150,000.</code></pre>
+      <p>Verified locally against the GitHired tool schemas; confirm in your Cursor MCP settings after deploy.</p>
+    </section>
+
+    <section>
+      <h2>Claude / ChatGPT</h2>
+      <p>
+        Use each product’s custom connector / MCP configuration UI with
+        <code>https://api.githired.ca/mcp</code> once the production Worker is live.
+        Integration is <strong>not claimed verified</strong> until tested in that product after deployment.
+      </p>
+    </section>
+
+    <section>
+      <h2>MCP Inspector</h2>
+      <pre class="code-block"><code>npx @modelcontextprotocol/inspector https://api.githired.ca/mcp</code></pre>
+    </section>
+
+    <section>
+      <h2>Safety</h2>
+      <ul>
+        <li>Read-only — no apply automation</li>
+        <li>No résumé or personal profile persistence</li>
+        <li>Rate limited</li>
+        <li>Never invents Canadian eligibility or salaries</li>
+      </ul>
+    </section>
+  </main>
+  <style>
+    .code-block {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+    }
+    main h2 { margin-top: 2rem; }
+    main ol, main ul { line-height: 1.7; }
+  </style>
+</body>
+</html>

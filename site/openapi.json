@@ -1,0 +1,188 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "GitHired API",
+    "version": "1.0.0",
+    "summary": "Public read-only API for Canada-eligible technology jobs",
+    "description": "Search employer-ATS jobs that GitHired has confirmed as Canada-eligible. Salaries are advertised annual base only — never estimated. No authentication required.",
+    "contact": {
+      "name": "GitHired",
+      "url": "https://githired.ca"
+    },
+    "license": {
+      "name": "See repository",
+      "url": "https://github.com/mikegianfelice/GitHired"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.githired.ca",
+      "description": "Production"
+    }
+  ],
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Service and dataset health",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Health payload (`status` may be ok or degraded when the dataset is stale)"
+          }
+        }
+      }
+    },
+    "/api/v1/stats": {
+      "get": {
+        "summary": "Dataset statistics",
+        "operationId": "getStats",
+        "responses": {
+          "200": {
+            "description": "Aggregate counts for tracked employers (not a labour-market census)"
+          }
+        }
+      }
+    },
+    "/api/v1/companies": {
+      "get": {
+        "summary": "Tracked employers",
+        "operationId": "listCompanies",
+        "responses": {
+          "200": {
+            "description": "Employers with active Canada-eligible job counts"
+          }
+        }
+      }
+    },
+    "/api/v1/jobs": {
+      "get": {
+        "summary": "Search jobs",
+        "operationId": "searchJobs",
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" }, "example": "data engineer" },
+          { "name": "location", "in": "query", "schema": { "type": "string" } },
+          { "name": "province", "in": "query", "schema": { "type": "string" }, "example": "ON" },
+          { "name": "remote", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "work_mode", "in": "query", "schema": { "type": "string", "enum": ["remote", "hybrid", "onsite"] } },
+          { "name": "salary_min", "in": "query", "schema": { "type": "number" }, "description": "Minimum advertised annual base (CAD-normalized)", "example": 150000 },
+          { "name": "salary_max", "in": "query", "schema": { "type": "number" } },
+          { "name": "salary_disclosed", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "seniority", "in": "query", "schema": { "type": "string" }, "example": "senior" },
+          { "name": "company", "in": "query", "schema": { "type": "string" } },
+          { "name": "sort", "in": "query", "schema": { "type": "string", "enum": ["relevance", "salary", "freshness"] } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 50 }, "example": 10 },
+          { "name": "cursor", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching Canada-eligible jobs",
+            "content": {
+              "application/json": {
+                "example": {
+                  "total": 2,
+                  "limit": 10,
+                  "next_cursor": null,
+                  "dataset_id": "b588e1b5dbd07924",
+                  "generated_at": "2026-11-06T12:27:47Z",
+                  "jobs": [
+                    {
+                      "id": "exampleid1234567",
+                      "title": "Senior Data Engineer",
+                      "company": "Example Co",
+                      "location": "Remote - Canada",
+                      "work_arrangement": "remote",
+                      "salary_min": 150000,
+                      "salary_max": 180000,
+                      "salary_currency": "CAD",
+                      "apply_url": "https://boards.greenhouse.io/example/jobs/1"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{id}": {
+      "get": {
+        "summary": "Get job by id",
+        "operationId": "getJob",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Job detail including description excerpt" },
+          "404": { "description": "Unknown id" }
+        }
+      }
+    },
+    "/api/v1/match": {
+      "post": {
+        "summary": "Deterministic profile match",
+        "operationId": "matchProfile",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skills": { "type": "array", "items": { "type": "string" } },
+                  "years_experience": { "type": "number" },
+                  "preferred_roles": { "type": "array", "items": { "type": "string" } },
+                  "preferred_locations": { "type": "array", "items": { "type": "string" } },
+                  "remote_preference": { "type": "boolean" },
+                  "minimum_salary": { "type": "number" },
+                  "seniority": { "type": "string" },
+                  "limit": { "type": "integer" }
+                }
+              },
+              "example": {
+                "skills": ["Python", "Spark", "Airflow"],
+                "preferred_roles": ["Data Engineer"],
+                "remote_preference": true,
+                "minimum_salary": 150000,
+                "seniority": "senior",
+                "limit": 5
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Ranked matches with explanations (not stored)" }
+        }
+      }
+    },
+    "/mcp": {
+      "post": {
+        "summary": "MCP Streamable HTTP JSON-RPC endpoint",
+        "operationId": "mcpJsonRpc",
+        "description": "Standards-oriented MCP endpoint exposing search_jobs, get_job, match_profile, get_market_stats.",
+        "responses": {
+          "200": { "description": "JSON-RPC response" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Job": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "company": { "type": "string" },
+          "location": { "type": "string" },
+          "province": { "type": ["string", "null"] },
+          "work_arrangement": { "type": "string" },
+          "remote_scope": { "type": "string" },
+          "salary_available": { "type": "boolean" },
+          "salary_kind": { "type": "string", "enum": ["advertised_base", "undisclosed"] },
+          "apply_url": { "type": "string", "format": "uri" },
+          "last_verified": { "type": "string" }
+        }
+      }
+    }
+  }
+}

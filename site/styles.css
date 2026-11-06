@@ -709,6 +709,36 @@ fieldset.stack {
   text-underline-offset: 3px;
 }
 
+.dev-ai {
+  margin: 0 auto 1.75rem;
+  padding: 1.35rem 1.4rem 1.5rem;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.08), rgba(52, 211, 153, 0.05));
+}
+
+.dev-ai h2 {
+  margin: 0 0 0.45rem;
+  font-size: 1.25rem;
+}
+
+.dev-ai p {
+  margin: 0 0 0.95rem;
+  color: var(--muted);
+  max-width: 42rem;
+}
+
+.dev-ai .hero-actions {
+  margin: 0;
+}
+
+.dev-ai .btn-primary,
+.dev-ai .btn-secondary {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
 .site-footer {
   border-top: 1px solid var(--card-border);
   background: rgba(5, 11, 20, 0.9);
