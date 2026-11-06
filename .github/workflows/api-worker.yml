@@ -8,6 +8,7 @@ on:
       - "api/**"
       - ".github/workflows/api-worker.yml"
       - "jobseek/api_snapshot.py"
+      - "jobseek/public_shortlist/export.py"
       - "scripts/export_api_snapshot.py"
 
 # Do not run full discovery on Worker code changes.
@@ -20,13 +21,13 @@ jobs:
     name: Worker unit checks
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: "24"
           cache: npm
           cache-dependency-path: api/package-lock.json
       - name: Install Python package
@@ -35,14 +36,16 @@ jobs:
         run: python -m pytest tests/jobseek/test_api_snapshot.py -q
       - name: Install Worker deps
         working-directory: api
-        run: |
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+        run: npm ci
       - name: Typecheck Worker
         working-directory: api
         run: npx tsc --noEmit
-      - name: Node snapshot tests
+      - name: Node unit + MCP protocol checks
         working-directory: api
         run: npm test
+      - name: Validate Worker bundle
+        working-directory: api
+        run: npx wrangler deploy --dry-run --outdir=.dry-run-out
 
   deploy:
     name: Deploy Cloudflare Worker
@@ -51,10 +54,12 @@ jobs:
     runs-on: ubuntu-24.04
     environment: api
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: api/package-lock.json
       - name: Check Cloudflare secrets
         id: secrets
         env:
@@ -74,5 +79,5 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          npm install
+          npm ci
           npx wrangler deploy --var ENVIRONMENT:production

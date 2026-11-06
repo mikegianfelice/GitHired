@@ -18,6 +18,9 @@ from typing import Any
 from jobseek.filters.apply_url import select_actionable_apply_url
 from jobseek.filters.hard import apply_hard_filters
 from jobseek.filters.location import (
+    _CANADA_HIRE,
+    _CANADA_WORD,
+    _US_GEO,
     find_any_canadian_province,
     infer_work_arrangement,
 )
@@ -196,6 +199,68 @@ def _province_code(location: str) -> str | None:
     return mapping.get(name, name)
 
 
+_US_ONLY_LOCATION = re.compile(
+    r"""
+    ^\s*(?:remote\s*[-–,()]+\s*)?(?:the\s+)?(?:united\s+states|u\.?s\.?a?\.?|usa)
+    (?:\s*\(?\s*remote\s*\)?)?
+    (?:\s*\([^)]*\))?
+    \s*$
+    |
+    ^\s*united\s+states\s*\(\s*remote\s*\)\s*$
+    |
+    ^\s*remote\s*[-–—,]?\s*(?:united\s+states|u\.?s\.?a?\.?|usa)\s*$
+    """,
+    re.I | re.X,
+)
+
+_DUAL_CA_US_REMOTE = re.compile(
+    r"""
+    remote(?:ly)?\s+in\s+canada\s+or\s+(?:the\s+)?united\s+states |
+    canada\s+or\s+(?:the\s+)?united\s+states |
+    united\s+states\s+or\s+canada |
+    (?:canada|canadian).{0,40}(?:united\s+states|u\.?s\.?a?\.?|usa) |
+    (?:united\s+states|u\.?s\.?a?\.?|usa).{0,40}(?:canada|canadian)
+    """,
+    re.I | re.X,
+)
+
+
+def _structured_location_is_us_only(location: str) -> bool:
+    """True when the ATS location field names the US with no Canada token."""
+    loc = (location or "").strip()
+    if not loc:
+        return False
+    if _CANADA_WORD.search(loc):
+        return False
+    if _US_ONLY_LOCATION.search(loc):
+        return True
+    return bool(_US_GEO.search(loc)) and not find_any_canadian_province(loc)
+
+
+def public_location_label(location: str, description: str = "") -> str:
+    """Public card location — never show exclusive US labels for Canada-eligible jobs.
+
+    Some ATS boards set ``location`` to ``United States (Remote)`` while the body
+    explicitly allows Canada. Eligibility may correctly PASS from description
+    evidence; the displayed location must still reflect Canada eligibility.
+    """
+    loc = (location or "").strip() or "Canada"
+    desc = description or ""
+    if not _structured_location_is_us_only(loc):
+        return loc[:120]
+    if not _CANADA_HIRE.search(desc):
+        return loc[:120]
+    dual = _DUAL_CA_US_REMOTE.search(desc)
+    if dual:
+        label = re.sub(r"\s+", " ", dual.group(0)).strip()
+        if not label.lower().startswith("remote"):
+            label = f"Remote — {label}"
+        return label[:120]
+    hire = _CANADA_HIRE.search(desc)
+    evidence = hire.group(0).strip() if hire else "Canada"
+    return f"Remote — {evidence} (ATS location: {loc})"[:120]
+
+
 def _remote_scope(location: str, arrangement: str, provinces: list[str]) -> str:
     """canada | province | local | unspecified — never overclaim nationwide remote."""
     loc = (location or "").casefold()
@@ -295,12 +360,24 @@ def select_public_jobs(
         if hard.relevance == "NO_MATCH" or not hard.title_match:
             continue
 
-        location = str(job.get("location_raw") or "").strip() or "Canada"
-        arrangement = infer_work_arrangement(location, str(job.get("description") or ""))
+        raw_location = str(job.get("location_raw") or "").strip() or "Canada"
+        description = str(job.get("description") or "")
+        location = public_location_label(raw_location, description)
+        arrangement = infer_work_arrangement(
+            raw_location, description
+        ) or infer_work_arrangement(location, description)
         # Public cards: never claim remote/hybrid without evidence
         work = arrangement if arrangement in ("remote", "hybrid", "onsite") else "unspecified"
-        provinces = find_any_canadian_province(location)
+        provinces = find_any_canadian_province(location) or find_any_canadian_province(raw_location)
         scope = _remote_scope(location, work if work != "unspecified" else arrangement, provinces)
+        # Description-backed Canada remote when ATS location was US-only.
+        if (
+            scope == "unspecified"
+            and work == "remote"
+            and _CANADA_HIRE.search(description)
+            and _structured_location_is_us_only(raw_location)
+        ):
+            scope = "canada"
         # Province-restricted remote must not be labeled canada-wide
         if scope == "province" and work == "remote":
             pass  # explicit province scope kept
@@ -312,7 +389,7 @@ def select_public_jobs(
         last_verified = last_seen.astimezone(timezone.utc).date().isoformat()
         discovered_today = first_seen_dt.astimezone(timezone.utc).date() == today
         clean_url = apply_url.split("?")[0] if "utm_" in apply_url.casefold() else apply_url
-        # Title + location only — never export description text for public matching hints.
+        # Title + public location only — never export description text for matching hints.
         tech = _extract_technologies(title, location)
 
         out.append(
@@ -321,7 +398,7 @@ def select_public_jobs(
                 title=title,
                 company=company,
                 location=location[:120],
-                province=_province_code(location),
+                province=_province_code(location) or _province_code(raw_location),
                 work_arrangement=work,
                 remote_scope=scope,
                 seniority=detect_seniority(title),

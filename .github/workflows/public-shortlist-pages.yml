@@ -113,7 +113,19 @@ jobs:
           from pathlib import Path
 
           site = Path("site")
-          required = ["index.html", "styles.css", "app.js", "jobs.json", ".nojekyll"]
+          required = [
+              "index.html",
+              "styles.css",
+              "app.js",
+              "jobs.json",
+              ".nojekyll",
+              "llms.txt",
+              "openapi.json",
+              "robots.txt",
+              "sitemap.xml",
+              "developers/index.html",
+              "agents/index.html",
+          ]
           missing = [n for n in required if not (site / n).is_file()]
           assert not missing, f"missing site files: {missing}"
 

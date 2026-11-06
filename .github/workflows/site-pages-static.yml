@@ -1,0 +1,86 @@
+# Deploy the static site/ folder (docs, llms.txt, openapi, current jobs.json)
+# without re-running discovery. Used when documentation/API surface files change.
+#
+# Full job refreshes remain on public-shortlist-pages.yml (schedule / manual).
+
+name: Site Pages (static)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/site-pages-static.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: public-shortlist-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Validate + deploy site/
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Validate site artifact
+        id: gate
+        run: |
+          python <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          site = Path("site")
+          required = [
+              "index.html",
+              "styles.css",
+              "app.js",
+              "jobs.json",
+              ".nojekyll",
+              "llms.txt",
+              "openapi.json",
+              "robots.txt",
+              "sitemap.xml",
+              "developers/index.html",
+              "agents/index.html",
+          ]
+          missing = [n for n in required if not (site / n).is_file()]
+          assert not missing, f"missing site files: {missing}"
+
+          data = json.loads((site / "jobs.json").read_text(encoding="utf-8"))
+          count = int(data.get("count") or 0)
+          assert count > 0, "refusing to deploy empty jobs.json"
+          assert len(data.get("jobs") or []) == count
+          print(f"count={count} docs+jobs validated")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write("deployable=true\n")
+          PY
+
+      - name: Configure Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        with:
+          path: site
+
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

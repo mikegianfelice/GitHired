@@ -49,6 +49,8 @@ linkedin_Profile.pdf
 # jobseek local database
 data/*.db
 data/*.db-*
+api/data/*.db
+api/data/*.db-*
 
 # User company overrides (never auto-written by discovery)
 config/companies.local.yaml

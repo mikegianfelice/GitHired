@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-04T18:43:16Z",
+  "generated_at": "2026-11-06T17:56:27Z",
   "source": "githired-public-shortlist",
   "limit": 300,
   "count": 300,
@@ -27,7 +27,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -50,7 +50,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -73,7 +73,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -96,7 +96,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Go"
       ],
@@ -121,7 +121,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -144,7 +144,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -167,7 +167,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -190,7 +190,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -213,7 +213,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -236,7 +236,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -259,7 +259,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -282,7 +282,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -305,7 +305,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -328,7 +328,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Security"
       ],
@@ -353,7 +353,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -376,7 +376,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -399,7 +399,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -422,7 +422,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -468,7 +468,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -491,7 +491,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -514,7 +514,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -537,7 +537,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -560,7 +560,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -698,7 +698,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -721,7 +721,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -744,7 +744,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -767,7 +767,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -790,7 +790,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -813,7 +813,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -836,7 +836,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -859,7 +859,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -882,7 +882,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -905,7 +905,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -928,7 +928,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -951,7 +951,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -974,7 +974,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -997,7 +997,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1068,7 +1068,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -1091,7 +1091,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -1114,7 +1114,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -1137,7 +1137,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -1145,10 +1145,10 @@
       "id": "6c999f6b9f4ed86d",
       "title": "Full Stack Software Engineer - Control Plane",
       "company": "ClickHouse",
-      "location": "United States (Remote)",
+      "location": "remote in Canada or the United States",
       "province": null,
       "work_arrangement": "remote",
-      "remote_scope": "unspecified",
+      "remote_scope": "canada",
       "seniority": null,
       "track": "software_engineering",
       "salary_min": 195000.0,
@@ -1160,7 +1160,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -1183,7 +1183,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1206,7 +1206,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1229,7 +1229,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Go"
       ],
@@ -1254,7 +1254,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Security"
       ],
@@ -1302,7 +1302,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1440,7 +1440,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -1463,7 +1463,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -1486,7 +1486,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -1509,7 +1509,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1532,7 +1532,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1555,7 +1555,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1578,7 +1578,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1601,7 +1601,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1624,7 +1624,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1647,7 +1647,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1670,7 +1670,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1693,7 +1693,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1716,7 +1716,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1739,7 +1739,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1762,7 +1762,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1785,7 +1785,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1808,7 +1808,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1831,7 +1831,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1854,7 +1854,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1877,7 +1877,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -1900,7 +1900,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -1923,7 +1923,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "TypeScript"
       ],
@@ -1948,7 +1948,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -1971,7 +1971,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -1994,7 +1994,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -2017,7 +2017,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -2040,7 +2040,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2063,7 +2063,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2086,7 +2086,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Security"
       ],
@@ -2111,7 +2111,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2134,7 +2134,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2157,7 +2157,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2180,7 +2180,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -2203,7 +2203,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2226,7 +2226,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2249,7 +2249,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2272,7 +2272,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2295,7 +2295,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2318,7 +2318,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2341,7 +2341,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -2364,7 +2364,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -2387,7 +2387,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2410,7 +2410,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2433,7 +2433,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -2456,7 +2456,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -2479,7 +2479,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2502,7 +2502,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -2640,7 +2640,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2663,7 +2663,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2686,7 +2686,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Python"
       ],
@@ -2711,7 +2711,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Python"
       ],
@@ -2736,7 +2736,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2759,7 +2759,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2782,7 +2782,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2805,7 +2805,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2851,7 +2851,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -2874,7 +2874,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -2897,7 +2897,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2920,7 +2920,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2943,7 +2943,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2966,7 +2966,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -2989,7 +2989,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3012,7 +3012,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3035,7 +3035,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3058,7 +3058,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3081,7 +3081,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3104,7 +3104,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3127,7 +3127,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3150,7 +3150,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3173,7 +3173,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3196,7 +3196,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3219,7 +3219,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3242,7 +3242,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3265,7 +3265,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3288,7 +3288,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3311,7 +3311,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3334,7 +3334,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3449,7 +3449,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3472,7 +3472,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Python"
       ],
@@ -3497,7 +3497,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Python"
       ],
@@ -3522,7 +3522,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -3545,7 +3545,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -3568,7 +3568,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -3591,7 +3591,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -3614,7 +3614,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -3637,7 +3637,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -3660,7 +3660,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -3683,7 +3683,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -3752,7 +3752,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3821,7 +3821,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3844,7 +3844,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3867,7 +3867,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3913,7 +3913,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3936,7 +3936,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3959,7 +3959,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -3982,7 +3982,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4005,7 +4005,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4028,7 +4028,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4051,7 +4051,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4074,7 +4074,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -4097,7 +4097,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4143,7 +4143,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -4166,7 +4166,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4189,7 +4189,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4212,7 +4212,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4235,7 +4235,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4258,7 +4258,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4281,7 +4281,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Security"
       ],
@@ -4306,7 +4306,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Security"
       ],
@@ -4331,7 +4331,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4379,7 +4379,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -4402,7 +4402,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -4425,7 +4425,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4448,7 +4448,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4471,7 +4471,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4494,7 +4494,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4517,7 +4517,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4540,7 +4540,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4563,7 +4563,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4586,7 +4586,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4609,7 +4609,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4632,7 +4632,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4655,7 +4655,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4678,7 +4678,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4701,7 +4701,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4724,7 +4724,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4747,7 +4747,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4770,7 +4770,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4793,7 +4793,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4816,7 +4816,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -4839,7 +4839,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Python",
         "React"
@@ -4865,7 +4865,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Python"
       ],
@@ -4890,7 +4890,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -4913,7 +4913,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -4936,7 +4936,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -4959,7 +4959,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -4982,7 +4982,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -5028,7 +5028,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -5051,7 +5051,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -5074,7 +5074,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5097,7 +5097,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5120,7 +5120,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -5143,7 +5143,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -5166,7 +5166,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5189,7 +5189,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5212,7 +5212,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5235,7 +5235,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5327,7 +5327,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -5350,7 +5350,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5373,7 +5373,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5396,7 +5396,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Python"
       ],
@@ -5421,7 +5421,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Python"
       ],
@@ -5446,7 +5446,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -5469,7 +5469,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -5492,7 +5492,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5515,7 +5515,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5538,7 +5538,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -5561,7 +5561,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -5584,7 +5584,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Python",
         "React"
@@ -5610,7 +5610,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Security"
       ],
@@ -5635,7 +5635,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -5658,7 +5658,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5681,7 +5681,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -5704,7 +5704,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5727,7 +5727,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5750,7 +5750,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5773,7 +5773,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -5796,7 +5796,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -5819,7 +5819,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -5842,7 +5842,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Java"
       ],
@@ -5867,7 +5867,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -5890,7 +5890,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Security"
       ],
@@ -5915,7 +5915,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -5938,7 +5938,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Java"
       ],
@@ -5963,7 +5963,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -5986,7 +5986,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6009,7 +6009,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6032,7 +6032,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6055,7 +6055,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6078,7 +6078,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6101,7 +6101,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6124,7 +6124,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6147,7 +6147,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6170,7 +6170,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -6193,7 +6193,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -6216,7 +6216,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6239,7 +6239,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Kotlin"
       ],
@@ -6264,7 +6264,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6287,7 +6287,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6310,7 +6310,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "React"
       ],
@@ -6335,7 +6335,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "workday"
     },
@@ -6358,7 +6358,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [
         "Python",
         "React"
@@ -6384,7 +6384,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -6407,7 +6407,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -6430,7 +6430,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -6453,7 +6453,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -6476,7 +6476,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -6499,7 +6499,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -6522,7 +6522,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -6545,7 +6545,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -6568,7 +6568,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -6591,7 +6591,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -6614,7 +6614,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -6637,7 +6637,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -6660,7 +6660,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -6683,7 +6683,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -6777,7 +6777,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -6800,7 +6800,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -6823,7 +6823,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -6846,7 +6846,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -6869,7 +6869,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -6892,7 +6892,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "ashby"
     },
@@ -6915,7 +6915,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "greenhouse"
     },
@@ -6938,7 +6938,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     },
@@ -6961,7 +6961,7 @@
       "verified": true,
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
-      "discovered_today": true,
+      "discovered_today": false,
       "technologies": [],
       "source": "lever"
     }
