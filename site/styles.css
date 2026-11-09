@@ -835,6 +835,22 @@ body.menu-open {
   font-size: 0.72rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.verified-badge svg {
+  display: block;
 }
 
 .job-title {
@@ -934,6 +950,8 @@ body.menu-open {
   font-size: 0.78rem;
   font-family: var(--mono);
 }
+
+/* Keep date details on hover/focus via title; no visible "Verified …" text */
 
 .match-score-block {
   display: grid;

@@ -358,7 +358,7 @@
     const salary = formatSalary(job);
     const arr = arrangementLabel(job);
     const loc = truncateLocation(job.location);
-    const verified = formatVerifiedDate(job.last_verified);
+    const verifiedLabel = formatVerifiedDate(job.last_verified);
     const card = document.createElement("article");
     card.className = "job-card";
     const maxOnly =
@@ -367,9 +367,10 @@
         : "";
     const matchBadge = match
       ? `<span class="pill match">Match ${match.percent}%</span>`
-      : verified
-        ? `<span class="freshness" title="Date GitHired last confirmed this listing — not the original posting date">${escapeHtml(verified)}</span>`
-        : "";
+      : "";
+    const verifiedMark = !match && job.last_verified
+      ? `<span class="verified-badge" title="${escapeHtml(verifiedLabel || "Verified listing")} — not the original posting date" aria-label="${escapeHtml(verifiedLabel || "Verified listing")}"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2.5l2.09 1.52 2.5-.3 1.08 2.28 2.28 1.08-.3 2.5L21.5 12l-1.52 2.09.3 2.5-2.28 1.08-1.08 2.28-2.5-.3L12 21.5l-2.09-1.52-2.5.3-1.08-2.28-2.28-1.08.3-2.5L2.5 12l1.52-2.09-.3-2.5 2.28-1.08L7.08 3.72l2.5.3L12 2.5zm-1.2 12.3 5.3-5.3-1.4-1.4-3.9 3.9-1.8-1.8-1.4 1.4 3.2 3.2z"/></svg></span>`
+      : "";
 
     let extras = "";
     if (match) {
@@ -398,7 +399,7 @@
     card.innerHTML = `
       <div class="job-card-top">
         <div>
-          <p class="job-company">${escapeHtml(job.company)}</p>
+          <p class="job-company">${escapeHtml(job.company)}${verifiedMark}</p>
           <h2 class="job-title">${escapeHtml(job.title)}</h2>
         </div>
         ${matchBadge}
