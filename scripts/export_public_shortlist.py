@@ -32,7 +32,7 @@ def main(argv: list[str] | None = None) -> int:
         default=ROOT / "site",
         help="Static site directory (default: ./site)",
     )
-    parser.add_argument("--limit", type=int, default=300)
+    parser.add_argument("--limit", type=int, default=400)
     parser.add_argument("--max-age-days", type=int, default=21)
     parser.add_argument(
         "--allow-empty",

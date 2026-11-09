@@ -18,13 +18,13 @@
 </p>
 
 <p align="center">
-  <a href="#browse-jobs-online"><strong>Browse Jobs Online</strong></a> ·
+  <a href="https://githired.ca"><strong>Browse Jobs</strong></a> ·
+  <a href="https://githired.ca/developers"><strong>REST API</strong></a> ·
+  <a href="https://githired.ca/agents"><strong>MCP / Agents</strong></a> ·
   <a href="#quick-start"><strong>Install CLI</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
   <a href="#top-5-high-paying-jobs-discovered-today"><strong>Top salaries</strong></a> ·
   <a href="SETUP.md">Setup guide</a> ·
-  <a href="docs/discovery.md">Discovery docs</a> ·
-  <a href="docs/showcase/ARCHITECTURE.md">Showcase architecture</a>
+  <a href="docs/discovery.md">Discovery docs</a>
 </p>
 
 ---
@@ -33,16 +33,30 @@
 
 **No install. No account. No API key.**
 
-After GitHub Pages is enabled for this repository, the public shortlist is published at:
+**https://githired.ca** — public shortlist, REST API docs, and MCP agent onboarding.
 
-**https://mikegianfelice.github.io/GitHired/**
-
-| Public site | Personalized CLI |
-| ----------- | ---------------- |
+| Public site / API | Personalized CLI |
+| ----------------- | ---------------- |
 | Confirmed Canada-eligible engineering listings | Your tracks, city, salary floor, digests |
 | Search, salary slider, and filters in the browser | `githired discover` → `enrich` → `rank` → `jobs` |
-| Optional **Find My Matches** (local résumé / profile) | Cursor `/apply` CV + cover letter (with your approval) |
-| Shared daily snapshot (not your private CLI scores) | Private SQLite + profile on your machine |
+| REST: `https://api.githired.ca` · MCP: `https://api.githired.ca/mcp` | Cursor `/apply` CV + cover letter (with your approval) |
+| Optional **Find My Matches** (local résumé / profile) | Private SQLite + profile on your machine |
+
+### Connect an AI agent (MCP)
+
+One-click for **Cursor** (official deeplink) and copyable setup for Claude / ChatGPT:
+
+**https://githired.ca/agents**
+
+```json
+{
+  "mcpServers": {
+    "githired": {
+      "url": "https://api.githired.ca/mcp"
+    }
+  }
+}
+```
 
 ### Public site features
 

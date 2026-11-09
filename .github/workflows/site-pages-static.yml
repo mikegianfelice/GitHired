@@ -52,6 +52,7 @@ jobs:
               "index.html",
               "styles.css",
               "app.js",
+              "docs.js",
               "jobs.json",
               ".nojekyll",
               "llms.txt",

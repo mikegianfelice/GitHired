@@ -14,6 +14,13 @@ Developer docs: https://githired.ca/developers
 Agent docs: https://githired.ca/agents
 OpenAPI: https://githired.ca/openapi.json
 
+## How AI agents should connect
+
+1. Prefer MCP Streamable HTTP at `https://api.githired.ca/mcp` (no API key).
+2. Cursor: official one-click install deeplink is published on https://githired.ca/agents
+3. Claude / ChatGPT: add a custom remote connector/plugin with the same URL (no third-party one-click).
+4. Or use the REST API documented at https://githired.ca/developers
+
 ## Data methodology
 
 - Jobs are ingested from public employer ATS boards via scheduled discovery.
@@ -25,11 +32,11 @@ OpenAPI: https://githired.ca/openapi.json
 
 ## Public API (no auth)
 
-- `GET /api/v1/jobs` — search/filter Canada-eligible jobs
+- `GET /api/v1/jobs` — search/filter Canada-eligible jobs (cursor pagination, limit ≤ 50)
 - `GET /api/v1/jobs/{id}` — job detail (includes description excerpt)
 - `GET /api/v1/companies` — tracked employers with active counts
 - `GET /api/v1/stats` — aggregate dataset statistics
-- `GET /api/v1/health` — service + dataset freshness
+- `GET /api/v1/health` — service + dataset freshness (`ok` vs `degraded`)
 - `POST /api/v1/match` — deterministic profile matching (no résumé storage)
 
 ## MCP tools
@@ -41,11 +48,12 @@ Remote MCP (Streamable HTTP) at `https://api.githired.ca/mcp`:
 - `match_profile`
 - `get_market_stats`
 
-Read-only. No authentication required for normal use. Rate limited. Profiles/résumés are not stored.
+Read-only. No authentication required for normal use. Rate limited (~120 req/min/IP). Profiles/résumés are not stored.
 
 ## Important limitations
 
 - Not a complete Canadian labour-market census — only tracked employer ATS boards.
+- Public snapshots are capped for Worker/Pages size; check `/api/v1/health` for live count.
 - UNCERTAIN geography is excluded from the public confirmed set (precision over recall).
 - Match scores are deterministic relevance, not hiring decisions or LLM judgments.
 - Publishing an MCP server does not guarantee automatic discovery by ChatGPT/Claude.

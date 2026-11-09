@@ -4,15 +4,36 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GitHired Developers — Public REST API</title>
-  <meta name="description" content="Public read-only REST API for Canada-eligible technology jobs. No auth. Advertised salaries only." />
+  <meta name="description" content="Public read-only REST API for Canada-eligible technology jobs. No auth. Advertised salaries only. OpenAPI included." />
   <link rel="canonical" href="https://githired.ca/developers" />
+  <meta property="og:title" content="GitHired Developer API" />
+  <meta property="og:url" content="https://githired.ca/developers" />
+  <meta property="og:description" content="Query Canada-eligible tech jobs over HTTPS. Free, no account." />
   <link rel="stylesheet" href="../styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebAPI",
+    "name": "GitHired REST API",
+    "description": "Public read-only API for Canada-eligible technology jobs from employer ATS boards.",
+    "url": "https://githired.ca/developers",
+    "documentation": "https://githired.ca/openapi.json",
+    "provider": {
+      "@type": "Organization",
+      "name": "GitHired",
+      "url": "https://githired.ca"
+    },
+    "endpointUrl": "https://api.githired.ca/api/v1/jobs"
+  }
+  </script>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="docs-live" class="sr-only" aria-live="polite"></div>
   <header class="site-header">
     <div class="wrap header-inner">
-      <a class="brand" href="../">
+      <a class="brand" href="../" aria-label="GitHired home">
         <span class="brand-mark" aria-hidden="true">GH</span>
         <span class="brand-text">
           <span class="brand-name">GitHired</span>
@@ -21,95 +42,203 @@
       </a>
       <nav class="header-nav" aria-label="Primary">
         <a href="../">Job Search</a>
-        <a href="./">API</a>
+        <a href="./" aria-current="page">API</a>
         <a href="../agents/">Agents</a>
         <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
       </nav>
     </div>
   </header>
 
-  <main id="main" class="wrap" style="padding: 2.5rem 1.25rem 4rem; max-width: 820px;">
+  <main id="main" class="wrap docs-main">
     <p class="eyebrow">Public · Read-only · No account</p>
     <h1>GitHired REST API</h1>
     <p class="lede">
       Query Canada-eligible technology jobs discovered from employer ATS boards.
-      Free to use. No authentication for normal search traffic.
+      Free HTTPS JSON. No authentication for normal search traffic.
+    </p>
+    <p id="api-status" class="docs-status" role="status" data-state="loading">
+      <span class="docs-status-dot" aria-hidden="true"></span>
+      <span>Checking API health…</span>
     </p>
 
-    <section>
-      <h2>Base URL</h2>
+    <div class="docs-actions" role="group" aria-label="Quick links">
+      <a class="docs-btn docs-btn-primary" href="../openapi.json">OpenAPI spec</a>
+      <a class="docs-btn docs-btn-secondary" href="../agents/">MCP / Agents</a>
+      <button type="button" class="docs-btn docs-btn-secondary" data-copy="mcp-url">Copy MCP URL</button>
+    </div>
+
+    <section aria-labelledby="base-heading">
+      <h2 id="base-heading">Base URL</h2>
       <pre class="code-block"><code>https://api.githired.ca</code></pre>
-      <p>OpenAPI: <a href="../openapi.json">/openapi.json</a> · MCP: <a href="../agents/">/agents</a></p>
+      <p>
+        Machine-readable: <a href="../openapi.json">openapi.json</a> ·
+        Agents: <a href="../agents/">/agents</a> ·
+        Dataset mirror (lean): <a href="../api-dataset.json">api-dataset.json</a>
+      </p>
     </section>
 
-    <section>
-      <h2>Endpoints</h2>
+    <section aria-labelledby="endpoints-heading">
+      <h2 id="endpoints-heading">Endpoints</h2>
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <thead>
+            <tr><th>Method</th><th>Path</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>GET</code></td><td><code>/api/v1/health</code></td><td>Service + dataset freshness</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v1/stats</code></td><td>Aggregate counts</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v1/companies</code></td><td>Employers with active counts</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v1/jobs</code></td><td>Search &amp; filter</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v1/jobs/{id}</code></td><td>Job detail + excerpt</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/v1/match</code></td><td>Deterministic profile match</td></tr>
+            <tr><td><code>POST</code></td><td><code>/mcp</code></td><td>MCP JSON-RPC</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="quick-heading">
+      <h2 id="quick-heading">Quick start</h2>
+      <pre class="code-block" id="curl-example"><code>curl -sS 'https://api.githired.ca/api/v1/jobs?q=data%20engineer&amp;remote=true&amp;salary_min=150000&amp;limit=5' | jq .</code></pre>
+      <div class="copy-row">
+        <button type="button" class="copy-btn" data-copy-target="#curl-example">Copy curl</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="params-heading">
+      <h2 id="params-heading">Query parameters (<code>/api/v1/jobs</code>)</h2>
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <thead>
+            <tr><th>Param</th><th>Type</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>q</code></td><td>string</td><td>Keyword query (title, company, skills)</td></tr>
+            <tr><td><code>location</code></td><td>string</td><td>Substring match on location text</td></tr>
+            <tr><td><code>province</code></td><td>string</td><td>Canadian province code, e.g. <code>ON</code></td></tr>
+            <tr><td><code>remote</code></td><td>boolean</td><td><code>true</code> / <code>false</code></td></tr>
+            <tr><td><code>work_mode</code></td><td>enum</td><td><code>remote</code> | <code>hybrid</code> | <code>onsite</code></td></tr>
+            <tr><td><code>salary_min</code></td><td>number</td><td>Min advertised annual base, CAD-normalized</td></tr>
+            <tr><td><code>salary_max</code></td><td>number</td><td>Max advertised annual base, CAD-normalized</td></tr>
+            <tr><td><code>salary_disclosed</code></td><td>boolean</td><td>Require / exclude advertised pay</td></tr>
+            <tr><td><code>seniority</code></td><td>string</td><td>e.g. <code>senior</code>, <code>staff</code></td></tr>
+            <tr><td><code>company</code></td><td>string</td><td>Substring match</td></tr>
+            <tr><td><code>sort</code></td><td>enum</td><td><code>relevance</code> (default) | <code>salary</code> | <code>freshness</code></td></tr>
+            <tr><td><code>limit</code></td><td>integer</td><td>1–50 (default 20)</td></tr>
+            <tr><td><code>cursor</code></td><td>string</td><td>Opaque pagination token from <code>next_cursor</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="response-heading">
+      <h2 id="response-heading">Example response</h2>
+      <pre class="code-block"><code>{
+  "jobs": [
+    {
+      "id": "82d4aa797f949b4f",
+      "title": "Senior Staff Data Engineer",
+      "company": "Cohere",
+      "location": "Toronto (Remote)",
+      "work_arrangement": "remote",
+      "salary_min": 275000,
+      "salary_max": 450000,
+      "salary_currency": "USD",
+      "salary_available": true,
+      "salary_max_cad": 607500,
+      "apply_url": "https://jobs.ashbyhq.com/cohere/…/application",
+      "last_verified": "2026-11-09"
+    }
+  ],
+  "total": 49,
+  "limit": 2,
+  "next_cursor": "Mg==",
+  "dataset_id": "7b762b6f4c074978",
+  "generated_at": "2026-11-09T13:35:15Z",
+  "dataset_fresh": true
+}</code></pre>
+    </section>
+
+    <section aria-labelledby="pagination-heading">
+      <h2 id="pagination-heading">Pagination</h2>
+      <ol>
+        <li>Call <code>/api/v1/jobs</code> with <code>limit</code>.</li>
+        <li>If <code>next_cursor</code> is non-null, pass it as <code>cursor</code> on the next request.</li>
+        <li>Stop when <code>next_cursor</code> is <code>null</code>.</li>
+      </ol>
+      <pre class="code-block"><code>curl -sS 'https://api.githired.ca/api/v1/jobs?q=engineer&amp;limit=20&amp;cursor=Mg==' | jq '.next_cursor,.jobs|length'</code></pre>
+      <p class="docs-note"><code>total</code> is the full match count before pagination. Cursors are opaque — do not invent them.</p>
+    </section>
+
+    <section aria-labelledby="salary-heading">
+      <h2 id="salary-heading">Salary filtering</h2>
       <ul>
-        <li><code>GET /api/v1/jobs</code> — search &amp; filter</li>
-        <li><code>GET /api/v1/jobs/{id}</code> — job detail + description excerpt</li>
-        <li><code>GET /api/v1/companies</code> — employers + active counts</li>
-        <li><code>GET /api/v1/stats</code> — dataset aggregates</li>
-        <li><code>GET /api/v1/health</code> — service + freshness</li>
-        <li><code>POST /api/v1/match</code> — deterministic profile match (not stored)</li>
+        <li>Filters use <strong>employer-advertised annual base</strong> only.</li>
+        <li>USD is converted with the snapshot <code>usd_to_cad</code> rate for comparison; employer currency stays on the job.</li>
+        <li>Missing / non-annual pay is undisclosed — never estimated.</li>
+        <li>Non-positive <code>salary_min</code> / <code>salary_max</code> values are ignored.</li>
       </ul>
     </section>
 
-    <section>
-      <h2>Example</h2>
-      <pre class="code-block"><code>curl -s 'https://api.githired.ca/api/v1/jobs?q=data%20engineer&amp;remote=true&amp;salary_min=150000&amp;limit=10' | jq .</code></pre>
-    </section>
-
-    <section>
-      <h2>Query parameters</h2>
-      <p><code>q</code>, <code>location</code>, <code>province</code>, <code>remote</code>, <code>work_mode</code>,
-        <code>salary_min</code>, <code>salary_max</code>, <code>salary_disclosed</code>,
-        <code>seniority</code>, <code>company</code>, <code>sort</code> (relevance|salary|freshness),
-        <code>limit</code> (max 50), <code>cursor</code>.</p>
-    </section>
-
-    <section>
-      <h2>Salary filtering</h2>
+    <section aria-labelledby="fresh-heading">
+      <h2 id="fresh-heading">Dataset freshness</h2>
       <p>
-        Filters apply to <strong>employer-advertised annual base pay only</strong> (CAD/USD).
-        USD amounts are converted with the snapshot <code>usd_to_cad</code> rate for comparison.
-        Missing or non-annual pay is treated as undisclosed — never estimated.
+        Responses include <code>dataset_id</code> and <code>generated_at</code>.
+        <code>/api/v1/health</code> reports <code>ok</code> or <code>degraded</code> when age exceeds
+        <code>stale_after_hours</code> (default 48). Jobs expose <code>last_verified</code>.
+      </p>
+      <pre class="code-block"><code>curl -sS https://api.githired.ca/api/v1/health | jq .</code></pre>
+    </section>
+
+    <section aria-labelledby="errors-heading">
+      <h2 id="errors-heading">Errors</h2>
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <thead>
+            <tr><th>HTTP</th><th>Meaning</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>400</code></td><td>Invalid JSON body (e.g. <code>POST /match</code>)</td></tr>
+            <tr><td><code>404</code></td><td>Unknown job id</td></tr>
+            <tr><td><code>405</code></td><td>Method not allowed</td></tr>
+            <tr><td><code>429</code></td><td>Rate limited — respect <code>Retry-After</code></td></tr>
+            <tr><td><code>500</code></td><td>Unexpected server error</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <pre class="code-block"><code>{"error":"not_found","message":"No job with id …"}</code></pre>
+    </section>
+
+    <section aria-labelledby="limits-heading">
+      <h2 id="limits-heading">Rate limits</h2>
+      <p>Approximately <strong>120 requests / minute / IP</strong>. Burst abuse may receive HTTP 429.</p>
+    </section>
+
+    <section aria-labelledby="coverage-heading">
+      <h2 id="coverage-heading">Dataset coverage</h2>
+      <p>
+        The API serves a curated snapshot of Canada-eligible engineering roles
+        (hard-filter PASS + ELIGIBLE + direct apply URL). The snapshot is capped
+        for Worker bundle size and freshness; see <code>/api/v1/stats</code> for the
+        live count. The website shortlist uses the same eligibility rules.
       </p>
     </section>
 
-    <section>
-      <h2>Rate limits</h2>
-      <p>Approximately 120 requests / minute / IP. Burst abuse may receive HTTP 429.</p>
-    </section>
-
-    <section>
-      <h2>Dataset freshness</h2>
+    <section aria-labelledby="mcp-heading">
+      <h2 id="mcp-heading">MCP</h2>
       <p>
-        Every response includes <code>dataset_id</code> and <code>generated_at</code>.
-        <code>/api/v1/health</code> reports whether the dataset is fresh or stale.
-        Jobs include <code>last_verified</code> timestamps.
-      </p>
-    </section>
-
-    <section>
-      <h2>MCP</h2>
-      <p>
-        Compatible AI clients can use the remote MCP server at
-        <code>https://api.githired.ca/mcp</code>. See <a href="../agents/">Agent docs</a>.
+        AI clients can use the same dataset over MCP at
+        <code>https://api.githired.ca/mcp</code>. See <a href="../agents/">Agent docs</a>
+        for Cursor one-click install and Claude / ChatGPT setup.
       </p>
     </section>
   </main>
-  <style>
-    .code-block {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 1rem 1.1rem;
-      overflow-x: auto;
-      font-family: var(--mono);
-      font-size: 0.9rem;
-    }
-    main h2 { margin-top: 2rem; }
-    main ul { line-height: 1.7; }
-  </style>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p class="footer-note">Open source · Free · <a href="https://github.com/mikegianfelice/GitHired">GitHub</a></p>
+    </div>
+  </footer>
+  <script src="../docs.js" defer></script>
 </body>
 </html>

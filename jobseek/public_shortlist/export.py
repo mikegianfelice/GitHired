@@ -33,7 +33,9 @@ from jobseek.showcase.top_paying import (
 )
 
 SCHEMA_VERSION = 2
-DEFAULT_LIMIT = 300
+# Public/API snapshot cap. Sized for Cloudflare Worker bundle (~gzip ~100–150KB)
+# while covering the full current Canada-eligible shortlist (~350–400 roles).
+DEFAULT_LIMIT = 400
 DEFAULT_MAX_AGE_DAYS = 21
 MIN_ANNUAL = 30_000.0
 MAX_ANNUAL = 800_000.0

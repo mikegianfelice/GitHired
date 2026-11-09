@@ -39,7 +39,7 @@ Privacy copy on the site: *Your résumé stays in your browser. We don't upload 
 
 1. GitHub Actions runs list-only `githired discover` (budgeted ATS concurrency).
 2. Bounded `githired enrich` hydrates promising descriptions.
-3. `scripts/export_public_shortlist.py` selects up to **300** jobs that:
+3. `scripts/export_public_shortlist.py` selects up to **400** jobs that:
    - match engineering tracks,
    - are geographically **ELIGIBLE** (not UNCERTAIN),
    - have a **direct, posting-specific** employer apply URL,
@@ -65,7 +65,7 @@ Project Pages use the `/GitHired/` base path; the static assets use **relative**
 ```bash
 python -m pip install -e .
 githired discover && githired enrich
-python scripts/export_public_shortlist.py --site-dir site --limit 300
+python scripts/export_public_shortlist.py --site-dir site --limit 400
 cd site && python3 -m http.server 8080
 ```
 

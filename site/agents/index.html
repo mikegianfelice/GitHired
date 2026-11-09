@@ -3,16 +3,37 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GitHired Agents — Connect an AI assistant</title>
-  <meta name="description" content="Connect ChatGPT, Claude, Cursor, or other MCP-compatible clients to GitHired's Canadian tech job data." />
+  <title>GitHired for AI Agents — MCP</title>
+  <meta name="description" content="Give your AI agent access to Canadian tech jobs via GitHired's free remote MCP server. One-click Cursor install, Claude and ChatGPT setup." />
   <link rel="canonical" href="https://githired.ca/agents" />
+  <meta property="og:title" content="GitHired for AI Agents" />
+  <meta property="og:url" content="https://githired.ca/agents" />
+  <meta property="og:description" content="Connect Cursor, Claude, or ChatGPT to Canada-eligible tech jobs via MCP." />
   <link rel="stylesheet" href="../styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebAPI",
+    "name": "GitHired MCP",
+    "description": "Remote Model Context Protocol server for Canada-eligible technology jobs.",
+    "url": "https://githired.ca/agents",
+    "documentation": "https://githired.ca/agents",
+    "provider": {
+      "@type": "Organization",
+      "name": "GitHired",
+      "url": "https://githired.ca"
+    },
+    "endpointUrl": "https://api.githired.ca/mcp"
+  }
+  </script>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="docs-live" class="sr-only" aria-live="polite"></div>
   <header class="site-header">
     <div class="wrap header-inner">
-      <a class="brand" href="../">
+      <a class="brand" href="../" aria-label="GitHired home">
         <span class="brand-mark" aria-hidden="true">GH</span>
         <span class="brand-text">
           <span class="brand-name">GitHired</span>
@@ -22,92 +43,173 @@
       <nav class="header-nav" aria-label="Primary">
         <a href="../">Job Search</a>
         <a href="../developers/">API</a>
-        <a href="./">Agents</a>
+        <a href="./" aria-current="page">Agents</a>
         <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
       </nav>
     </div>
   </header>
 
-  <main id="main" class="wrap" style="padding: 2.5rem 1.25rem 4rem; max-width: 820px;">
-    <p class="eyebrow">MCP · Read-only · No résumé upload</p>
-    <h1>Connect an AI agent</h1>
+  <main id="main" class="wrap docs-main">
+    <p class="eyebrow">MCP · Free · No account · Read-only</p>
+    <h1>Give your AI agent access to Canadian tech jobs.</h1>
     <p class="lede">
-      Point a compatible MCP client at GitHired to search real Canada-eligible tech jobs
-      with original employer apply links.
+      Connect Cursor, Claude, ChatGPT, or any MCP-compatible client to GitHired’s
+      live Canada-eligible job dataset — original employer apply links, advertised
+      salaries only, no résumé upload.
+    </p>
+    <p id="api-status" class="docs-status" role="status" data-state="loading">
+      <span class="docs-status-dot" aria-hidden="true"></span>
+      <span>Checking API health…</span>
     </p>
 
-    <section>
-      <h2>Three ways to use GitHired</h2>
+    <div class="docs-actions" role="group" aria-label="Quick actions">
+      <!-- Official Cursor deeplink: https://cursor.com/docs/mcp/install-links -->
+      <a
+        class="docs-btn docs-btn-primary"
+        href="cursor://anysphere.cursor-deeplink/mcp/install?name=githired&amp;config=eyJ1cmwiOiJodHRwczovL2FwaS5naXRoaXJlZC5jYS9tY3AifQ=="
+      >Connect to Cursor</a>
+      <button type="button" class="docs-btn docs-btn-secondary" data-copy="mcp-url">Copy MCP URL</button>
+      <button type="button" class="docs-btn docs-btn-secondary" data-copy="mcp-config">Copy MCP config</button>
+      <a class="docs-btn docs-btn-secondary" href="../developers/">REST API docs</a>
+    </div>
+    <p class="docs-note">
+      The Cursor button uses Cursor’s official MCP install deeplink
+      (<code>cursor://anysphere.cursor-deeplink/mcp/install</code>).
+      Cursor prompts before installing. No authentication is required for GitHired.
+    </p>
+
+    <section aria-labelledby="endpoint-heading">
+      <h2 id="endpoint-heading">MCP endpoint</h2>
+      <pre class="code-block" id="mcp-url-block"><code>https://api.githired.ca/mcp</code></pre>
+      <div class="copy-row">
+        <button type="button" class="copy-btn" data-copy="mcp-url">Copy URL</button>
+      </div>
+      <p>Transport: Streamable HTTP (JSON-RPC). Protocol: <code>2024-11-05</code>.</p>
+    </section>
+
+    <section aria-labelledby="install-heading">
+      <h2 id="install-heading">Installation</h2>
+
+      <h3>Cursor (one-click)</h3>
       <ol>
-        <li><strong>Website search</strong> — browse filters on <a href="../">githired.ca</a>.</li>
-        <li><strong>REST API</strong> — HTTP JSON for your own tools (<a href="../developers/">docs</a>).</li>
-        <li><strong>MCP</strong> — tool calling for AI assistants (this page).</li>
+        <li>Click <strong>Connect to Cursor</strong> above (or paste the deeplink into your browser).</li>
+        <li>Approve the install prompt in Cursor.</li>
+        <li>Ask Cursor something like the example prompts below.</li>
       </ol>
+      <p>Manual config (<code>~/.cursor/mcp.json</code> or project <code>.cursor/mcp.json</code>):</p>
+      <pre class="code-block" id="mcp-config-block"><code>{
+  "mcpServers": {
+    "githired": {
+      "url": "https://api.githired.ca/mcp"
+    }
+  }
+}</code></pre>
+      <div class="copy-row">
+        <button type="button" class="copy-btn" data-copy="mcp-config">Copy config</button>
+      </div>
+
+      <h3>Claude (custom connector)</h3>
       <p>
-        Publishing an MCP server does <em>not</em> guarantee automatic discovery by ChatGPT or Claude.
-        You (or the product) must configure the connector URL.
+        Claude supports remote MCP via <strong>Connectors → Add → Custom → Web</strong>
+        (Claude.ai / Desktop). There is no official public one-click install URL for third-party
+        servers — paste the endpoint and choose <strong>No sign in</strong>.
       </p>
+      <ol>
+        <li>Open Customize → Connectors → Add → Custom → Web.</li>
+        <li>Name: <code>GitHired</code></li>
+        <li>URL: <code>https://api.githired.ca/mcp</code></li>
+        <li>Authentication: No sign in</li>
+      </ol>
+
+      <h3>ChatGPT (custom MCP plugin)</h3>
+      <p>
+        ChatGPT supports remote MCP plugins on the web. There is no official third-party
+        one-click install link — add a custom server and install the plugin.
+      </p>
+      <ol>
+        <li>Open <a href="https://chatgpt.com/plugins">chatgpt.com/plugins</a> → Add custom MCP server.</li>
+        <li>Server URL: <code>https://api.githired.ca/mcp</code></li>
+        <li>Authentication: No authentication</li>
+        <li>Create as a plugin, then install it and mention it with <code>@</code> in chat.</li>
+      </ol>
     </section>
 
-    <section>
-      <h2>MCP endpoint</h2>
-      <pre class="code-block"><code>https://api.githired.ca/mcp</code></pre>
-      <p>Transport: Streamable HTTP (JSON-RPC). No API key required for normal use.</p>
+    <section aria-labelledby="tools-heading">
+      <h2 id="tools-heading">Tools</h2>
+      <div class="docs-card-list">
+        <article class="docs-card">
+          <h3><code>search_jobs</code></h3>
+          <p>Keywords, location, province, remote, work mode, minimum CAD salary, seniority, company, limit (≤25).</p>
+        </article>
+        <article class="docs-card">
+          <h3><code>get_job</code></h3>
+          <p>Full detail for a stable GitHired id, including description excerpt and apply URL.</p>
+        </article>
+        <article class="docs-card">
+          <h3><code>match_profile</code></h3>
+          <p>Deterministic skill/role matching. Profiles are not stored. Scores are relevance, not hiring decisions.</p>
+        </article>
+        <article class="docs-card">
+          <h3><code>get_market_stats</code></h3>
+          <p>Aggregates for tracked employer ATS boards only — not a full labour-market census.</p>
+        </article>
+      </div>
     </section>
 
-    <section>
-      <h2>Tools</h2>
+    <section aria-labelledby="examples-heading">
+      <h2 id="examples-heading">Example prompts</h2>
+      <pre class="code-block"><code>Find five remote Senior Data Engineer jobs available in Canada.</code></pre>
+      <pre class="code-block"><code>Find Toronto software engineering roles advertising at least CAD $150,000.</code></pre>
+      <pre class="code-block"><code>Match me to data engineering jobs: Python 5y, SQL 5y, Databricks 2y, ETL, cloud.</code></pre>
+      <pre class="code-block"><code>Show Canadian tech job market stats from GitHired's tracked employers.</code></pre>
+    </section>
+
+    <section aria-labelledby="example-call-heading">
+      <h2 id="example-call-heading">Example tool call</h2>
+      <pre class="code-block"><code>{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "search_jobs",
+    "arguments": {
+      "keywords": "data engineer",
+      "remote": true,
+      "minimum_salary": 150000,
+      "limit": 5
+    }
+  }
+}</code></pre>
+    </section>
+
+    <section aria-labelledby="troubleshoot-heading">
+      <h2 id="troubleshoot-heading">Troubleshooting</h2>
       <ul>
-        <li><code>search_jobs</code> — keywords, location, province, remote, salary floor, seniority, company</li>
-        <li><code>get_job</code> — detail by GitHired id</li>
-        <li><code>match_profile</code> — deterministic skill/role matching (profiles are not stored)</li>
-        <li><code>get_market_stats</code> — aggregates for tracked employers only</li>
+        <li><strong>Cursor deeplink does nothing</strong> — update Cursor, or paste the JSON config into <code>~/.cursor/mcp.json</code> and reload MCP.</li>
+        <li><strong>Tools missing</strong> — confirm the server shows as connected in MCP settings; retry <code>initialize</code> / refresh tools.</li>
+        <li><strong>Empty results</strong> — broaden keywords; salary filters only match employer-advertised annual base.</li>
+        <li><strong>HTTP 429</strong> — slow down; limit is about 120 requests/minute/IP.</li>
+        <li><strong>Stale data</strong> — check the status pill above or <code>GET /api/v1/health</code>. Freshness threshold is 48 hours.</li>
+        <li><strong>Inspector</strong> — <code>npx @modelcontextprotocol/inspector https://api.githired.ca/mcp</code></li>
       </ul>
     </section>
 
-    <section>
-      <h2>Cursor</h2>
-      <p>Add a remote MCP server entry pointing at the URL above (Streamable HTTP). Then ask:</p>
-      <pre class="code-block"><code>Find remote senior data engineering jobs in Canada paying at least CAD $150,000.</code></pre>
-      <p>Verified locally against the GitHired tool schemas; confirm in your Cursor MCP settings after deploy.</p>
-    </section>
-
-    <section>
-      <h2>Claude / ChatGPT</h2>
-      <p>
-        Use each product’s custom connector / MCP configuration UI with
-        <code>https://api.githired.ca/mcp</code> once the production Worker is live.
-        Integration is <strong>not claimed verified</strong> until tested in that product after deployment.
-      </p>
-    </section>
-
-    <section>
-      <h2>MCP Inspector</h2>
-      <pre class="code-block"><code>npx @modelcontextprotocol/inspector https://api.githired.ca/mcp</code></pre>
-    </section>
-
-    <section>
-      <h2>Safety</h2>
+    <section aria-labelledby="safety-heading">
+      <h2 id="safety-heading">Safety &amp; limits</h2>
       <ul>
         <li>Read-only — no apply automation</li>
         <li>No résumé or personal profile persistence</li>
-        <li>Rate limited</li>
-        <li>Never invents Canadian eligibility or salaries</li>
+        <li>Canada-first eligibility; never invents geography or pay</li>
+        <li>Public REST twin: <a href="../developers/">/developers</a></li>
       </ul>
     </section>
   </main>
-  <style>
-    .code-block {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 1rem 1.1rem;
-      overflow-x: auto;
-      font-family: var(--mono);
-      font-size: 0.9rem;
-    }
-    main h2 { margin-top: 2rem; }
-    main ol, main ul { line-height: 1.7; }
-  </style>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p class="footer-note">Open source · Free · <a href="https://github.com/mikegianfelice/GitHired">GitHub</a></p>
+    </div>
+  </footer>
+  <script src="../docs.js" defer></script>
 </body>
 </html>
