@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "dataset_id": "0b100be9c2eaf865",
-  "generated_at": "2026-11-09T12:19:31Z",
+  "dataset_id": "7b762b6f4c074978",
+  "generated_at": "2026-11-09T13:35:15Z",
   "source": "githired-api-snapshot",
   "limit": 300,
   "count": 300,
@@ -29,7 +29,7 @@
     "total_jobs": 300,
     "total_companies": 57,
     "remote_jobs": 201,
-    "jobs_with_advertised_salary": 245
+    "jobs_with_advertised_salary": 246
   },
   "companies": [
     {
@@ -54,7 +54,7 @@
     },
     {
       "name": "TD",
-      "active_jobs": 12
+      "active_jobs": 13
     },
     {
       "name": "Grafana Labs",
@@ -85,10 +85,6 @@
       "active_jobs": 7
     },
     {
-      "name": "Stripe",
-      "active_jobs": 7
-    },
-    {
       "name": "Blackpoint Cyber",
       "active_jobs": 6
     },
@@ -98,6 +94,10 @@
     },
     {
       "name": "Northbeam",
+      "active_jobs": 6
+    },
+    {
+      "name": "Stripe",
       "active_jobs": 6
     },
     {
@@ -6363,6 +6363,32 @@
       "description_complete": true
     },
     {
+      "id": "913ba3629f6e84ae",
+      "title": "Software Engineer II - Senior IVR Developer",
+      "company": "TD",
+      "location": "Toronto, Ontario; Onsite",
+      "province": "ON",
+      "work_arrangement": "onsite",
+      "remote_scope": "local",
+      "seniority": "senior",
+      "track": "software_engineering",
+      "salary_min": 81600.0,
+      "salary_max": 115200.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
+      "salary_max_cad": 115200.0,
+      "salary_period": "annual",
+      "salary_kind": "advertised_base",
+      "apply_url": "https://td.wd3.myworkdayjobs.com/TD_Bank_Careers/job/Toronto-Ontario/Software-Engineer-II---Senior-IVR-Developer_R_1517829",
+      "verified": true,
+      "first_seen": "2026-11-09",
+      "last_verified": "2026-11-09",
+      "discovered_today": true,
+      "technologies": [],
+      "source": "workday",
+      "description_complete": true
+    },
+    {
       "id": "8ab1a33c32e40816",
       "title": "Software Engineer II Full Stack (Branch Systems)",
       "company": "TD",
@@ -8316,32 +8342,6 @@
       "salary_period": null,
       "salary_kind": "undisclosed",
       "apply_url": "https://stripe.com/jobs/search?gh_jid=8209967",
-      "verified": true,
-      "first_seen": "2026-11-09",
-      "last_verified": "2026-11-09",
-      "discovered_today": true,
-      "technologies": [],
-      "source": "greenhouse",
-      "description_complete": true
-    },
-    {
-      "id": "39ebb3d3910ccf22",
-      "title": "Staff Software Engineer, Risk Engineering",
-      "company": "Stripe",
-      "location": "Toronto",
-      "province": null,
-      "work_arrangement": "hybrid",
-      "remote_scope": "unspecified",
-      "seniority": "staff",
-      "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
-      "salary_max_cad": null,
-      "salary_period": null,
-      "salary_kind": "undisclosed",
-      "apply_url": "https://stripe.com/jobs/search?gh_jid=8120494",
       "verified": true,
       "first_seen": "2026-11-09",
       "last_verified": "2026-11-09",

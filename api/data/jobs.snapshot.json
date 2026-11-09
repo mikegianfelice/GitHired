@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "dataset_id": "0b100be9c2eaf865",
-  "generated_at": "2026-11-09T12:19:31Z",
+  "dataset_id": "7b762b6f4c074978",
+  "generated_at": "2026-11-09T13:35:15Z",
   "source": "githired-api-snapshot",
   "limit": 300,
   "count": 300,
@@ -29,7 +29,7 @@
     "total_jobs": 300,
     "total_companies": 57,
     "remote_jobs": 201,
-    "jobs_with_advertised_salary": 245
+    "jobs_with_advertised_salary": 246
   },
   "companies": [
     {
@@ -54,7 +54,7 @@
     },
     {
       "name": "TD",
-      "active_jobs": 12
+      "active_jobs": 13
     },
     {
       "name": "Grafana Labs",
@@ -85,10 +85,6 @@
       "active_jobs": 7
     },
     {
-      "name": "Stripe",
-      "active_jobs": 7
-    },
-    {
       "name": "Blackpoint Cyber",
       "active_jobs": 6
     },
@@ -98,6 +94,10 @@
     },
     {
       "name": "Northbeam",
+      "active_jobs": 6
+    },
+    {
+      "name": "Stripe",
       "active_jobs": 6
     },
     {
@@ -6589,6 +6589,33 @@
       "description_complete": true
     },
     {
+      "id": "913ba3629f6e84ae",
+      "title": "Software Engineer II - Senior IVR Developer",
+      "company": "TD",
+      "location": "Toronto, Ontario; Onsite",
+      "province": "ON",
+      "work_arrangement": "onsite",
+      "remote_scope": "local",
+      "seniority": "senior",
+      "track": "software_engineering",
+      "salary_min": 81600.0,
+      "salary_max": 115200.0,
+      "salary_currency": "CAD",
+      "salary_available": true,
+      "salary_max_cad": 115200.0,
+      "salary_period": "annual",
+      "salary_kind": "advertised_base",
+      "apply_url": "https://td.wd3.myworkdayjobs.com/TD_Bank_Careers/job/Toronto-Ontario/Software-Engineer-II---Senior-IVR-Developer_R_1517829",
+      "verified": true,
+      "first_seen": "2026-11-09",
+      "last_verified": "2026-11-09",
+      "discovered_today": true,
+      "technologies": [],
+      "source": "workday",
+      "description_excerpt": "Work Location: Toronto, Ontario, Canada Hours: 37.5 Line of Business: Technology Solutions Pay Details: $81,600 - $115,200 CAD This role is eligible for a discretionary variable compensation award that considers business and individual performance. TD is committed to providing fair and equitable compensation opportunities to all colleagues. Growth opportunities and skill development are defining features of the colleague experience at TD. Our compensation policies and practices have been designed to allow colleagues to progress through the salary range over time as they progress in their role. The base pay actually offered may vary based upon the candidate's skills and experience, job-related knowledge, geographic location, and other specific business and organizational needs. As a candidate, you are encouraged to ask compensation related questions and have an open dialogue with your re…",
+      "description_complete": true
+    },
+    {
       "id": "8ab1a33c32e40816",
       "title": "Software Engineer II Full Stack (Branch Systems)",
       "company": "TD",
@@ -8621,33 +8648,6 @@
       "technologies": [],
       "source": "greenhouse",
       "description_excerpt": "Who we are About Stripe Stripe is a financial infrastructure platform for businesses. Millions of companies—from the world’s largest enterprises to the most ambitious startups—use Stripe to accept payments, grow their revenue, and accelerate new business opportunities. Our mission is to increase the GDP of the internet, and we have a staggering amount of work ahead. That means you have an unprecedented opportunity to put the global economy within everyone’s reach while doing the most important work of your career. About the team In this role, you will be joining the High Availability and Disaster Recovery team. At Stripe, availability is a core feature of our products. This team designs and builds new solutions to allow latency-critical, stateful applications to survive any type of disaster. We build distributed systems on top of unreliable architecture to provide highly available and r…",
-      "description_complete": true
-    },
-    {
-      "id": "39ebb3d3910ccf22",
-      "title": "Staff Software Engineer, Risk Engineering",
-      "company": "Stripe",
-      "location": "Toronto",
-      "province": null,
-      "work_arrangement": "hybrid",
-      "remote_scope": "unspecified",
-      "seniority": "staff",
-      "track": "software_engineering",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
-      "salary_max_cad": null,
-      "salary_period": null,
-      "salary_kind": "undisclosed",
-      "apply_url": "https://stripe.com/jobs/search?gh_jid=8120494",
-      "verified": true,
-      "first_seen": "2026-11-09",
-      "last_verified": "2026-11-09",
-      "discovered_today": true,
-      "technologies": [],
-      "source": "greenhouse",
-      "description_excerpt": "Who we are About Stripe Stripe is a financial infrastructure platform for businesses. Millions of companies - from the world’s largest enterprises to the most ambitious startups - use Stripe to accept payments, grow their revenue, and accelerate new business opportunities. Our mission is to increase the GDP of the internet, and we have a staggering amount of work ahead. That means you have an unprecedented opportunity to put the global economy within everyone’s reach while doing the most important work of your career. About the team Risk Engineering builds the systems that protect Stripe from fraud, credit losses, and regulatory risk across user onboarding, compliance, financial crimes, and identity verification. Financial Crimes Engineering builds the systems and controls that let Stripe safely onboard businesses in emerging and regulated industries while keeping Stripe in compliance w…",
       "description_complete": true
     }
   ]
