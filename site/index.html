@@ -9,7 +9,7 @@
   <meta property="og:url" content="https://githired.ca/" />
   <meta property="og:description" content="Canada-first tech jobs from employer ATS boards. Search and match in your browser — no account required." />
   <title>GitHired — Jobs Without the Noise</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=20261109c" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </span>
       </a>
 
-      <nav class="header-nav primary-nav" aria-label="Primary">
+      <nav class="header-nav desktop-nav" aria-label="Primary">
         <button type="button" class="nav-link is-active" data-nav="browse">Browse Jobs</button>
         <button type="button" class="nav-link" data-nav="match">Find My Matches</button>
         <div class="nav-dropdown" id="nav-developers">
@@ -40,36 +40,33 @@
             aria-controls="nav-dev-menu"
             aria-haspopup="true"
           >For Developers</button>
-          <div class="nav-dropdown-menu" id="nav-dev-menu" role="menu" hidden>
-            <a role="menuitem" href="./developers/">REST API</a>
-            <a role="menuitem" href="./agents/">AI Agents / MCP</a>
-            <a role="menuitem" href="./openapi.json">OpenAPI</a>
-            <a role="menuitem" href="https://github.com/mikegianfelice/GitHired">GitHub</a>
-          </div>
+          <ul class="nav-dropdown-menu" id="nav-dev-menu" role="menu" hidden>
+            <li role="none"><a role="menuitem" href="./developers/">Developer API</a></li>
+            <li role="none"><a role="menuitem" href="./agents/">Connect an AI Agent</a></li>
+            <li role="none"><a role="menuitem" href="https://github.com/mikegianfelice/GitHired">GitHub</a></li>
+          </ul>
         </div>
       </nav>
 
-      <div class="header-mobile-actions">
-        <button type="button" class="nav-link mobile-quick" data-nav="browse">Jobs</button>
-        <button type="button" class="nav-link mobile-quick" data-nav="match">Matches</button>
-        <button
-          type="button"
-          class="menu-toggle"
-          id="menu-toggle"
-          aria-expanded="false"
-          aria-controls="mobile-menu"
-          aria-label="Open menu"
-        >
-          <span class="menu-toggle-bars" aria-hidden="true"></span>
-        </button>
-      </div>
+      <button
+        type="button"
+        class="menu-toggle"
+        id="menu-toggle"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Open menu"
+      >
+        <span class="menu-toggle-bars" aria-hidden="true"></span>
+      </button>
     </div>
 
     <div class="mobile-menu wrap" id="mobile-menu" hidden>
-      <nav aria-label="More destinations">
-        <a href="./developers/">REST API</a>
-        <a href="./agents/">AI Agents / MCP</a>
-        <a href="./openapi.json">OpenAPI</a>
+      <nav aria-label="Site">
+        <button type="button" class="mobile-menu-link" data-nav="browse">Browse Jobs</button>
+        <button type="button" class="mobile-menu-link" data-nav="match">Find My Matches</button>
+        <div class="mobile-menu-divider" role="separator"></div>
+        <a href="./developers/">Developer API</a>
+        <a href="./agents/">Connect an AI Agent</a>
         <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
       </nav>
     </div>
@@ -236,7 +233,7 @@
       <div id="job-list" class="job-list"></div>
       <div class="load-more-wrap" id="load-more-wrap" hidden>
         <p class="showing-count" id="showing-count"></p>
-        <button type="button" class="btn-secondary" id="btn-load-more">Load 20 more jobs</button>
+        <button type="button" class="btn-secondary" id="btn-load-more">Load 20 More Jobs</button>
       </div>
       <div id="empty-state" class="empty-state" hidden>
         <h2>No matching jobs</h2>
@@ -405,8 +402,8 @@
 
   <div class="filter-drawer-backdrop" id="filter-drawer-backdrop" hidden></div>
 
-  <script src="match-engine.js"></script>
-  <script src="resume.js"></script>
-  <script src="app.js" defer></script>
+  <script src="match-engine.js?v=20261109c"></script>
+  <script src="resume.js?v=20261109c"></script>
+  <script src="app.js?v=20261109c" defer></script>
 </body>
 </html>

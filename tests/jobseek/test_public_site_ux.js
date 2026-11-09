@@ -30,8 +30,9 @@ describe("homepage UX markup", () => {
     assert.match(indexHtml, /data-nav="match"/);
     assert.match(indexHtml, /id="menu-toggle"/);
     assert.match(indexHtml, /aria-controls="mobile-menu"/);
-    assert.match(indexHtml, /class="[^"]*mobile-quick[^"]*"[^>]*data-nav="browse"/);
-    assert.match(indexHtml, /class="[^"]*mobile-quick[^"]*"[^>]*data-nav="match"/);
+    assert.match(indexHtml, /desktop-nav/);
+    assert.match(indexHtml, /Developer API/);
+    assert.match(indexHtml, /Connect an AI Agent/);
   });
 
   it("uses advanced filters with salary presets and chips", () => {

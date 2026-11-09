@@ -5,6 +5,7 @@
   const R = window.GitHiredResume;
   const PROFILE_KEY = "githired_public_profile_v1";
   const BATCH_SIZE = 20;
+  const LOAD_MORE_BATCH_SIZE = 20;
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   const els = {
@@ -102,6 +103,26 @@
     const month = MONTHS[Number(m[2]) - 1] || m[2];
     const day = String(Number(m[3]));
     return `Verified ${month} ${day}`;
+  }
+
+  function formatSnapshotMeta(count, generatedAt) {
+    const n = Number(count) || 0;
+    const primary = `${n.toLocaleString("en-CA")} verified Canadian tech jobs`;
+    if (!generatedAt) return primary;
+    const d = new Date(generatedAt);
+    if (Number.isNaN(d.getTime())) return primary;
+    const updated = d.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    return `${primary} · Last updated ${updated}`;
+  }
+
+  function on(el, type, handler, options) {
+    if (!el) return false;
+    el.addEventListener(type, handler, options);
+    return true;
   }
 
   function arrangementLabel(job) {
@@ -392,7 +413,7 @@
       </div>
       ${extras}
       <div class="job-actions">
-        <a class="apply-btn" href="${escapeHtml(job.apply_url)}" rel="noopener noreferrer" target="_blank">Apply Directly</a>
+        <a class="apply-btn" href="${escapeHtml(job.apply_url)}" rel="noopener noreferrer" target="_blank">Apply</a>
       </div>
     `;
     return card;
@@ -449,9 +470,9 @@
 
   function loadMore() {
     const before = window.scrollY;
-    visibleCount += BATCH_SIZE;
+    visibleCount += LOAD_MORE_BATCH_SIZE;
     renderBrowse({ append: true });
-    window.scrollTo(0, before);
+    requestAnimationFrame(() => window.scrollTo(0, before));
     announce(`Showing ${Math.min(visibleCount, filteredRows.length)} of ${filteredRows.length} jobs`);
   }
 
@@ -462,29 +483,79 @@
   function setAdvancedOpen(open) {
     if (!els.advanced || !els.allFiltersBtn) return;
     const mobile = isMobileFilters();
-    els.advanced.hidden = !open;
+    if (open) {
+      els.advanced.removeAttribute("hidden");
+      els.advanced.hidden = false;
+      els.advanced.classList.add("is-open");
+    } else {
+      els.advanced.setAttribute("hidden", "");
+      els.advanced.hidden = true;
+      els.advanced.classList.remove("is-open");
+    }
     els.allFiltersBtn.setAttribute("aria-expanded", open ? "true" : "false");
     els.allFiltersBtn.classList.toggle("is-active", open);
     document.body.classList.toggle("filters-open", open && mobile);
-    if (els.backdrop) els.backdrop.hidden = !(open && mobile);
-    if (open && mobile) {
-      const closeBtn = els.advanced.querySelector("#btn-apply-filters");
-      if (closeBtn) closeBtn.focus();
+    if (els.backdrop) {
+      if (open && mobile) {
+        els.backdrop.removeAttribute("hidden");
+        els.backdrop.hidden = false;
+      } else {
+        els.backdrop.setAttribute("hidden", "");
+        els.backdrop.hidden = true;
+      }
     }
+    if (open && mobile && els.applyFilters) {
+      els.applyFilters.focus();
+    }
+  }
+
+  function toggleAdvancedFilters() {
+    const open = els.allFiltersBtn.getAttribute("aria-expanded") !== "true";
+    setAdvancedOpen(open);
+    return open;
   }
 
   function setMobileMenuOpen(open) {
     if (!els.mobileMenu || !els.menuToggle) return;
-    els.mobileMenu.hidden = !open;
+    if (open) {
+      els.mobileMenu.removeAttribute("hidden");
+      els.mobileMenu.hidden = false;
+      els.mobileMenu.classList.add("is-open");
+    } else {
+      els.mobileMenu.setAttribute("hidden", "");
+      els.mobileMenu.hidden = true;
+      els.mobileMenu.classList.remove("is-open");
+    }
     els.menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
     els.menuToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
     document.body.classList.toggle("menu-open", open);
   }
 
+  function toggleMobileMenu() {
+    const open = els.menuToggle.getAttribute("aria-expanded") !== "true";
+    setMobileMenuOpen(open);
+    if (open) setDevMenuOpen(false);
+    return open;
+  }
+
   function setDevMenuOpen(open) {
     if (!els.devMenu || !els.devToggle) return;
-    els.devMenu.hidden = !open;
+    if (open) {
+      els.devMenu.removeAttribute("hidden");
+      els.devMenu.hidden = false;
+      els.devMenu.classList.add("is-open");
+    } else {
+      els.devMenu.setAttribute("hidden", "");
+      els.devMenu.hidden = true;
+      els.devMenu.classList.remove("is-open");
+    }
     els.devToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function toggleDevMenu() {
+    const open = els.devToggle.getAttribute("aria-expanded") !== "true";
+    setDevMenuOpen(open);
+    return open;
   }
 
   function setView(name) {
@@ -497,7 +568,10 @@
 
     document.querySelectorAll("[data-nav]").forEach((el) => {
       const active = el.getAttribute("data-nav") === name;
-      if (el.classList.contains("nav-link") || el.classList.contains("mobile-quick")) {
+      if (
+        el.classList.contains("nav-link") ||
+        el.classList.contains("mobile-menu-link")
+      ) {
         el.classList.toggle("is-active", active);
       }
     });
@@ -762,7 +836,12 @@
       jobs = Array.isArray(data.jobs) ? data.jobs : [];
       if (data.usd_to_cad) fx = Number(data.usd_to_cad) || fx;
       totalJobCount = typeof data.count === "number" ? data.count : jobs.length;
-      els.meta.textContent = `${totalJobCount.toLocaleString("en-CA")} verified Canadian tech jobs`;
+      if (els.meta) {
+        els.meta.textContent = formatSnapshotMeta(totalJobCount, data.generated_at);
+        if (data.generated_at) {
+          els.meta.title = `Dataset generated ${data.generated_at}`;
+        }
+      }
       populateFilters(jobs);
       restoreUrlState();
       els.error.hidden = true;
@@ -783,106 +862,114 @@
     });
   }
 
-  document.querySelectorAll("[data-nav]").forEach((el) => {
-    el.addEventListener("click", (e) => {
-      const nav = el.getAttribute("data-nav");
-      if (!nav) return;
-      if (el.tagName === "A" && nav === "browse") e.preventDefault();
-      setView(nav);
+  function bindUi() {
+    document.querySelectorAll("[data-nav]").forEach((el) => {
+      on(el, "click", (e) => {
+        const nav = el.getAttribute("data-nav");
+        if (!nav) return;
+        if (el.tagName === "A" && nav === "browse") e.preventDefault();
+        setView(nav);
+      });
     });
-  });
 
-  bindMultiFilters();
+    bindMultiFilters();
 
-  for (const el of [els.search, els.sort, els.salaryMin, els.includeUndisclosed]) {
-    el.addEventListener("input", () => {
-      if (el === els.salaryMin) updateSalaryDisplay();
+    for (const el of [els.search, els.sort, els.salaryMin, els.includeUndisclosed]) {
+      on(el, "input", () => {
+        if (el === els.salaryMin) updateSalaryDisplay();
+        onFiltersChanged();
+      });
+      on(el, "change", () => {
+        if (el === els.salaryMin) updateSalaryDisplay();
+        onFiltersChanged();
+      });
+    }
+
+    document.querySelectorAll(".preset-btn").forEach((btn) => {
+      on(btn, "click", () => {
+        if (!els.salaryMin) return;
+        els.salaryMin.value = String(Number(btn.getAttribute("data-salary")) || 0);
+        updateSalaryDisplay();
+        onFiltersChanged();
+      });
+    });
+
+    // Root cause of prior "does nothing" failures: listeners were attached
+    // without null-guards, so one missing node aborted the whole bind chain.
+    on(els.allFiltersBtn, "click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleAdvancedFilters();
+    });
+    on(els.applyFilters, "click", () => {
       onFiltersChanged();
-    });
-    el.addEventListener("change", () => {
-      if (el === els.salaryMin) updateSalaryDisplay();
-      onFiltersChanged();
-    });
-  }
-
-  document.querySelectorAll(".preset-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      els.salaryMin.value = String(Number(btn.getAttribute("data-salary")) || 0);
-      updateSalaryDisplay();
-      onFiltersChanged();
-    });
-  });
-
-  els.allFiltersBtn.addEventListener("click", () => {
-    const open = els.advanced.hidden;
-    setAdvancedOpen(open);
-  });
-  els.applyFilters.addEventListener("click", () => {
-    onFiltersChanged();
-    setAdvancedOpen(false);
-    announce(`${filteredRows.length} jobs match your filters`);
-  });
-  els.clearFilters.addEventListener("click", clearAllFilters);
-  els.clearFiltersAdv.addEventListener("click", clearAllFilters);
-  els.clearEmpty.addEventListener("click", clearAllFilters);
-  els.loadMore.addEventListener("click", loadMore);
-  els.chips.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-chip]");
-    if (btn) removeChip(btn.getAttribute("data-chip"));
-  });
-
-  if (els.backdrop) {
-    els.backdrop.addEventListener("click", () => setAdvancedOpen(false));
-  }
-
-  els.menuToggle.addEventListener("click", () => {
-    const open = els.mobileMenu.hidden;
-    setMobileMenuOpen(open);
-    if (open) setDevMenuOpen(false);
-  });
-
-  els.devToggle.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const open = els.devMenu.hidden;
-    setDevMenuOpen(open);
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest("#nav-developers")) setDevMenuOpen(false);
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeAllMultiFilters();
       setAdvancedOpen(false);
-      setMobileMenuOpen(false);
-      setDevMenuOpen(false);
-    }
-  });
+      announce(`${filteredRows.length} jobs match your filters`);
+    });
+    on(els.clearFilters, "click", clearAllFilters);
+    on(els.clearFiltersAdv, "click", clearAllFilters);
+    on(els.clearEmpty, "click", clearAllFilters);
+    on(els.loadMore, "click", (e) => {
+      e.preventDefault();
+      loadMore();
+    });
+    on(els.chips, "click", (e) => {
+      const btn = e.target.closest("[data-chip]");
+      if (btn) removeChip(btn.getAttribute("data-chip"));
+    });
+    on(els.backdrop, "click", () => setAdvancedOpen(false));
 
-  els.resumeFile.addEventListener("change", () => {
-    const file = els.resumeFile.files && els.resumeFile.files[0];
-    if (file) onResumeFile(file);
-  });
+    on(els.menuToggle, "click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleMobileMenu();
+    });
 
-  document.getElementById("btn-extract").addEventListener("click", () => {
-    try {
-      extractDraft();
-      showProfileStep();
-    } catch (err) {
-      els.resumeStatus.textContent = err.message || String(err);
-    }
-  });
-  document.getElementById("btn-back-input").addEventListener("click", () => showMatchStep("input"));
-  document.getElementById("btn-edit-profile").addEventListener("click", () => showProfileStep());
-  document.getElementById("btn-run-match").addEventListener("click", runMatch);
-  document.getElementById("btn-save-profile").addEventListener("click", () => {
-    draftProfile = readProfileEditor();
-    saveProfile(draftProfile);
-    els.resumeStatus.textContent =
-      "Profile saved in this browser only. Clearing site data removes it.";
-  });
-  document.getElementById("btn-clear-profile").addEventListener("click", clearProfile);
+    on(els.devToggle, "click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleDevMenu();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#nav-developers")) setDevMenuOpen(false);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeAllMultiFilters();
+        setAdvancedOpen(false);
+        setMobileMenuOpen(false);
+        setDevMenuOpen(false);
+      }
+    });
+
+    on(els.resumeFile, "change", () => {
+      const file = els.resumeFile.files && els.resumeFile.files[0];
+      if (file) onResumeFile(file);
+    });
+
+    on(document.getElementById("btn-extract"), "click", () => {
+      try {
+        extractDraft();
+        showProfileStep();
+      } catch (err) {
+        if (els.resumeStatus) els.resumeStatus.textContent = err.message || String(err);
+      }
+    });
+    on(document.getElementById("btn-back-input"), "click", () => showMatchStep("input"));
+    on(document.getElementById("btn-edit-profile"), "click", () => showProfileStep());
+    on(document.getElementById("btn-run-match"), "click", runMatch);
+    on(document.getElementById("btn-save-profile"), "click", () => {
+      draftProfile = readProfileEditor();
+      saveProfile(draftProfile);
+      if (els.resumeStatus) {
+        els.resumeStatus.textContent =
+          "Profile saved in this browser only. Clearing site data removes it.";
+      }
+    });
+    on(document.getElementById("btn-clear-profile"), "click", clearProfile);
+  }
 
   window.GitHiredPublic = {
     assetUrl,
@@ -890,8 +977,24 @@
     renderBrowse: () => renderBrowse({ append: false }),
     getFilteredCount: () => filteredRows.length,
     getVisibleCount: () => Math.min(visibleCount, filteredRows.length),
+    getRenderedCardCount: () => (els.list ? els.list.querySelectorAll(".job-card").length : 0),
+    loadMore,
+    toggleAdvancedFilters,
+    toggleDevMenu,
+    toggleMobileMenu,
+    setAdvancedOpen,
+    setDevMenuOpen,
+    setMobileMenuOpen,
+    formatSnapshotMeta,
     BATCH_SIZE,
+    LOAD_MORE_BATCH_SIZE,
     PROFILE_KEY,
   };
+
+  try {
+    bindUi();
+  } catch (err) {
+    console.error("GitHired UI bind failed", err);
+  }
   boot();
 })();
