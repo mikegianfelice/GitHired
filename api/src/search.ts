@@ -18,14 +18,25 @@ export function parseSearchFilters(params: URLSearchParams): SearchFilters {
       ? sortRaw
       : "relevance";
   const limitRaw = Number(params.get("limit") || DEFAULT_LIMIT);
+  const salaryMinRaw =
+    params.get("salary_min") != null ? Number(params.get("salary_min")) : undefined;
+  const salaryMaxRaw =
+    params.get("salary_max") != null ? Number(params.get("salary_max")) : undefined;
   return {
     q: params.get("q")?.trim() || undefined,
     location: params.get("location")?.trim() || undefined,
     province: params.get("province")?.trim()?.toUpperCase() || undefined,
     remote: parseBool(params.get("remote")),
     work_mode: params.get("work_mode")?.trim()?.toLowerCase() || undefined,
-    salary_min: params.get("salary_min") != null ? Number(params.get("salary_min")) : undefined,
-    salary_max: params.get("salary_max") != null ? Number(params.get("salary_max")) : undefined,
+    // Non-positive / NaN salary bounds are ignored (never invent floors/ceilings).
+    salary_min:
+      salaryMinRaw != null && Number.isFinite(salaryMinRaw) && salaryMinRaw > 0
+        ? salaryMinRaw
+        : undefined,
+    salary_max:
+      salaryMaxRaw != null && Number.isFinite(salaryMaxRaw) && salaryMaxRaw > 0
+        ? salaryMaxRaw
+        : undefined,
     salary_disclosed: parseBool(params.get("salary_disclosed")),
     seniority: params.get("seniority")?.trim()?.toLowerCase() || undefined,
     company: params.get("company")?.trim() || undefined,

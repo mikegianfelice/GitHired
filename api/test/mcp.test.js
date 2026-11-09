@@ -34,6 +34,22 @@ test("MCP exposes documented tools", () => {
   }
 });
 
+test("MCP notifications return 202 instead of Internal error", () => {
+  // Cursor (and other Streamable HTTP clients) send notifications/initialized with no id.
+  assert.match(mcpSrc, /acceptedResponse/);
+  assert.match(mcpSrc, /responses\.length === 0\) return acceptedResponse\(\)/);
+});
+
+test("MCP minimum_salary ignores non-positive values", () => {
+  assert.match(mcpSrc, /args\.minimum_salary > 0/);
+});
+
+const restSrc = readFileSync(join(root, "src/rest.ts"), "utf8");
+test("REST exports acceptedResponse for MCP notifications", () => {
+  assert.match(restSrc, /export function acceptedResponse/);
+  assert.match(restSrc, /status:\s*202/);
+});
+
 test("snapshot ClickHouse Control Plane is not US-only labeled", () => {
   const snapshot = JSON.parse(readFileSync(join(root, "data/jobs.snapshot.json"), "utf8"));
   const hit = snapshot.jobs.find(

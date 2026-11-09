@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "githired": {
+      "url": "https://api.githired.ca/mcp"
+    }
+  }
+}

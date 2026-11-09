@@ -27,6 +27,11 @@ export function optionsResponse(): Response {
   return new Response(null, { status: 204, headers: CORS });
 }
 
+/** Empty acknowledgment for MCP notifications (Streamable HTTP). */
+export function acceptedResponse(): Response {
+  return new Response(null, { status: 202, headers: CORS });
+}
+
 function staleHours(env: Env): number {
   const n = Number(env.STALE_AFTER_HOURS || 48);
   return Number.isFinite(n) && n > 0 ? n : 48;

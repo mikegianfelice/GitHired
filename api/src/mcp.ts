@@ -3,7 +3,7 @@ import { matchProfile } from "./match";
 import { checkRateLimit, clientIp } from "./rate-limit";
 import { compactJob, getJobById, searchJobs } from "./search";
 import type { Env, MatchProfileInput, SearchFilters } from "./types";
-import { json, optionsResponse } from "./rest";
+import { acceptedResponse, json, optionsResponse } from "./rest";
 
 const PROTOCOL_VERSION = "2024-11-05";
 const SERVER_INFO = { name: "githired", version: "1.0.0" };
@@ -103,7 +103,10 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       province: typeof args.province === "string" ? args.province.toUpperCase() : undefined,
       remote: typeof args.remote === "boolean" ? args.remote : undefined,
       work_mode: typeof args.work_mode === "string" ? args.work_mode : undefined,
-      salary_min: typeof args.minimum_salary === "number" ? args.minimum_salary : undefined,
+      salary_min:
+        typeof args.minimum_salary === "number" && Number.isFinite(args.minimum_salary) && args.minimum_salary > 0
+          ? args.minimum_salary
+          : undefined,
       seniority: typeof args.seniority === "string" ? args.seniority : undefined,
       company: typeof args.company === "string" ? args.company : undefined,
       sort: "relevance",
@@ -282,7 +285,11 @@ export async function handleMcp(request: Request, env: Env): Promise<Response> {
   }
 
   if (Array.isArray(body)) {
+    // Batch of notifications only → 202 with no body.
+    if (responses.length === 0) return acceptedResponse();
     return json(responses);
   }
-  return json(responses[0] || rpcError(null, -32603, "Internal error"));
+  // Single notification (no id / no result) must not become Internal error.
+  if (responses.length === 0) return acceptedResponse();
+  return json(responses[0]);
 }
