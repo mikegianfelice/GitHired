@@ -518,7 +518,9 @@
     );
     const minSal = Number(filters.minimum_salary_cad) || 0;
     const includeUndisclosed = filters.include_undisclosed_salary !== false;
-    const sort = filters.sort || "salary";
+    // Default: newest verification date (last_verified). This is NOT the original
+    // employer posting date — only when GitHired last confirmed the listing.
+    const sort = filters.sort || "verified";
 
     let out = (jobs || []).filter((job) => {
       if (q) {
@@ -544,8 +546,19 @@
         if (bc == null) return -1;
         return bc - ac;
       });
-    } else if (sort === "recent") {
-      out.sort((a, b) => String(b.first_seen || "").localeCompare(String(a.first_seen || "")));
+    } else if (sort === "verified" || sort === "recent") {
+      // "verified" = last_verified desc; legacy "recent" = first_seen (discovery) desc.
+      const key = sort === "recent" ? "first_seen" : "last_verified";
+      out.sort((a, b) => {
+        const av = String(a[key] || "");
+        const bv = String(b[key] || "");
+        if (bv !== av) return bv.localeCompare(av);
+        // Stable tie-breakers
+        const ac = salaryMaxCad(a, fx);
+        const bc = salaryMaxCad(b, fx);
+        if (ac != null && bc != null && bc !== ac) return bc - ac;
+        return a.company.localeCompare(b.company) || a.title.localeCompare(b.title);
+      });
     } else if (sort === "company") {
       out.sort((a, b) => a.company.localeCompare(b.company) || a.title.localeCompare(b.title));
     }

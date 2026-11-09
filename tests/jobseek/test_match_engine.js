@@ -247,4 +247,58 @@ describe("filterBrowseJobs", () => {
     assert.equal(out.length, 1);
     assert.equal(out[0].job.company, "B");
   });
+
+  it("defaults to newest verified (last_verified), not salary", () => {
+    const jobs = [
+      job({
+        company: "OldHigh",
+        last_verified: "2026-10-01",
+        salary_max: 300000,
+        salary_max_cad: 300000,
+      }),
+      job({
+        company: "NewLow",
+        last_verified: "2026-11-09",
+        salary_max: 90000,
+        salary_max_cad: 90000,
+      }),
+    ];
+    const out = M.filterBrowseJobs(jobs, { minimum_salary_cad: 0 }, 1.35);
+    assert.equal(out[0].job.company, "NewLow");
+  });
+
+  it("sort=verified uses last_verified; sort=recent uses first_seen", () => {
+    const jobs = [
+      job({
+        company: "VerifiedNew",
+        last_verified: "2026-11-09",
+        first_seen: "2026-10-01",
+      }),
+      job({
+        company: "DiscoveredNew",
+        last_verified: "2026-10-01",
+        first_seen: "2026-11-08",
+      }),
+    ];
+    const verified = M.filterBrowseJobs(jobs, { sort: "verified", minimum_salary_cad: 0 }, 1.35);
+    const recent = M.filterBrowseJobs(jobs, { sort: "recent", minimum_salary_cad: 0 }, 1.35);
+    assert.equal(verified[0].job.company, "VerifiedNew");
+    assert.equal(recent[0].job.company, "DiscoveredNew");
+  });
+
+  it("puts jobs without salary after advertised when sorting by salary", () => {
+    const jobs = [
+      job({
+        company: "Unknown",
+        salary_available: false,
+        salary_min: null,
+        salary_max: null,
+        salary_max_cad: null,
+      }),
+      job({ company: "Listed", salary_max: 120000, salary_max_cad: 120000 }),
+    ];
+    const out = M.filterBrowseJobs(jobs, { sort: "salary", minimum_salary_cad: 0 }, 1.35);
+    assert.equal(out[0].job.company, "Listed");
+    assert.equal(out[1].job.company, "Unknown");
+  });
 });

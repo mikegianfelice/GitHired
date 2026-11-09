@@ -7,7 +7,7 @@
   <link rel="canonical" href="https://githired.ca/" />
   <meta property="og:title" content="GitHired — Jobs Without the Noise" />
   <meta property="og:url" content="https://githired.ca/" />
-  <meta property="og:description" content="Canada-first tech jobs from employer ATS boards. Public API and MCP for developers and AI agents." />
+  <meta property="og:description" content="Canada-first tech jobs from employer ATS boards. Search and match in your browser — no account required." />
   <title>GitHired — Jobs Without the Noise</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -16,6 +16,8 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
+  <div id="live-region" class="sr-only" aria-live="polite"></div>
+
   <header class="site-header">
     <div class="wrap header-inner">
       <a class="brand" href="./" aria-label="GitHired home" data-nav="browse">
@@ -25,75 +27,73 @@
           <span class="brand-tag">Jobs Without the Noise</span>
         </span>
       </a>
-      <nav class="header-nav" aria-label="Primary">
+
+      <nav class="header-nav primary-nav" aria-label="Primary">
         <button type="button" class="nav-link is-active" data-nav="browse">Browse Jobs</button>
         <button type="button" class="nav-link" data-nav="match">Find My Matches</button>
-        <a href="./developers/">API</a>
-        <a href="./agents/">Agents</a>
+        <div class="nav-dropdown" id="nav-developers">
+          <button
+            type="button"
+            class="nav-link nav-dropdown-toggle"
+            id="nav-dev-toggle"
+            aria-expanded="false"
+            aria-controls="nav-dev-menu"
+            aria-haspopup="true"
+          >For Developers</button>
+          <div class="nav-dropdown-menu" id="nav-dev-menu" role="menu" hidden>
+            <a role="menuitem" href="./developers/">REST API</a>
+            <a role="menuitem" href="./agents/">AI Agents / MCP</a>
+            <a role="menuitem" href="./openapi.json">OpenAPI</a>
+            <a role="menuitem" href="https://github.com/mikegianfelice/GitHired">GitHub</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="header-mobile-actions">
+        <button type="button" class="nav-link mobile-quick" data-nav="browse">Jobs</button>
+        <button type="button" class="nav-link mobile-quick" data-nav="match">Matches</button>
+        <button
+          type="button"
+          class="menu-toggle"
+          id="menu-toggle"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+          aria-label="Open menu"
+        >
+          <span class="menu-toggle-bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu wrap" id="mobile-menu" hidden>
+      <nav aria-label="More destinations">
+        <a href="./developers/">REST API</a>
+        <a href="./agents/">AI Agents / MCP</a>
+        <a href="./openapi.json">OpenAPI</a>
         <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
       </nav>
     </div>
   </header>
 
   <main id="main">
-    <section class="hero wrap">
-      <p class="eyebrow">Canada-first · Public ATS boards · No account</p>
+    <!-- Compact job-search-first hero -->
+    <section class="hero hero-compact wrap" id="view-hero-browse">
       <h1>Find Canadian tech jobs that actually fit</h1>
-      <p class="lede">
-        Browse verified opportunities, or let GitHired score listings against your experience —
-        entirely in your browser. No install, no login, no résumé upload to our servers.
+      <p class="lede lede-compact">
+        Verified listings from employer career pages — search in your browser. No account required.
       </p>
-      <div class="hero-actions" role="group" aria-label="Choose view">
-        <button type="button" class="btn-primary" data-nav="browse" aria-pressed="true">Browse Jobs</button>
-        <button type="button" class="btn-secondary" data-nav="match" aria-pressed="false">Find My Matches</button>
-      </div>
-      <p class="snapshot-meta" id="snapshot-meta" aria-live="polite">Loading shortlist…</p>
-    </section>
-
-    <section class="dev-ai wrap" aria-label="Developers and AI agents">
-      <h2>Built for Developers. Accessible to AI.</h2>
-      <p>
-        Search Canadian tech jobs yourself, or connect GitHired to your AI assistant.
-      </p>
-      <div class="hero-actions" role="group" aria-label="Developer links">
-        <a class="btn-primary" href="./" data-nav="browse">Job Search</a>
-        <a class="btn-secondary" href="./developers/">Developer API</a>
-        <a class="btn-secondary" href="./agents/">Connect an AI Agent</a>
-      </div>
+      <p class="snapshot-meta" id="snapshot-meta" aria-live="polite">Loading jobs…</p>
     </section>
 
     <!-- BROWSE VIEW -->
     <section id="view-browse" class="view wrap" aria-label="Browse jobs">
       <section class="controls" aria-label="Search and filters">
         <label class="search-field">
-          <span class="sr-only">Search</span>
-          <input id="search" type="search" placeholder="Search title, company, or technology" autocomplete="off" />
+          <span class="sr-only">Search title, company, or skills</span>
+          <input id="search" type="search" placeholder="Search title, company, or skills" autocomplete="off" />
         </label>
 
-        <div class="salary-panel">
-          <div class="salary-panel-head">
-            <label for="salary-min">Minimum Salary (CAD)</label>
-            <output id="salary-min-display" for="salary-min" class="salary-display">$0</output>
-          </div>
-          <input
-            id="salary-min"
-            type="range"
-            min="0"
-            max="300000"
-            step="10000"
-            value="0"
-            aria-valuemin="0"
-            aria-valuemax="300000"
-            aria-valuenow="0"
-          />
-          <div class="salary-scale" aria-hidden="true"><span>$0</span><span>$150k</span><span>$300k+</span></div>
-          <label class="check-row">
-            <input id="include-undisclosed" type="checkbox" checked />
-            <span>Include jobs without advertised salaries</span>
-          </label>
-        </div>
-
-        <div class="filter-row">
+        <div class="filter-toolbar">
           <div class="multi-filter" data-filter="province">
             <span class="multi-filter-label" id="label-province">Province</span>
             <button
@@ -114,8 +114,9 @@
               hidden
             ></div>
           </div>
+
           <div class="multi-filter" data-filter="arrangement">
-            <span class="multi-filter-label" id="label-arrangement">Arrangement</span>
+            <span class="multi-filter-label" id="label-arrangement">Work arrangement</span>
             <button
               type="button"
               class="multi-filter-toggle"
@@ -134,70 +135,138 @@
               hidden
             ></div>
           </div>
-          <div class="multi-filter" data-filter="seniority">
-            <span class="multi-filter-label" id="label-seniority">Seniority</span>
-            <button
-              type="button"
-              class="multi-filter-toggle"
-              id="filter-seniority-toggle"
-              aria-haspopup="listbox"
-              aria-expanded="false"
-              aria-controls="filter-seniority-panel"
-              aria-labelledby="label-seniority"
-            >All</button>
-            <div
-              class="multi-filter-panel"
-              id="filter-seniority-panel"
-              role="listbox"
-              aria-multiselectable="true"
-              aria-labelledby="label-seniority"
-              hidden
-            ></div>
-          </div>
-          <label>
+
+          <label class="sort-field">
             <span>Sort</span>
             <select id="filter-sort">
+              <option value="verified" selected>Newest verified</option>
               <option value="salary">Highest advertised salary</option>
-              <option value="recent">Recently discovered</option>
+              <option value="recent">Newest discovered</option>
               <option value="company">Company A–Z</option>
             </select>
           </label>
+
+          <button
+            type="button"
+            class="btn-secondary all-filters-btn"
+            id="btn-all-filters"
+            aria-expanded="false"
+            aria-controls="advanced-filters"
+          >All Filters</button>
         </div>
-        <p class="result-count" id="result-count"></p>
+
+        <div class="advanced-filters" id="advanced-filters" hidden>
+          <div class="advanced-filters-inner">
+            <p class="filter-hint">
+              Salary filters use <strong>employer-advertised annual base pay</strong> only.
+              USD is converted for comparison; the employer’s currency stays on the card.
+              Jobs without a listed salary are included only when you opt in below.
+            </p>
+
+            <div class="salary-presets" role="group" aria-label="Minimum salary presets">
+              <span class="multi-filter-label">Minimum salary (CAD)</span>
+              <div class="preset-row">
+                <button type="button" class="preset-btn" data-salary="0">Any</button>
+                <button type="button" class="preset-btn" data-salary="80000">$80k+</button>
+                <button type="button" class="preset-btn" data-salary="100000">$100k+</button>
+                <button type="button" class="preset-btn" data-salary="120000">$120k+</button>
+                <button type="button" class="preset-btn" data-salary="150000">$150k+</button>
+              </div>
+            </div>
+
+            <div class="salary-panel">
+              <div class="salary-panel-head">
+                <label for="salary-min">Custom minimum</label>
+                <output id="salary-min-display" for="salary-min" class="salary-display">$0</output>
+              </div>
+              <input
+                id="salary-min"
+                type="range"
+                min="0"
+                max="300000"
+                step="10000"
+                value="0"
+                aria-valuemin="0"
+                aria-valuemax="300000"
+                aria-valuenow="0"
+                aria-label="Minimum salary in Canadian dollars"
+              />
+              <div class="salary-scale" aria-hidden="true"><span>$0</span><span>$150k</span><span>$300k+</span></div>
+              <label class="check-row">
+                <input id="include-undisclosed" type="checkbox" checked />
+                <span>Include jobs without advertised salaries</span>
+              </label>
+            </div>
+
+            <div class="multi-filter" data-filter="seniority">
+              <span class="multi-filter-label" id="label-seniority">Seniority</span>
+              <button
+                type="button"
+                class="multi-filter-toggle"
+                id="filter-seniority-toggle"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-controls="filter-seniority-panel"
+                aria-labelledby="label-seniority"
+              >All</button>
+              <div
+                class="multi-filter-panel"
+                id="filter-seniority-panel"
+                role="listbox"
+                aria-multiselectable="true"
+                aria-labelledby="label-seniority"
+                hidden
+              ></div>
+            </div>
+
+            <div class="advanced-filter-actions">
+              <button type="button" class="btn-primary" id="btn-apply-filters">Apply Filters</button>
+              <button type="button" class="btn-secondary" id="btn-clear-filters-adv">Clear All</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-chips" id="filter-chips" hidden></div>
+        <div class="result-bar">
+          <p class="result-count" id="result-count"></p>
+          <button type="button" class="linkish" id="btn-clear-filters" hidden>Clear all filters</button>
+        </div>
       </section>
 
       <div id="job-list" class="job-list"></div>
+      <div class="load-more-wrap" id="load-more-wrap" hidden>
+        <p class="showing-count" id="showing-count"></p>
+        <button type="button" class="btn-secondary" id="btn-load-more">Load 20 more jobs</button>
+      </div>
       <div id="empty-state" class="empty-state" hidden>
         <h2>No matching jobs</h2>
-        <p>Try lowering the salary floor or clearing filters.</p>
+        <p>Try clearing some filters or lowering the salary minimum.</p>
+        <button type="button" class="btn-primary" id="btn-clear-empty">Clear Filters</button>
       </div>
       <div id="error-state" class="empty-state" hidden>
-        <h2>Shortlist unavailable</h2>
-        <p>Could not load <code>jobs.json</code>. Serve the <code>site/</code> folder over HTTP for local preview.</p>
+        <h2>Jobs unavailable</h2>
+        <p>Could not load the job list. Refresh the page, or try again shortly.</p>
       </div>
     </section>
 
     <!-- MATCH VIEW -->
     <section id="view-match" class="view wrap" hidden aria-label="Find my matches">
       <div class="match-intro">
-        <h2>Find My Matches</h2>
+        <h2>Find jobs that match your experience</h2>
         <p>
-          Deterministic relevance scoring against the public shortlist — not an AI model.
-          Geography remains a hard filter. Your résumé stays in this browser.
-        </p>
-        <p>
-          Want deeper, AI-assisted ranking and application help?
-          Install the
-          <a href="https://github.com/mikegianfelice/GitHired#quick-start">GitHired CLI</a>
-          and run it with Cursor, Claude Code, Codex, or a similar coding agent on your machine.
+          Upload a résumé or enter your skills. We’ll score the public shortlist against what you share —
+          right here in your browser.
         </p>
         <p class="privacy-banner" role="note">
-          Your résumé stays in your browser. We don't upload or store it on our servers.
+          Your résumé stays in this browser. We don’t upload or store it on GitHired servers.
+        </p>
+        <p class="hint">
+          Matching uses clear rules (skills, title, location preferences) — not generative AI.
         </p>
       </div>
 
       <div class="match-steps" id="match-step-input">
-        <div class="tab-row" role="tablist" aria-label="Experience input">
+        <div class="tab-row" role="tablist" aria-label="How to share your experience">
           <button type="button" class="tab is-active" data-tab="upload" role="tab" aria-selected="true">Upload résumé</button>
           <button type="button" class="tab" data-tab="paste" role="tab" aria-selected="false">Paste text</button>
           <button type="button" class="tab" data-tab="manual" role="tab" aria-selected="false">Enter manually</button>
@@ -268,7 +337,7 @@
         </div>
 
         <div class="match-actions">
-          <button type="button" class="btn-primary" id="btn-extract">Continue to profile</button>
+          <button type="button" class="btn-primary" id="btn-extract">Continue</button>
         </div>
       </div>
 
@@ -290,13 +359,13 @@
         <div class="match-actions">
           <button type="button" class="btn-secondary" id="btn-back-input">Back</button>
           <button type="button" class="btn-secondary" id="btn-save-profile">Save profile in this browser</button>
-          <button type="button" class="btn-primary" id="btn-run-match">Find My Matches</button>
+          <button type="button" class="btn-primary" id="btn-run-match">Find matching jobs</button>
         </div>
         <p class="hint">Clearing browser data removes a saved profile. <button type="button" class="linkish" id="btn-clear-profile">Clear My Profile</button></p>
       </div>
 
       <div class="match-steps" id="match-step-results" hidden>
-        <h3>Your Top Matches</h3>
+        <h3>Your top matches</h3>
         <p id="match-summary" class="result-count"></p>
         <div id="match-list" class="job-list"></div>
         <div id="match-empty" class="empty-state" hidden>
@@ -309,23 +378,32 @@
         </div>
       </div>
     </section>
+
+    <section class="dev-ai wrap" aria-label="For developers" id="dev-promo">
+      <h2>Building with GitHired?</h2>
+      <p>Use the free REST API or connect an AI agent over MCP — docs stay out of the way of job search.</p>
+      <div class="hero-actions" role="group" aria-label="Developer links">
+        <a class="btn-secondary" href="./developers/">Developer API</a>
+        <a class="btn-secondary" href="./agents/">Connect an AI Agent</a>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
     <div class="wrap footer-inner">
       <p>
-        Public browsing and Find My Matches use the shared Canada-eligible shortlist.
-        Matching is <strong>deterministic relevance scoring</strong>, not generative AI.
-        For private digests and salary floors on your machine, use the
-        <a href="https://github.com/mikegianfelice/GitHired#quick-start">GitHired CLI</a>.
+        Public browsing and matching use the shared Canada-eligible shortlist.
+        Matching uses deterministic relevance scoring — not generative AI.
       </p>
       <p class="footer-note">
         Salaries appear only when employers advertise them — never estimated.
-        Province-restricted remote is labeled as province scope, not Canada-wide.
-        Résumés are parsed locally and are never sent to GitHired servers.
+        Province-restricted remote is labeled clearly, not as Canada-wide.
+        Résumés are parsed locally and never sent to GitHired servers.
       </p>
     </div>
   </footer>
+
+  <div class="filter-drawer-backdrop" id="filter-drawer-backdrop" hidden></div>
 
   <script src="match-engine.js"></script>
   <script src="resume.js"></script>
