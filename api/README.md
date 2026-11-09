@@ -42,7 +42,12 @@ Do **not** change root `githired.ca` GitHub Pages DNS.
 ## Dataset updates
 
 `scripts/export_api_snapshot.py` writes `api/data/jobs.snapshot.json`.
-Optional R2 binding `DATA` with object `snapshots/current.json` enables data-only swaps without redeploying Worker code.
+The scheduled **API dataset sync** workflow (`api-dataset.yml`) discovers, exports,
+commits the snapshot, and **deploys the Worker** so production does not stay on a
+stale bundled dataset. (`GITHUB_TOKEN` commits do not trigger `api-worker.yml`.)
+
+Optional R2 binding `DATA` with object `snapshots/current.json` enables data-only
+swaps without redeploying Worker code.
 
 ## Salary policy
 

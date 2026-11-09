@@ -1,3 +1,11 @@
+# Refresh the API/MCP job snapshot and deploy it to the production Worker.
+#
+# Important:
+# - GITHUB_TOKEN pushes do not trigger other workflows, so this job must deploy
+#   the Worker itself after a successful export (bundled snapshot path).
+# - Never commit or deploy an empty snapshot.
+# - Do not invent jobs, salaries, or timestamps.
+
 name: API dataset sync
 
 on:
@@ -12,22 +20,29 @@ concurrency:
 
 jobs:
   snapshot:
-    name: Export + commit API snapshot
+    name: Export + deploy API snapshot
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     permissions:
       contents: write
+    environment: api
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
-      - name: Install GitHired
-        run: python -m pip install -e .
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install GitHired (with pytest)
+        run: python -m pip install -e ".[dev]"
 
       - name: Non-interactive profile (public tracks)
         run: |
@@ -40,34 +55,76 @@ jobs:
             --salary-cad 100000 \
             --skills Python TypeScript Go \
             --years 5 --name "GitHired Public" \
-            --email "public@githired.ca" || true
+            --seniority-include junior mid senior staff principal lead
+
+      - name: Configure sources for Actions budgets
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import yaml
+          p = Path("config/search.yaml")
+          data = yaml.safe_load(p.read_text()) or {}
+          sources = dict(data.get("sources") or {})
+          sources["workday"] = True
+          sources["freehire"] = False
+          sources["linkedin_guest"] = False
+          sources["linkedin_search_index"] = False
+          sources["linkedin_alert_import"] = False
+          sources["company_concurrency"] = 4
+          sources["workday_company_concurrency"] = 2
+          sources["workday_list_budget_s"] = 90
+          sources["workday_detail_budget_s"] = 60
+          sources["enrich_budget_s"] = 240
+          sources["enrich_batch_size"] = 120
+          sources["enrich_concurrency"] = 3
+          data["sources"] = sources
+          salary = dict(data.get("salary") or {})
+          salary["policy"] = "none"
+          data["salary"] = salary
+          p.write_text(yaml.dump(data, sort_keys=False), encoding="utf-8")
+          print("sources configured for API dataset export")
+          PY
 
       - name: Discover (budgeted)
-        run: githired discover --mode quick
         continue-on-error: true
+        run: githired discover --mode quick
 
       - name: Enrich (bounded)
-        run: githired enrich --mode standard
         continue-on-error: true
+        run: githired enrich --mode standard
 
       - name: Export API snapshot
-        run: |
-          python scripts/export_api_snapshot.py --limit 300 --out api/data/jobs.snapshot.json
-          python -m pytest tests/jobseek/test_api_snapshot.py -q
+        run: python scripts/export_api_snapshot.py --limit 300 --out api/data/jobs.snapshot.json
 
-      - name: Validate snapshot non-empty
+      - name: Snapshot schema tests
+        run: python -m pytest tests/jobseek/test_api_snapshot.py tests/jobseek/test_api_dataset_workflow.py -q
+
+      - name: Validate snapshot non-empty and fresh
         id: gate
         run: |
-          python - <<'PY'
-          import json, pathlib, os
-          p = pathlib.Path("api/data/jobs.snapshot.json")
-          data = json.loads(p.read_text())
+          python <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          p = Path("api/data/jobs.snapshot.json")
+          data = json.loads(p.read_text(encoding="utf-8"))
           count = int(data.get("count") or 0)
-          print(f"count={count} dataset_id={data.get('dataset_id')}")
+          generated_at = str(data.get("generated_at") or "")
+          print(f"count={count} dataset_id={data.get('dataset_id')} generated_at={generated_at}")
           if count < 1:
-            raise SystemExit("Refusing to publish empty API snapshot")
-          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              raise SystemExit("Refusing to publish empty API snapshot")
+          if len(data.get("jobs") or []) != count:
+              raise SystemExit("Snapshot count does not match jobs array length")
+          generated = datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
+          age_h = (datetime.now(timezone.utc) - generated).total_seconds() / 3600
+          if age_h > 2:
+              raise SystemExit(f"Refusing to publish stale export age_hours={age_h:.1f}")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
               fh.write("deployable=true\n")
+              fh.write(f"count={count}\n")
+              fh.write(f"generated_at={generated_at}\n")
           PY
 
       - name: Commit snapshot when changed
@@ -76,8 +133,32 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add api/data/jobs.snapshot.json site/api-dataset.json
           if git diff --staged --quiet; then
-            echo "No snapshot changes."
+            echo "No snapshot content changes to commit."
           else
             git commit -m "chore(api): refresh jobs snapshot"
             git push
           fi
+
+      - name: Require Cloudflare secrets for production deploy
+        id: secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID missing — refusing to leave production on a stale bundled snapshot."
+            exit 1
+          fi
+          echo "present=true" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy snapshot to Cloudflare Worker
+        working-directory: api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Deploy from this workspace (includes the freshly exported snapshot).
+          # Do not print secret values.
+          npm ci
+          npx wrangler deploy --var ENVIRONMENT:production
+          echo "Deployed Worker with dataset generated_at=${{ steps.gate.outputs.generated_at }} count=${{ steps.gate.outputs.count }}"
