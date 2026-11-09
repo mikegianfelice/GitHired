@@ -9,7 +9,7 @@
   <meta property="og:title" content="GitHired Developer API" />
   <meta property="og:url" content="https://githired.ca/developers" />
   <meta property="og:description" content="Query Canada-eligible tech jobs over HTTPS. Free, no account." />
-  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../styles.css?v=20261109e" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script type="application/ld+json">
   {
@@ -37,14 +37,46 @@
         <span class="brand-mark" aria-hidden="true">GH</span>
         <span class="brand-text">
           <span class="brand-name">GitHired</span>
-          <span class="brand-tag">Developer API</span>
+          <span class="brand-tag">Jobs Without the Noise</span>
         </span>
       </a>
-      <nav class="header-nav" aria-label="Primary">
-        <a href="../">Browse Jobs</a>
-        <a href="../#match">Find My Matches</a>
-        <a href="./" aria-current="page">API</a>
-        <a href="../agents/">Agents</a>
+      <nav class="header-nav desktop-nav" aria-label="Primary">
+        <a class="nav-link" href="../">Browse Jobs</a>
+        <a class="nav-link" href="../#match">Find My Matches</a>
+        <div class="nav-dropdown" id="nav-developers">
+          <button
+            type="button"
+            class="nav-link nav-dropdown-toggle is-active"
+            id="nav-dev-toggle"
+            aria-expanded="false"
+            aria-controls="nav-dev-menu"
+            aria-haspopup="true"
+          >For Developers</button>
+          <ul class="nav-dropdown-menu" id="nav-dev-menu" role="menu" hidden>
+            <li role="none"><a role="menuitem" href="./" aria-current="page">Developer API</a></li>
+            <li role="none"><a role="menuitem" href="../agents/">Connect an AI Agent</a></li>
+            <li role="none"><a role="menuitem" href="https://github.com/mikegianfelice/GitHired">GitHub</a></li>
+          </ul>
+        </div>
+      </nav>
+      <button
+        type="button"
+        class="menu-toggle"
+        id="menu-toggle"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Open menu"
+      >
+        <span class="menu-toggle-bars" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="mobile-menu wrap" id="mobile-menu" hidden>
+      <nav aria-label="Site">
+        <a class="mobile-menu-link" href="../">Browse Jobs</a>
+        <a class="mobile-menu-link" href="../#match">Find My Matches</a>
+        <div class="mobile-menu-divider" role="separator"></div>
+        <a href="./" aria-current="page">Developer API</a>
+        <a href="../agents/">Connect an AI Agent</a>
         <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
       </nav>
     </div>
@@ -53,7 +85,7 @@
   <main id="main" class="wrap docs-main">
     <p class="eyebrow">Public · Read-only · No account</p>
     <h1>GitHired REST API</h1>
-    <p class="lede">
+    <p class="lede lede-compact">
       Query Canada-eligible technology jobs discovered from employer ATS boards.
       Free HTTPS JSON. No authentication for normal search traffic.
     </p>
@@ -65,7 +97,7 @@
     <div class="docs-actions" role="group" aria-label="Quick links">
       <a class="docs-btn docs-btn-primary" href="../openapi.json">OpenAPI spec</a>
       <a class="docs-btn docs-btn-secondary" href="../agents/">MCP / Agents</a>
-      <button type="button" class="docs-btn docs-btn-secondary" data-copy="mcp-url">Copy MCP URL</button>
+      <button type="button" class="docs-btn docs-btn-accent" data-copy="mcp-url">Copy MCP URL</button>
     </div>
 
     <section aria-labelledby="base-heading">
@@ -102,7 +134,7 @@
       <h2 id="quick-heading">Quick start</h2>
       <pre class="code-block" id="curl-example"><code>curl -sS 'https://api.githired.ca/api/v1/jobs?q=data%20engineer&amp;remote=true&amp;salary_min=150000&amp;limit=5' | jq .</code></pre>
       <div class="copy-row">
-        <button type="button" class="copy-btn" data-copy-target="#curl-example">Copy curl</button>
+        <button type="button" class="copy-btn docs-btn-accent" data-copy-target="#curl-example">Copy curl</button>
       </div>
     </section>
 
@@ -240,6 +272,6 @@
       <p class="footer-note">Open source · Free · <a href="https://github.com/mikegianfelice/GitHired">GitHub</a></p>
     </div>
   </footer>
-  <script src="../docs.js" defer></script>
+  <script src="../docs.js?v=20261109e" defer></script>
 </body>
 </html>

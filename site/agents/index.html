@@ -9,7 +9,7 @@
   <meta property="og:title" content="GitHired for AI Agents" />
   <meta property="og:url" content="https://githired.ca/agents" />
   <meta property="og:description" content="Connect Cursor, Claude, or ChatGPT to Canada-eligible tech jobs via MCP." />
-  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../styles.css?v=20261109e" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script type="application/ld+json">
   {
@@ -37,14 +37,46 @@
         <span class="brand-mark" aria-hidden="true">GH</span>
         <span class="brand-text">
           <span class="brand-name">GitHired</span>
-          <span class="brand-tag">AI Agents</span>
+          <span class="brand-tag">Jobs Without the Noise</span>
         </span>
       </a>
-      <nav class="header-nav" aria-label="Primary">
-        <a href="../">Browse Jobs</a>
-        <a href="../#match">Find My Matches</a>
-        <a href="../developers/">API</a>
-        <a href="./" aria-current="page">Agents</a>
+      <nav class="header-nav desktop-nav" aria-label="Primary">
+        <a class="nav-link" href="../">Browse Jobs</a>
+        <a class="nav-link" href="../#match">Find My Matches</a>
+        <div class="nav-dropdown" id="nav-developers">
+          <button
+            type="button"
+            class="nav-link nav-dropdown-toggle is-active"
+            id="nav-dev-toggle"
+            aria-expanded="false"
+            aria-controls="nav-dev-menu"
+            aria-haspopup="true"
+          >For Developers</button>
+          <ul class="nav-dropdown-menu" id="nav-dev-menu" role="menu" hidden>
+            <li role="none"><a role="menuitem" href="../developers/">Developer API</a></li>
+            <li role="none"><a role="menuitem" href="./" aria-current="page">Connect an AI Agent</a></li>
+            <li role="none"><a role="menuitem" href="https://github.com/mikegianfelice/GitHired">GitHub</a></li>
+          </ul>
+        </div>
+      </nav>
+      <button
+        type="button"
+        class="menu-toggle"
+        id="menu-toggle"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Open menu"
+      >
+        <span class="menu-toggle-bars" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="mobile-menu wrap" id="mobile-menu" hidden>
+      <nav aria-label="Site">
+        <a class="mobile-menu-link" href="../">Browse Jobs</a>
+        <a class="mobile-menu-link" href="../#match">Find My Matches</a>
+        <div class="mobile-menu-divider" role="separator"></div>
+        <a href="../developers/">Developer API</a>
+        <a href="./" aria-current="page">Connect an AI Agent</a>
         <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
       </nav>
     </div>
@@ -52,8 +84,8 @@
 
   <main id="main" class="wrap docs-main">
     <p class="eyebrow">MCP · Free · No account · Read-only</p>
-    <h1>Give your AI agent access to Canadian tech jobs.</h1>
-    <p class="lede">
+    <h1>Give your AI agent access to Canadian tech jobs</h1>
+    <p class="lede lede-compact">
       Connect Cursor, Claude, ChatGPT, or any MCP-compatible client to GitHired’s
       live Canada-eligible job dataset — original employer apply links, advertised
       salaries only, no résumé upload.
@@ -69,8 +101,8 @@
         class="docs-btn docs-btn-primary"
         href="cursor://anysphere.cursor-deeplink/mcp/install?name=githired&amp;config=eyJ1cmwiOiJodHRwczovL2FwaS5naXRoaXJlZC5jYS9tY3AifQ=="
       >Connect to Cursor</a>
-      <button type="button" class="docs-btn docs-btn-secondary" data-copy="mcp-url">Copy MCP URL</button>
-      <button type="button" class="docs-btn docs-btn-secondary" data-copy="mcp-config">Copy MCP config</button>
+      <button type="button" class="docs-btn docs-btn-accent" data-copy="mcp-url">Copy MCP URL</button>
+      <button type="button" class="docs-btn docs-btn-accent" data-copy="mcp-config">Copy MCP config</button>
       <a class="docs-btn docs-btn-secondary" href="../developers/">REST API docs</a>
     </div>
     <p class="docs-note">
@@ -83,7 +115,7 @@
       <h2 id="endpoint-heading">MCP endpoint</h2>
       <pre class="code-block" id="mcp-url-block"><code>https://api.githired.ca/mcp</code></pre>
       <div class="copy-row">
-        <button type="button" class="copy-btn" data-copy="mcp-url">Copy URL</button>
+        <button type="button" class="copy-btn docs-btn-accent" data-copy="mcp-url">Copy URL</button>
       </div>
       <p>Transport: Streamable HTTP (JSON-RPC). Protocol: <code>2024-11-05</code>.</p>
     </section>
@@ -106,7 +138,7 @@
   }
 }</code></pre>
       <div class="copy-row">
-        <button type="button" class="copy-btn" data-copy="mcp-config">Copy config</button>
+        <button type="button" class="copy-btn docs-btn-accent" data-copy="mcp-config">Copy config</button>
       </div>
 
       <h3>Claude (custom connector)</h3>
@@ -211,6 +243,6 @@
       <p class="footer-note">Open source · Free · <a href="https://github.com/mikegianfelice/GitHired">GitHub</a></p>
     </div>
   </footer>
-  <script src="../docs.js" defer></script>
+  <script src="../docs.js?v=20261109e" defer></script>
 </body>
 </html>
