@@ -120,8 +120,7 @@ _SKILL_ALIASES: dict[str, str] = {
     "pyspark": "PySpark",
 }
 
-# One-hop related skills for overlap only (not exported as tags).
-# Do not chain platform → dialect → language (SQL ↛ PySpark ↛ Python).
+# Profile→job related hits (one-hop). Job Python must not count as Spark.
 _RELATED: dict[str, frozenset[str]] = {
     "SQL": frozenset({"PostgreSQL", "MySQL"}),
     "PostgreSQL": frozenset({"SQL"}),
@@ -132,6 +131,14 @@ _RELATED: dict[str, frozenset[str]] = {
     "Node": frozenset({"JavaScript"}),
     "JavaScript": frozenset({"Node", "TypeScript"}),
     "TypeScript": frozenset({"JavaScript"}),
+}
+
+# Expand exported job tags only (compound / alias), not the full related graph.
+_JOB_EXPAND: dict[str, frozenset[str]] = {
+    "PostgreSQL": frozenset({"SQL"}),
+    "MySQL": frozenset({"SQL"}),
+    "PySpark": frozenset({"Python", "Spark"}),
+    "Node": frozenset({"Node"}),
 }
 
 # Avoid bare \bnot\b — phrases like "not just prototypes" / "not just tried
@@ -263,10 +270,9 @@ def skills_overlap(
     evidence the skill — not a confirmed gap.
     """
     job_norm = {normalize_skill_label(s) for s in job_skills if normalize_skill_label(s)}
-    # Expand job set with related skills for overlap only (not for export).
     expanded = set(job_norm)
     for js in list(job_norm):
-        expanded |= _RELATED.get(js, frozenset())
+        expanded |= _JOB_EXPAND.get(js, frozenset())
 
     matched: list[str] = []
     unconfirmed: list[str] = []

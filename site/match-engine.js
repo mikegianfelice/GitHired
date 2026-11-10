@@ -65,8 +65,7 @@
     pyspark: "PySpark",
   };
 
-  // One-hop related skills for overlap only. Do not chain platform → dialect → language
-  // (e.g. SQL must not imply PySpark → Python).
+  // Profile→job related hits (one-hop). Job Python must not count as Spark.
   const RELATED_SKILLS = {
     SQL: ["PostgreSQL", "MySQL"],
     PostgreSQL: ["SQL"],
@@ -78,6 +77,15 @@
     Node: ["Node.js", "JavaScript"],
     JavaScript: ["Node.js", "TypeScript"],
     TypeScript: ["JavaScript"],
+  };
+
+  // Expand exported job tags only (compound / alias). Not full RELATED graph.
+  const JOB_SKILL_EXPAND = {
+    PostgreSQL: ["SQL"],
+    MySQL: ["SQL"],
+    PySpark: ["Python", "Spark"],
+    Node: ["Node.js"],
+    "Node.js": ["Node"],
   };
 
   const DISCIPLINES = [
@@ -318,13 +326,8 @@
       const n = normalizeSkill(s);
       if (n) set.add(n);
     }
-    // Alias folding for overlap
-    if (set.has("Node")) set.add("Node.js");
-    if (set.has("Node.js")) set.add("Node");
-    // Related-skill expansion for overlap only (not inventing export tags)
     for (const s of [...set]) {
-      const related = RELATED_SKILLS[s] || [];
-      for (const r of related) set.add(r);
+      for (const r of JOB_SKILL_EXPAND[s] || []) set.add(r);
     }
     return set;
   }

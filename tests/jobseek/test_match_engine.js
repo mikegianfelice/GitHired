@@ -169,6 +169,16 @@ describe("matchJobs", () => {
     assert.ok(results[0].match.unconfirmed_skills.includes("Kafka"));
   });
 
+  it("job Python does not count as Spark", () => {
+    const results = M.matchJobs(
+      { ...profile, skills: ["Spark"] },
+      [job({ technologies: ["Python", "SQL"] })],
+      { limit: 5 }
+    );
+    assert.deepEqual(results[0].match.matched_skills, []);
+    assert.ok(results[0].match.unconfirmed_skills.includes("Spark"));
+  });
+
   it("province-restricted remote outside preference is ineligible", () => {
     const p = {
       ...profile,

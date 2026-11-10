@@ -10,7 +10,7 @@ function norm(s: string): string {
   return s.trim().toLowerCase();
 }
 
-/** One-hop related skills for overlap (SQL ↔ PostgreSQL/MySQL). Not transitive. */
+/** Profile→job related hits. Job python must not count as spark. */
 const RELATED: Record<string, string[]> = {
   sql: ["postgresql", "mysql"],
   postgresql: ["sql"],
@@ -22,6 +22,15 @@ const RELATED: Record<string, string[]> = {
   node: ["node.js", "javascript"],
   javascript: ["node.js", "typescript"],
   typescript: ["javascript"],
+};
+
+/** Expand exported job tags only (not full RELATED graph). */
+const JOB_EXPAND: Record<string, string[]> = {
+  postgresql: ["sql"],
+  mysql: ["sql"],
+  pyspark: ["python", "spark"],
+  node: ["node.js"],
+  "node.js": ["node"],
 };
 
 const SKILL_ALIASES: Record<string, string> = {
@@ -47,7 +56,7 @@ function skillHit(job: ApiJob, skill: string): boolean {
   const jobSkills = job.technologies.map((t) => canonicalSkill(t));
   const expanded = new Set(jobSkills);
   for (const t of jobSkills) {
-    for (const r of RELATED[t] || []) expanded.add(r);
+    for (const r of JOB_EXPAND[t] || []) expanded.add(r);
   }
   if (expanded.has(s) || (RELATED[s] || []).some((r) => expanded.has(r))) {
     return true;
