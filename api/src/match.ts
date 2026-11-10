@@ -10,12 +10,49 @@ function norm(s: string): string {
   return s.trim().toLowerCase();
 }
 
-function skillHit(job: ApiJob, skill: string): boolean {
+/** One-hop related skills for overlap (SQL ↔ PostgreSQL/MySQL). Not transitive. */
+const RELATED: Record<string, string[]> = {
+  sql: ["postgresql", "mysql"],
+  postgresql: ["sql"],
+  mysql: ["sql"],
+  pyspark: ["python", "spark"],
+  python: ["pyspark"],
+  spark: ["pyspark"],
+  "node.js": ["javascript", "node"],
+  node: ["node.js", "javascript"],
+  javascript: ["node.js", "typescript"],
+  typescript: ["javascript"],
+};
+
+const SKILL_ALIASES: Record<string, string> = {
+  tsql: "sql",
+  "t-sql": "sql",
+  plsql: "sql",
+  "pl/sql": "sql",
+  "sql server": "sql",
+  postgres: "postgresql",
+  nodejs: "node.js",
+  golang: "go",
+  k8s: "kubernetes",
+};
+
+function canonicalSkill(skill: string): string {
   const s = norm(skill);
+  return SKILL_ALIASES[s] || s;
+}
+
+function skillHit(job: ApiJob, skill: string): boolean {
+  const s = canonicalSkill(skill);
   if (!s) return false;
-  if (job.technologies.some((t) => norm(t) === s || norm(t).includes(s) || s.includes(norm(t)))) {
+  const jobSkills = job.technologies.map((t) => canonicalSkill(t));
+  const expanded = new Set(jobSkills);
+  for (const t of jobSkills) {
+    for (const r of RELATED[t] || []) expanded.add(r);
+  }
+  if (expanded.has(s) || (RELATED[s] || []).some((r) => expanded.has(r))) {
     return true;
   }
+  // Fallback: title / track / excerpt substring — not a confirmed requirement.
   const blob = `${job.title} ${job.track || ""} ${(job.description_excerpt || "").slice(0, 800)}`.toLowerCase();
   return blob.includes(s);
 }
@@ -113,9 +150,11 @@ export function matchProfile(snapshot: ApiSnapshot, input: MatchProfileInput): {
     if (input.remote_preference && job.work_arrangement === "remote") score += 10;
     else if (!input.remote_preference) score += 5;
 
+    // "gaps" field retained for API compatibility — values are unconfirmed
+    // (not evidenced), never claimed as confirmed missing requirements.
     const gaps: string[] = [];
     if (missingSkills.length) {
-      gaps.push(`Skills not evidenced in listing metadata: ${missingSkills.slice(0, 5).join(", ")}`);
+      gaps.push(`Unconfirmed in listing (not evidenced): ${missingSkills.slice(0, 5).join(", ")}`);
     }
     if (input.seniority && (job.seniority || "").toLowerCase() !== input.seniority.toLowerCase()) {
       gaps.push(
