@@ -239,8 +239,8 @@ class PublicSiteStaticTests(unittest.TestCase):
     def test_find_my_matches_nav_present(self):
         html = (SITE / "index.html").read_text(encoding="utf-8")
         self.assertIn("Find My Matches", html)
-        self.assertIn("Minimum Salary (CAD)", html)
-        self.assertIn("Your résumé stays in your browser", html)
+        self.assertIn("Minimum salary (CAD)", html)
+        self.assertIn("Your résumé stays in this browser", html)
         self.assertIn("match-engine.js", html)
         self.assertIn("resume.js", html)
 
@@ -262,8 +262,9 @@ class PublicSiteStaticTests(unittest.TestCase):
         html = (SITE / "index.html").read_text(encoding="utf-8")
         js = (SITE / "app.js").read_text(encoding="utf-8")
         # Relative href/src so /GitHired/ project Pages resolves correctly
-        self.assertIn('href="styles.css"', html)
-        self.assertIn('src="app.js"', html)
+        # Cache-busting query strings are allowed (styles.css?v=…).
+        self.assertRegex(html, r'href="styles\.css(\?[^"]*)?"')
+        self.assertRegex(html, r'src="app\.js(\?[^"]*)?"')
         self.assertNotIn('href="/styles.css"', html)
         self.assertIn("new URL(name, window.location.href)", js)
         self.assertIn("GitHiredPublic", js)

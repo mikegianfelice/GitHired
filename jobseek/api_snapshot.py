@@ -71,10 +71,14 @@ def _index_raw_jobs(jobs: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
 def build_api_job(public: PublicJob, raw: dict[str, Any] | None) -> dict[str, Any]:
     """Merge public card fields with API-only enrichment."""
     raw = raw or {}
+    full_plain = strip_html(str(raw.get("description") or ""))
     desc = description_excerpt(str(raw.get("description") or "") or None)
+    # Prefer full-description extraction (public shortlist already does this);
+    # fall back to public tags, then excerpt-only re-extract.
     tech = list(public.technologies)
-    # Prefer technologies inferred from description when available (still public-safe).
-    if desc:
+    if full_plain:
+        tech = _extract_technologies(public.title, public.location, full_plain) or tech
+    elif desc:
         tech = _extract_technologies(public.title, public.location, desc) or tech
     return {
         "id": public.id,

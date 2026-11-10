@@ -31,6 +31,7 @@ from jobseek.showcase.top_paying import (
     is_valid_apply_url,
     parse_iso_date,
 )
+from jobseek.skills.tech_extract import extract_technologies as _extract_technologies
 
 SCHEMA_VERSION = 2
 # Public/API snapshot cap. Sized for Cloudflare Worker bundle (~gzip ~100–150KB)
@@ -64,44 +65,6 @@ _FORBIDDEN_SUBSTRINGS = (
     "role_fit",
     "description",
 )
-
-_TECH_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
-    (name, re.compile(pattern, re.I))
-    for name, pattern in (
-        ("Python", r"\bpython\b"),
-        ("TypeScript", r"\btypescript\b|\bts\b"),
-        ("JavaScript", r"\bjavascript\b"),
-        ("Go", r"\bgolang\b|\bgo(?:lang)?\b"),
-        ("Rust", r"\brust\b"),
-        ("Java", r"\bjava\b"),
-        ("Kotlin", r"\bkotlin\b"),
-        ("C++", r"\bc\+\+\b"),
-        ("C#", r"\bc#\b|\bdotnet\b|\b\.net\b"),
-        ("Ruby", r"\bruby\b|\brails\b"),
-        ("Scala", r"\bscala\b"),
-        ("Swift", r"\bswift\b"),
-        ("SQL", r"\b(?:sql|postgres(?:ql)?|mysql|snowflake)\b"),
-        ("PostgreSQL", r"\bpostgres(?:ql)?\b"),
-        ("Spark", r"\b(?:spark|pyspark)\b"),
-        ("Kafka", r"\bkafka\b"),
-        ("Airflow", r"\bairflow\b"),
-        ("dbt", r"\bdbt\b"),
-        ("Databricks", r"\bdatabricks\b"),
-        ("Snowflake", r"\bsnowflake\b"),
-        ("Docker", r"\bdocker\b"),
-        ("Kubernetes", r"\bkubernetes\b|\bk8s\b"),
-        ("AWS", r"\baws\b|\bamazon web services\b"),
-        ("GCP", r"\bgcp\b|\bgoogle cloud\b"),
-        ("Azure", r"\bazure\b"),
-        ("Terraform", r"\bterraform\b"),
-        ("React", r"\breact\b"),
-        ("Node", r"\bnode\.?js\b"),
-        ("PyTorch", r"\bpytorch\b"),
-        ("TensorFlow", r"\btensorflow\b"),
-        ("LLM", r"\bllm\b|\blarge language model\b"),
-        ("Security", r"\b(?:security|appsec|devsecops)\b"),
-    )
-]
 
 PUBLIC_SEARCH: dict[str, Any] = {
     **SHOWCASE_SEARCH,
@@ -150,15 +113,6 @@ class PublicJob:
 def _stable_id(company: str, title: str, apply_url: str) -> str:
     raw = f"{company.casefold()}|{title.casefold()}|{apply_url.casefold()}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
-
-
-def _extract_technologies(*texts: str) -> list[str]:
-    blob = " ".join(t for t in texts if t)
-    found: list[str] = []
-    for label, pattern in _TECH_PATTERNS:
-        if pattern.search(blob) and label not in found:
-            found.append(label)
-    return found
 
 
 def _salary_max_cad(
@@ -391,8 +345,8 @@ def select_public_jobs(
         last_verified = last_seen.astimezone(timezone.utc).date().isoformat()
         discovered_today = first_seen_dt.astimezone(timezone.utc).date() == today
         clean_url = apply_url.split("?")[0] if "utm_" in apply_url.casefold() else apply_url
-        # Title + public location only — never export description text for matching hints.
-        tech = _extract_technologies(title, location)
+        # Analyze full description for skill tags, but export labels only (never description text).
+        tech = _extract_technologies(title, location, description)
 
         out.append(
             PublicJob(

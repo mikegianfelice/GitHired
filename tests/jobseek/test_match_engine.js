@@ -110,6 +110,18 @@ describe("extractProfileFromText", () => {
     const p = M.extractProfileFromText("Product Manager interested in leadership");
     assert.ok(!p.skills.includes("Kubernetes"));
   });
+
+  it("normalizes T-SQL / PL/SQL and SQL Server", () => {
+    const p = M.extractProfileFromText("T-SQL, PL/SQL, SQL Server");
+    assert.ok(p.skills.includes("SQL"));
+  });
+
+  it("extracts MySQL and Databricks distinctly", () => {
+    const p = M.extractProfileFromText("MySQL, Databricks, Snowflake");
+    assert.ok(p.skills.includes("MySQL"));
+    assert.ok(p.skills.includes("Databricks"));
+    assert.ok(p.skills.includes("Snowflake"));
+  });
 });
 
 describe("matchJobs", () => {
@@ -137,6 +149,24 @@ describe("matchJobs", () => {
     const results = M.matchJobs(profile, [job({ technologies: [] })], { limit: 5 });
     assert.equal(results.length, 1);
     assert.ok(results[0].match.unconfirmed_skills.length >= 1);
+  });
+
+  it("SQL profile skill matches PostgreSQL job tags", () => {
+    const results = M.matchJobs(profile, [job({ technologies: ["PostgreSQL", "Python"] })], {
+      limit: 5,
+    });
+    assert.ok(results[0].match.matched_skills.includes("SQL"));
+    assert.ok(results[0].match.matched_skills.includes("Python"));
+  });
+
+  it("does not fabricate matches for unrelated skills", () => {
+    const results = M.matchJobs(
+      { ...profile, skills: ["Kafka", "Terraform"] },
+      [job({ technologies: ["Python", "SQL"] })],
+      { limit: 5 }
+    );
+    assert.deepEqual(results[0].match.matched_skills, []);
+    assert.ok(results[0].match.unconfirmed_skills.includes("Kafka"));
   });
 
   it("province-restricted remote outside preference is ineligible", () => {

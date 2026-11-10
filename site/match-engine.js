@@ -15,14 +15,18 @@
   const SALARY_MAX_UI = 300000;
   const SALARY_STEP = 10000;
 
+  // Profile résumé extraction. PostgreSQL/MySQL imply SQL for the person;
+  // job export does not auto-tag SQL from platforms (see jobseek/skills/tech_extract.py).
   const TECH_ALIASES = [
     ["Python", [/\bpython\b/i, /\bpyspark\b/i]],
-    ["SQL", [/\bsql\b/i, /\bpostgres(?:ql)?\b/i, /\bmysql\b/i]],
+    ["SQL", [/\bt-?sql\b/i, /\bpl\/?sql\b/i, /\bsql\s*server\b/i, /\bsql\b/i, /\bpostgres(?:ql)?\b/i, /\bmysql\b/i]],
     ["PostgreSQL", [/\bpostgres(?:ql)?\b/i]],
+    ["MySQL", [/\bmysql\b/i]],
+    ["PySpark", [/\bpyspark\b/i]],
     ["JavaScript", [/\bjavascript\b/i, /\b(?<![a-z])js(?![a-z])\b/i]],
     ["TypeScript", [/\btypescript\b/i, /\b(?<![a-z])ts(?![a-z])\b/i]],
     ["Java", [/\bjava\b/i]],
-    ["Go", [/\bgolang\b/i, /\bgo(?:lang)?\b/i]],
+    ["Go", [/\bgolang\b/i, /\bgo(?:lang)?\s+(?:engineer|developer)\b/i, /\bgo(?:lang)?\b/i]],
     ["Rust", [/\brust\b/i]],
     ["React", [/\breact(?:\.?js)?\b/i]],
     ["Node.js", [/\bnode\.?js\b/i]],
@@ -42,6 +46,39 @@
     ["TensorFlow", [/\btensorflow\b/i]],
     ["LLM", [/\bllm\b/i, /\blarge language models?\b/i]],
   ];
+
+  const SKILL_ALIASES = {
+    tsql: "SQL",
+    "t-sql": "SQL",
+    plsql: "SQL",
+    "pl/sql": "SQL",
+    "sql server": "SQL",
+    sqlserver: "SQL",
+    postgres: "PostgreSQL",
+    postgresql: "PostgreSQL",
+    mysql: "MySQL",
+    "node.js": "Node.js",
+    nodejs: "Node.js",
+    node: "Node.js",
+    golang: "Go",
+    k8s: "Kubernetes",
+    pyspark: "PySpark",
+  };
+
+  // One-hop related skills for overlap only. Do not chain platform → dialect → language
+  // (e.g. SQL must not imply PySpark → Python).
+  const RELATED_SKILLS = {
+    SQL: ["PostgreSQL", "MySQL"],
+    PostgreSQL: ["SQL"],
+    MySQL: ["SQL"],
+    PySpark: ["Python", "Spark"],
+    Python: ["PySpark"],
+    Spark: ["PySpark"],
+    "Node.js": ["JavaScript", "Node"],
+    Node: ["Node.js", "JavaScript"],
+    JavaScript: ["Node.js", "TypeScript"],
+    TypeScript: ["JavaScript"],
+  };
 
   const DISCIPLINES = [
     {
@@ -263,7 +300,14 @@
   }
 
   function normalizeSkill(s) {
-    return String(s || "").trim();
+    const raw = String(s || "").trim();
+    if (!raw) return "";
+    const key = raw.toLowerCase().replace(/_/g, " ").replace(/\s+/g, " ");
+    if (SKILL_ALIASES[key]) return SKILL_ALIASES[key];
+    for (const [label] of TECH_ALIASES) {
+      if (label.toLowerCase() === key) return label;
+    }
+    return raw;
   }
 
   function jobSkillSet(job) {
@@ -277,6 +321,11 @@
     // Alias folding for overlap
     if (set.has("Node")) set.add("Node.js");
     if (set.has("Node.js")) set.add("Node");
+    // Related-skill expansion for overlap only (not inventing export tags)
+    for (const s of [...set]) {
+      const related = RELATED_SKILLS[s] || [];
+      for (const r of related) set.add(r);
+    }
     return set;
   }
 
@@ -306,9 +355,14 @@
     const jobSkills = jobSkillSet(job);
     const matched = [];
     const unconfirmed = [];
+    const seen = new Set();
     for (const s of skills) {
+      if (seen.has(s)) continue;
+      seen.add(s);
+      const related = RELATED_SKILLS[s] || [];
       const hit =
         jobSkills.has(s) ||
+        related.some((r) => jobSkills.has(r)) ||
         [...jobSkills].some((js) => js.toLowerCase() === s.toLowerCase());
       if (hit) matched.push(s);
       else unconfirmed.push(s); // not evidenced in listing — not a confirmed gap
