@@ -25,11 +25,13 @@ class ExtractFromDescriptionTests(unittest.TestCase):
         tech = extract_technologies("Senior Software Engineer (Python)", "Canada", "")
         self.assertIn("Python", tech)
 
-    def test_tsql_and_plsql_normalize_to_sql(self):
-        self.assertIn("SQL", extract_technologies("", "", "Strong T-SQL and stored procedures."))
+    def test_tsql_maps_to_sql_server_plsql_to_sql(self):
+        tech = extract_technologies("", "", "Strong T-SQL and stored procedures.")
+        self.assertIn("SQL Server", tech)
         self.assertIn("SQL", extract_technologies("", "", "Experience with PL/SQL packages."))
-        self.assertEqual(normalize_skill_label("T-SQL"), "SQL")
+        self.assertEqual(normalize_skill_label("T-SQL"), "SQL Server")
         self.assertEqual(normalize_skill_label("PL/SQL"), "SQL")
+        self.assertEqual(normalize_skill_label("MSSQL"), "SQL Server")
 
     def test_sql_server_postgres_mysql(self):
         tech = extract_technologies(
@@ -37,7 +39,7 @@ class ExtractFromDescriptionTests(unittest.TestCase):
             "",
             "SQL Server, PostgreSQL, and MySQL experience required.",
         )
-        self.assertIn("SQL", tech)
+        self.assertIn("SQL Server", tech)
         self.assertIn("PostgreSQL", tech)
         self.assertIn("MySQL", tech)
         # Platform tags must not invent SQL from postgres alone
@@ -134,12 +136,65 @@ class ExtractFromDescriptionTests(unittest.TestCase):
         self.assertIn("Python", tech)
         self.assertIn("JavaScript", tech)
 
+    def test_new_priority_skills(self):
+        tech = extract_technologies(
+            "Platform Engineer",
+            "",
+            "Terraform, Kubernetes (K8s), Redis, Control-M, Helm, Grafana, "
+            "GitHub Actions, ClickHouse, and CI/CD pipelines.",
+        )
+        for label in (
+            "Terraform",
+            "Kubernetes",
+            "Redis",
+            "Control-M",
+            "Helm",
+            "Grafana",
+            "GitHub Actions",
+            "ClickHouse",
+            "CI/CD",
+        ):
+            self.assertIn(label, tech)
+
+    def test_mcp_requires_ai_context(self):
+        self.assertNotIn(
+            "MCP",
+            extract_technologies("", "", "File transfer uses the MCP protocol for media."),
+        )
+        self.assertIn(
+            "MCP",
+            extract_technologies(
+                "",
+                "",
+                "Build AI agents with MCP (Model Context Protocol) tool servers.",
+            ),
+        )
+
+    def test_placeholder_contamination_ignored(self):
+        tech = extract_technologies(
+            "",
+            "",
+            "Requirements: Python. [INSERT RECRUITER NOTE ABOUT Kubernetes HERE]",
+        )
+        self.assertIn("Python", tech)
+        self.assertNotIn("Kubernetes", tech)
+
+    def test_k8s_alias(self):
+        self.assertEqual(normalize_skill_label("K8s"), "Kubernetes")
+        self.assertIn("Kubernetes", extract_technologies("", "", "Experience with K8s required."))
+
 
 class OverlapTests(unittest.TestCase):
-    def test_sql_matches_postgresql_job(self):
+    def test_sql_does_not_exact_match_postgresql_job(self):
         matched, unconfirmed = skills_overlap(["SQL", "Rust"], ["PostgreSQL", "Python"])
-        self.assertIn("SQL", matched)
+        self.assertNotIn("SQL", matched)
+        self.assertIn("SQL", unconfirmed)
         self.assertIn("Rust", unconfirmed)
+
+    def test_postgresql_profile_matches_sql_job(self):
+        matched, unconfirmed = skills_overlap(["PostgreSQL"], ["SQL", "Python"])
+        self.assertIn("PostgreSQL", matched)
+        self.assertEqual(unconfirmed, [])
 
     def test_unconfirmed_is_not_a_gap_claim(self):
         matched, unconfirmed = skills_overlap(["Kafka"], ["Python"])
@@ -148,7 +203,7 @@ class OverlapTests(unittest.TestCase):
 
     def test_normalization(self):
         matched, _ = skills_overlap(["t-sql", "node.js"], ["SQL", "Node"])
-        self.assertIn("SQL", matched)
+        self.assertIn("SQL Server", matched)  # T-SQL → SQL Server; related to SQL
         self.assertIn("Node", matched)
 
 

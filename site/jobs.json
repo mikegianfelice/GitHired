@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-11T11:39:48Z",
+  "generated_at": "2026-11-11T11:59:49Z",
   "source": "githired-public-shortlist",
   "limit": 400,
   "count": 358,
@@ -52,6 +52,7 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
+        "BigQuery",
         "Airflow",
         "dbt",
         "Snowflake",
@@ -83,8 +84,10 @@
         "Java",
         "Kotlin",
         "MySQL",
+        "Redis",
         "Kafka",
-        "AWS"
+        "AWS",
+        "gRPC"
       ],
       "source": "greenhouse"
     },
@@ -157,10 +160,13 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
+        "OpenSearch",
         "Kubernetes",
+        "Helm",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "CI/CD"
       ],
       "source": "ashby"
     },
@@ -186,9 +192,11 @@
       "discovered_today": false,
       "technologies": [
         "Kubernetes",
+        "Helm",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "CI/CD"
       ],
       "source": "ashby"
     },
@@ -214,9 +222,11 @@
       "discovered_today": false,
       "technologies": [
         "Kubernetes",
+        "Helm",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "CI/CD"
       ],
       "source": "ashby"
     },
@@ -241,7 +251,8 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
-        "Python"
+        "Python",
+        "RAG"
       ],
       "source": "ashby"
     },
@@ -296,6 +307,7 @@
       "technologies": [
         "TypeScript",
         "React",
+        "Next.js",
         "LLM"
       ],
       "source": "ashby"
@@ -348,9 +360,12 @@
       "discovered_today": false,
       "technologies": [
         "PostgreSQL",
+        "Redis",
+        "OpenSearch",
+        "ClickHouse",
         "Kubernetes",
-        "GCP",
         "Terraform",
+        "GCP",
         "Security"
       ],
       "source": "greenhouse"
@@ -466,9 +481,10 @@
       "technologies": [
         "Ruby",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "GCP",
-        "Terraform",
+        "CI/CD",
         "Security"
       ],
       "source": "greenhouse"
@@ -579,7 +595,8 @@
         "Python",
         "TypeScript",
         "Rust",
-        "LLM"
+        "LLM",
+        "MCP"
       ],
       "source": "greenhouse"
     },
@@ -606,9 +623,11 @@
       "technologies": [
         "Python",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "GCP",
-        "Terraform"
+        "GitHub Actions",
+        "CI/CD"
       ],
       "source": "ashby"
     },
@@ -633,7 +652,8 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
-        "JavaScript"
+        "JavaScript",
+        "CI/CD"
       ],
       "source": "greenhouse"
     },
@@ -707,6 +727,8 @@
         "Java",
         "Kotlin",
         "PostgreSQL",
+        "Elasticsearch",
+        "OpenSearch",
         "Kafka"
       ],
       "source": "greenhouse"
@@ -832,7 +854,9 @@
       "first_seen": "2026-10-31",
       "last_verified": "2026-11-04",
       "discovered_today": false,
-      "technologies": [],
+      "technologies": [
+        "Machine Learning"
+      ],
       "source": "greenhouse"
     },
     {
@@ -887,6 +911,7 @@
         "TypeScript",
         "SQL",
         "React",
+        "Next.js",
         "LLM"
       ],
       "source": "ashby"
@@ -916,6 +941,7 @@
         "TypeScript",
         "SQL",
         "React",
+        "Next.js",
         "LLM"
       ],
       "source": "ashby"
@@ -942,7 +968,8 @@
       "discovered_today": false,
       "technologies": [
         "Python",
-        "React"
+        "React",
+        "RAG"
       ],
       "source": "ashby"
     },
@@ -970,8 +997,11 @@
         "Go",
         "PostgreSQL",
         "MySQL",
+        "Oracle",
         "Kubernetes",
         "Terraform",
+        "EKS",
+        "Machine Learning",
         "Security"
       ],
       "source": "ashby"
@@ -1029,8 +1059,11 @@
         "PostgreSQL",
         "dbt",
         "Snowflake",
+        "Tableau",
+        "CI/CD",
         "React",
         "LLM",
+        "MCP",
         "Security"
       ],
       "source": "greenhouse"
@@ -1130,7 +1163,10 @@
         "Java",
         "AWS",
         "Node",
-        "LLM"
+        "LLM",
+        "LangChain",
+        "LangGraph",
+        "RAG"
       ],
       "source": "ashby"
     },
@@ -1158,6 +1194,8 @@
         "Go",
         "Ruby",
         "Kubernetes",
+        "Helm",
+        "CI/CD",
         "Security"
       ],
       "source": "greenhouse"
@@ -1185,8 +1223,14 @@
       "technologies": [
         "Go",
         "Kubernetes",
+        "Terraform",
         "AWS",
-        "Terraform"
+        "GitHub Actions",
+        "CI/CD",
+        "Linux",
+        "Bash",
+        "Prometheus",
+        "Grafana"
       ],
       "source": "greenhouse"
     },
@@ -1260,7 +1304,9 @@
         "Python",
         "TypeScript",
         "JavaScript",
-        "React"
+        "CI/CD",
+        "React",
+        "Next.js"
       ],
       "source": "greenhouse"
     },
@@ -1287,7 +1333,8 @@
       "technologies": [
         "Go",
         "Kubernetes",
-        "AWS"
+        "AWS",
+        "CI/CD"
       ],
       "source": "greenhouse"
     },
@@ -1314,8 +1361,10 @@
       "technologies": [
         "Go",
         "Kubernetes",
+        "Ansible",
+        "Terraform",
         "AWS",
-        "Terraform"
+        "CI/CD"
       ],
       "source": "greenhouse"
     },
@@ -1366,7 +1415,9 @@
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
       "discovered_today": false,
-      "technologies": [],
+      "technologies": [
+        "gRPC"
+      ],
       "source": "ashby"
     },
     {
@@ -1419,6 +1470,7 @@
         "Python",
         "JavaScript",
         "SQL",
+        "CI/CD",
         "LLM"
       ],
       "source": "ashby"
@@ -1447,9 +1499,12 @@
         "Python",
         "Go",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "GCP",
-        "Terraform"
+        "EKS",
+        "Prometheus",
+        "Grafana"
       ],
       "source": "ashby"
     },
@@ -1476,9 +1531,11 @@
       "technologies": [
         "TypeScript",
         "SQL",
+        "ClickHouse",
         "AWS",
         "GCP",
         "Azure",
+        "CI/CD",
         "React",
         "Node"
       ],
@@ -1595,6 +1652,7 @@
         "Rust",
         "Ruby",
         "Docker",
+        "CI/CD",
         "LLM",
         "Security"
       ],
@@ -1622,6 +1680,7 @@
       "discovered_today": false,
       "technologies": [
         "TypeScript",
+        "Grafana",
         "React"
       ],
       "source": "greenhouse"
@@ -1648,7 +1707,9 @@
       "discovered_today": false,
       "technologies": [
         "Node",
-        "LLM"
+        "Machine Learning",
+        "LLM",
+        "MCP"
       ],
       "source": "greenhouse"
     },
@@ -1674,8 +1735,11 @@
       "discovered_today": false,
       "technologies": [
         "Java",
+        "SQL Server",
         "PostgreSQL",
-        "MySQL"
+        "MySQL",
+        "Elasticsearch",
+        "OpenSearch"
       ],
       "source": "ashby"
     },
@@ -1702,6 +1766,7 @@
       "technologies": [
         "Java",
         "Kafka",
+        "Delta Lake",
         "Azure"
       ],
       "source": "ashby"
@@ -1829,7 +1894,8 @@
       "discovered_today": false,
       "technologies": [
         "TypeScript",
-        "PostgreSQL"
+        "PostgreSQL",
+        "Grafana"
       ],
       "source": "greenhouse"
     },
@@ -1879,9 +1945,11 @@
       "technologies": [
         "TypeScript",
         "PostgreSQL",
+        "MongoDB",
         "Azure",
         "React",
         "Node",
+        "GraphQL",
         "LLM"
       ],
       "source": "ashby"
@@ -1910,7 +1978,10 @@
         "Python",
         "Java",
         "PyTorch",
-        "TensorFlow"
+        "TensorFlow",
+        "Machine Learning",
+        "Deep Learning",
+        "LangGraph"
       ],
       "source": "workday"
     },
@@ -1938,7 +2009,10 @@
         "Python",
         "Java",
         "PyTorch",
-        "TensorFlow"
+        "TensorFlow",
+        "Machine Learning",
+        "Deep Learning",
+        "LangGraph"
       ],
       "source": "workday"
     },
@@ -1966,8 +2040,12 @@
         "Python",
         "TypeScript",
         "Java",
+        "Oracle",
         "Docker",
-        "Kubernetes"
+        "Kubernetes",
+        "CI/CD",
+        "gRPC",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -2049,9 +2127,10 @@
         "MySQL",
         "Spark",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "Azure",
-        "Terraform",
+        "CI/CD",
         "Security"
       ],
       "source": "greenhouse"
@@ -2081,7 +2160,8 @@
         "Java",
         "Kotlin",
         "Kubernetes",
-        "AWS"
+        "AWS",
+        "CI/CD"
       ],
       "source": "greenhouse"
     },
@@ -2143,8 +2223,8 @@
         "Spark",
         "Snowflake",
         "Kubernetes",
-        "AWS",
         "Terraform",
+        "AWS",
         "LLM"
       ],
       "source": "greenhouse"
@@ -2235,8 +2315,8 @@
         "MySQL",
         "Kafka",
         "Kubernetes",
-        "AWS",
-        "Terraform"
+        "Terraform",
+        "AWS"
       ],
       "source": "greenhouse"
     },
@@ -2352,6 +2432,7 @@
       "technologies": [
         "TypeScript",
         "JavaScript",
+        "CI/CD",
         "React"
       ],
       "source": "greenhouse"
@@ -2382,7 +2463,8 @@
         "Java",
         "Kotlin",
         "SQL",
-        "React"
+        "React",
+        "GraphQL"
       ],
       "source": "greenhouse"
     },
@@ -2434,8 +2516,10 @@
       "discovered_today": false,
       "technologies": [
         "TypeScript",
+        "MongoDB",
         "AWS",
         "React",
+        "Next.js",
         "Node"
       ],
       "source": "ashby"
@@ -2464,7 +2548,9 @@
         "TypeScript",
         "Go",
         "PostgreSQL",
+        "Redis",
         "React",
+        "MCP",
         "Security"
       ],
       "source": "greenhouse"
@@ -2491,10 +2577,11 @@
       "discovered_today": false,
       "technologies": [
         "Go",
+        "ClickHouse",
         "Kafka",
+        "Terraform",
         "GCP",
-        "Azure",
-        "Terraform"
+        "Azure"
       ],
       "source": "ashby"
     },
@@ -2521,10 +2608,12 @@
       "technologies": [
         "TypeScript",
         "JavaScript",
+        "ClickHouse",
         "AWS",
         "GCP",
         "Azure",
-        "React"
+        "React",
+        "Machine Learning"
       ],
       "source": "ashby"
     },
@@ -2551,6 +2640,7 @@
       "technologies": [
         "TypeScript",
         "Go",
+        "ClickHouse",
         "React"
       ],
       "source": "ashby"
@@ -2578,11 +2668,16 @@
       "technologies": [
         "Python",
         "SQL",
+        "ClickHouse",
         "Spark",
         "Kafka",
         "Airflow",
         "dbt",
-        "LLM"
+        "Power BI",
+        "Tableau",
+        "LLM",
+        "LangChain",
+        "RAG"
       ],
       "source": "ashby"
     },
@@ -2608,7 +2703,9 @@
       "discovered_today": false,
       "technologies": [
         "PostgreSQL",
+        "Redis",
         "AWS",
+        "CI/CD",
         "Security"
       ],
       "source": "ashby"
@@ -2636,10 +2733,12 @@
       "technologies": [
         "Java",
         "SQL",
+        "SQL Server",
         "PostgreSQL",
         "Docker",
         "Kubernetes",
         "Azure",
+        "CI/CD",
         "React",
         "Security"
       ],
@@ -2673,7 +2772,12 @@
         "AWS",
         "PyTorch",
         "TensorFlow",
-        "LLM"
+        "Machine Learning",
+        "LLM",
+        "LangChain",
+        "LangGraph",
+        "RAG",
+        "MCP"
       ],
       "source": "greenhouse"
     },
@@ -2702,10 +2806,14 @@
         "TypeScript",
         "Snowflake",
         "Docker",
-        "AWS",
         "Terraform",
+        "AWS",
+        "ECS",
+        "CI/CD",
         "React",
+        "GraphQL",
         "LLM",
+        "MCP",
         "Security"
       ],
       "source": "greenhouse"
@@ -2736,6 +2844,7 @@
         "Rust",
         "Ruby",
         "Docker",
+        "CI/CD",
         "LLM",
         "Security"
       ],
@@ -2789,7 +2898,8 @@
       "technologies": [
         "Python",
         "Go",
-        "Spark"
+        "Spark",
+        "gRPC"
       ],
       "source": "greenhouse"
     },
@@ -2871,7 +2981,8 @@
       "discovered_today": false,
       "technologies": [
         "Python",
-        "Rust"
+        "Rust",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -2899,7 +3010,8 @@
         "TypeScript",
         "Go",
         "Ruby",
-        "React"
+        "React",
+        "GraphQL"
       ],
       "source": "greenhouse"
     },
@@ -2927,7 +3039,8 @@
         "TypeScript",
         "Go",
         "Ruby",
-        "React"
+        "React",
+        "GraphQL"
       ],
       "source": "greenhouse"
     },
@@ -2951,7 +3064,9 @@
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
       "discovered_today": false,
-      "technologies": [],
+      "technologies": [
+        "Machine Learning"
+      ],
       "source": "greenhouse"
     },
     {
@@ -2977,9 +3092,13 @@
       "technologies": [
         "Go",
         "Java",
+        "Oracle",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "CI/CD",
+        "Linux",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -3011,7 +3130,12 @@
         "AWS",
         "PyTorch",
         "TensorFlow",
-        "LLM"
+        "Machine Learning",
+        "LLM",
+        "LangChain",
+        "LangGraph",
+        "RAG",
+        "MCP"
       ],
       "source": "greenhouse"
     },
@@ -3039,12 +3163,14 @@
         "Python",
         "Go",
         "SQL",
+        "ClickHouse",
         "Docker",
         "Kubernetes",
+        "Ansible",
+        "Terraform",
         "AWS",
         "GCP",
-        "Azure",
-        "Terraform"
+        "Azure"
       ],
       "source": "ashby"
     },
@@ -3071,11 +3197,12 @@
       "technologies": [
         "Go",
         "Java",
+        "ClickHouse",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "GCP",
-        "Azure",
-        "Terraform"
+        "Azure"
       ],
       "source": "ashby"
     },
@@ -3153,7 +3280,9 @@
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
       "discovered_today": false,
-      "technologies": [],
+      "technologies": [
+        "gRPC"
+      ],
       "source": "ashby"
     },
     {
@@ -3205,7 +3334,9 @@
       "technologies": [
         "JavaScript",
         "React",
-        "LLM"
+        "Machine Learning",
+        "LLM",
+        "MCP"
       ],
       "source": "greenhouse"
     },
@@ -3238,6 +3369,9 @@
         "AWS",
         "GCP",
         "Azure",
+        "CI/CD",
+        "MLflow",
+        "Machine Learning",
         "LLM"
       ],
       "source": "lever"
@@ -3270,7 +3404,9 @@
         "Kubernetes",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "Prometheus",
+        "Grafana"
       ],
       "source": "greenhouse"
     },
@@ -3296,6 +3432,8 @@
       "discovered_today": false,
       "technologies": [
         "TypeScript",
+        "Prometheus",
+        "Grafana",
         "React"
       ],
       "source": "greenhouse"
@@ -3324,7 +3462,9 @@
         "Python",
         "Rust",
         "Kafka",
-        "Kubernetes"
+        "Kubernetes",
+        "Prometheus",
+        "Grafana"
       ],
       "source": "greenhouse"
     },
@@ -3352,11 +3492,15 @@
         "TypeScript",
         "Go",
         "MySQL",
+        "BigQuery",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "GCP",
         "Azure",
-        "Terraform",
+        "CI/CD",
+        "Prometheus",
+        "Grafana",
         "React",
         "Node"
       ],
@@ -3389,7 +3533,9 @@
         "Kubernetes",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "Prometheus",
+        "Grafana"
       ],
       "source": "greenhouse"
     },
@@ -3419,6 +3565,7 @@
         "SQL",
         "PostgreSQL",
         "MySQL",
+        "BigQuery",
         "Spark",
         "Kafka",
         "Snowflake",
@@ -3503,6 +3650,7 @@
       "technologies": [
         "TypeScript",
         "PostgreSQL",
+        "MongoDB",
         "React",
         "Node"
       ],
@@ -3533,6 +3681,7 @@
         "TypeScript",
         "Go",
         "Java",
+        "MongoDB",
         "Kafka",
         "Kubernetes",
         "AWS",
@@ -3591,9 +3740,12 @@
       "technologies": [
         "Python",
         "SQL",
+        "BigQuery",
         "Airflow",
         "Docker",
-        "Kubernetes"
+        "Kubernetes",
+        "GraphQL",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -3620,7 +3772,8 @@
       "technologies": [
         "Python",
         "TypeScript",
-        "React"
+        "React",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -3648,7 +3801,11 @@
         "Java",
         "PostgreSQL",
         "MySQL",
+        "CI/CD",
+        "Linux",
         "React",
+        "gRPC",
+        "Machine Learning",
         "Security"
       ],
       "source": "greenhouse"
@@ -3677,7 +3834,8 @@
         "Python",
         "Java",
         "React",
-        "Node"
+        "Node",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -3703,7 +3861,9 @@
       "discovered_today": false,
       "technologies": [
         "Node",
-        "LLM"
+        "Machine Learning",
+        "LLM",
+        "MCP"
       ],
       "source": "greenhouse"
     },
@@ -3732,7 +3892,8 @@
         "AWS",
         "GCP",
         "Azure",
-        "React"
+        "React",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -3759,7 +3920,9 @@
       "technologies": [
         "TypeScript",
         "PostgreSQL",
+        "MongoDB",
         "AWS",
+        "CI/CD",
         "React",
         "Node"
       ],
@@ -3787,7 +3950,8 @@
       "discovered_today": false,
       "technologies": [
         "JavaScript",
-        "Rust"
+        "Rust",
+        "Linux"
       ],
       "source": "greenhouse"
     },
@@ -3816,14 +3980,19 @@
         "SQL",
         "PostgreSQL",
         "MySQL",
+        "MongoDB",
         "Spark",
         "Kafka",
         "Kubernetes",
         "AWS",
         "GCP",
         "Azure",
+        "Jenkins",
+        "CI/CD",
         "React",
         "Node",
+        "GraphQL",
+        "gRPC",
         "LLM",
         "Security"
       ],
@@ -3852,8 +4021,15 @@
       "technologies": [
         "Python",
         "SQL",
+        "Power BI",
+        "Tableau",
         "AWS",
-        "Azure"
+        "Azure",
+        "Azure Data Factory",
+        "CI/CD",
+        "Machine Learning",
+        "RAG",
+        "MCP"
       ],
       "source": "workday"
     },
@@ -3881,7 +4057,10 @@
         "Python",
         "Spark",
         "Airflow",
-        "PyTorch"
+        "PyTorch",
+        "MLflow",
+        "Machine Learning",
+        "Deep Learning"
       ],
       "source": "greenhouse"
     },
@@ -3943,7 +4122,8 @@
         "MySQL",
         "Kubernetes",
         "AWS",
-        "LLM"
+        "LLM",
+        "MCP"
       ],
       "source": "greenhouse"
     },
@@ -4123,8 +4303,8 @@
         "Airflow",
         "Snowflake",
         "Kubernetes",
-        "AWS",
-        "Terraform"
+        "Terraform",
+        "AWS"
       ],
       "source": "greenhouse"
     },
@@ -4186,9 +4366,10 @@
         "SQL",
         "PostgreSQL",
         "MySQL",
+        "Redis",
         "Kubernetes",
-        "AWS",
-        "Terraform"
+        "Terraform",
+        "AWS"
       ],
       "source": "greenhouse"
     },
@@ -4331,6 +4512,7 @@
         "MySQL",
         "Kubernetes",
         "AWS",
+        "CI/CD",
         "React"
       ],
       "source": "greenhouse"
@@ -4388,7 +4570,8 @@
       "technologies": [
         "Python",
         "TypeScript",
-        "Go"
+        "Go",
+        "CI/CD"
       ],
       "source": "greenhouse"
     },
@@ -4414,6 +4597,8 @@
       "discovered_today": false,
       "technologies": [
         "Java",
+        "MongoDB",
+        "Elasticsearch",
         "dbt",
         "AWS",
         "GCP",
@@ -4586,6 +4771,8 @@
         "Rust",
         "SQL",
         "Kubernetes",
+        "Prometheus",
+        "Grafana",
         "LLM"
       ],
       "source": "greenhouse"
@@ -4614,7 +4801,9 @@
         "Python",
         "Go",
         "Rust",
-        "Kubernetes"
+        "Kubernetes",
+        "Prometheus",
+        "Grafana"
       ],
       "source": "greenhouse"
     },
@@ -4643,6 +4832,7 @@
         "AWS",
         "GCP",
         "Azure",
+        "Machine Learning",
         "LLM"
       ],
       "source": "greenhouse"
@@ -4670,9 +4860,12 @@
       "technologies": [
         "Python",
         "SQL",
+        "BigQuery",
         "Airflow",
         "Docker",
-        "Kubernetes"
+        "Kubernetes",
+        "GraphQL",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -4699,7 +4892,8 @@
       "technologies": [
         "Python",
         "TypeScript",
-        "React"
+        "React",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -4727,8 +4921,11 @@
         "Python",
         "Java",
         "SQL",
+        "Oracle",
+        "MongoDB",
         "Kubernetes",
-        "Azure"
+        "Azure",
+        "GraphQL"
       ],
       "source": "workday"
     },
@@ -4757,8 +4954,12 @@
         "Kotlin",
         "Kafka",
         "Kubernetes",
+        "Helm",
+        "CI/CD",
+        "gRPC",
         "PyTorch",
-        "TensorFlow"
+        "TensorFlow",
+        "Machine Learning"
       ],
       "source": "ashby"
     },
@@ -4785,8 +4986,10 @@
       "technologies": [
         "SQL",
         "Kubernetes",
+        "Terraform",
         "Azure",
-        "Terraform"
+        "CI/CD",
+        "Linux"
       ],
       "source": "workday"
     },
@@ -4814,7 +5017,9 @@
         "Python",
         "Scala",
         "SQL",
-        "Azure"
+        "Azure",
+        "Machine Learning",
+        "Deep Learning"
       ],
       "source": "workday"
     },
@@ -4842,7 +5047,8 @@
         "Java",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "CI/CD"
       ],
       "source": "workday"
     },
@@ -4894,6 +5100,7 @@
       "discovered_today": false,
       "technologies": [
         "Python",
+        "Oracle",
         "Databricks",
         "Snowflake",
         "Node"
@@ -4948,9 +5155,13 @@
       "technologies": [
         "Databricks",
         "Snowflake",
+        "Power BI",
+        "Tableau",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "Grafana",
+        "MCP"
       ],
       "source": "greenhouse"
     },
@@ -4979,7 +5190,9 @@
         "Rust",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "Grafana",
+        "MCP"
       ],
       "source": "greenhouse"
     },
@@ -5006,11 +5219,18 @@
       "technologies": [
         "Python",
         "JavaScript",
+        "BigQuery",
         "Airflow",
         "GCP",
+        "CI/CD",
+        "Grafana",
         "React",
         "Node",
-        "LLM"
+        "LLM",
+        "LangChain",
+        "RAG",
+        "pgvector",
+        "MCP"
       ],
       "source": "greenhouse"
     },
@@ -5041,7 +5261,9 @@
         "Kubernetes",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "Prometheus",
+        "Grafana"
       ],
       "source": "greenhouse"
     },
@@ -5069,7 +5291,9 @@
         "TypeScript",
         "Go",
         "PostgreSQL",
+        "Redis",
         "React",
+        "MCP",
         "Security"
       ],
       "source": "greenhouse"
@@ -5098,7 +5322,10 @@
         "Python",
         "PostgreSQL",
         "AWS",
-        "React"
+        "React",
+        "Machine Learning",
+        "LangChain",
+        "LangGraph"
       ],
       "source": "lever"
     },
@@ -5149,7 +5376,10 @@
         "Python",
         "SQL",
         "Spark",
-        "Airflow"
+        "Airflow",
+        "Hadoop",
+        "Tableau",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -5176,10 +5406,13 @@
       "technologies": [
         "Python",
         "Kubernetes",
+        "Helm",
+        "Terraform",
         "AWS",
         "GCP",
         "Azure",
-        "Terraform",
+        "CI/CD",
+        "Bash",
         "Security"
       ],
       "source": "greenhouse"
@@ -5207,7 +5440,9 @@
       "technologies": [
         "Python",
         "Go",
-        "Kubernetes"
+        "Kubernetes",
+        "CI/CD",
+        "Linux"
       ],
       "source": "greenhouse"
     },
@@ -5235,11 +5470,12 @@
         "Go",
         "Docker",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "GCP",
         "Azure",
-        "Terraform",
-        "Node"
+        "Node",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -5270,7 +5506,8 @@
         "Ruby",
         "SQL",
         "MySQL",
-        "React"
+        "React",
+        "GraphQL"
       ],
       "source": "greenhouse"
     },
@@ -5294,7 +5531,9 @@
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
       "discovered_today": false,
-      "technologies": [],
+      "technologies": [
+        "Machine Learning"
+      ],
       "source": "greenhouse"
     },
     {
@@ -5319,6 +5558,7 @@
       "discovered_today": false,
       "technologies": [
         "PostgreSQL",
+        "MongoDB",
         "Docker",
         "Kubernetes",
         "AWS"
@@ -5349,7 +5589,8 @@
         "Python",
         "Go",
         "Java",
-        "Ruby"
+        "Ruby",
+        "GraphQL"
       ],
       "source": "greenhouse"
     },
@@ -5374,6 +5615,8 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
+        "Redis",
+        "ClickHouse",
         "Kafka"
       ],
       "source": "greenhouse"
@@ -5422,6 +5665,7 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
+        "BigQuery",
         "Snowflake",
         "AWS"
       ],
@@ -5531,11 +5775,14 @@
       "technologies": [
         "Go",
         "PostgreSQL",
+        "Redis",
         "Kafka",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "Azure",
-        "Terraform"
+        "Prometheus",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -5563,7 +5810,8 @@
         "Python",
         "Java",
         "React",
-        "Node"
+        "Node",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -5590,10 +5838,13 @@
       "technologies": [
         "Go",
         "PostgreSQL",
+        "MongoDB",
+        "Redis",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "Azure",
-        "Terraform"
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -5625,7 +5876,10 @@
         "Kubernetes",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "Prometheus",
+        "Grafana",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -5652,9 +5906,10 @@
       "technologies": [
         "Go",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "Azure",
-        "Terraform"
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -5684,10 +5939,11 @@
         "Kafka",
         "Docker",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "Azure",
-        "Terraform",
         "Node",
+        "Machine Learning",
         "Security"
       ],
       "source": "greenhouse"
@@ -5718,10 +5974,14 @@
         "Kafka",
         "Docker",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "Azure",
-        "Terraform",
+        "GitHub Actions",
+        "Jenkins",
+        "CI/CD",
         "Node",
+        "Machine Learning",
         "Security"
       ],
       "source": "greenhouse"
@@ -5748,12 +6008,15 @@
       "discovered_today": false,
       "technologies": [
         "Java",
+        "Elasticsearch",
         "Spark",
         "Kafka",
         "Databricks",
         "Snowflake",
+        "Hadoop",
         "Kubernetes",
-        "AWS"
+        "AWS",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -5778,7 +6041,8 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
-        "Rust"
+        "Rust",
+        "Linux"
       ],
       "source": "greenhouse"
     },
@@ -5805,12 +6069,21 @@
       "technologies": [
         "Python",
         "Go",
+        "Redis",
+        "Elasticsearch",
+        "OpenSearch",
         "Kafka",
         "Kubernetes",
+        "Helm",
+        "Terraform",
         "AWS",
         "GCP",
         "Azure",
-        "Terraform",
+        "GitHub Actions",
+        "Jenkins",
+        "CI/CD",
+        "Prometheus",
+        "Grafana",
         "Node",
         "Security"
       ],
@@ -5841,8 +6114,12 @@
         "TypeScript",
         "Docker",
         "Kubernetes",
-        "AWS",
         "Terraform",
+        "AWS",
+        "Jenkins",
+        "CI/CD",
+        "Linux",
+        "Bash",
         "Node",
         "Security"
       ],
@@ -5895,10 +6172,12 @@
         "Python",
         "Go",
         "Java",
+        "OpenSearch",
         "Kafka",
         "Kubernetes",
+        "Terraform",
         "AWS",
-        "Terraform"
+        "EKS"
       ],
       "source": "greenhouse"
     },
@@ -5955,7 +6234,10 @@
       "technologies": [
         "Python",
         "SQL",
-        "Spark"
+        "Spark",
+        "scikit-learn",
+        "Machine Learning",
+        "Deep Learning"
       ],
       "source": "greenhouse"
     },
@@ -5983,7 +6265,10 @@
         "Python",
         "Spark",
         "Airflow",
-        "PyTorch"
+        "PyTorch",
+        "MLflow",
+        "Machine Learning",
+        "Deep Learning"
       ],
       "source": "greenhouse"
     },
@@ -6067,6 +6352,7 @@
         "Python",
         "Kotlin",
         "MySQL",
+        "Redis",
         "AWS"
       ],
       "source": "greenhouse"
@@ -6096,9 +6382,10 @@
         "Kotlin",
         "SQL",
         "MySQL",
+        "Redis",
         "Kubernetes",
-        "AWS",
-        "Terraform"
+        "Terraform",
+        "AWS"
       ],
       "source": "greenhouse"
     },
@@ -6297,7 +6584,8 @@
       "technologies": [
         "Python",
         "Kotlin",
-        "React"
+        "React",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -6351,7 +6639,11 @@
       "technologies": [
         "Python",
         "Java",
+        "GitHub Actions",
+        "Jenkins",
+        "CI/CD",
         "React",
+        "Machine Learning",
         "LLM"
       ],
       "source": "greenhouse"
@@ -6381,6 +6673,7 @@
         "TypeScript",
         "JavaScript",
         "Azure",
+        "CI/CD",
         "React"
       ],
       "source": "ashby"
@@ -6410,8 +6703,10 @@
         "TypeScript",
         "PostgreSQL",
         "MySQL",
+        "Redis",
         "Kafka",
         "Azure",
+        "CI/CD",
         "React"
       ],
       "source": "ashby"
@@ -6443,7 +6738,9 @@
         "Snowflake",
         "AWS",
         "GCP",
-        "Azure"
+        "Azure",
+        "CI/CD",
+        "Bash"
       ],
       "source": "ashby"
     },
@@ -6474,11 +6771,15 @@
         "SQL",
         "PostgreSQL",
         "MySQL",
+        "MongoDB",
         "Spark",
         "Kafka",
         "Kubernetes",
         "AWS",
         "Node",
+        "GraphQL",
+        "gRPC",
+        "Machine Learning",
         "LLM",
         "Security"
       ],
@@ -6510,7 +6811,8 @@
         "Java",
         "Docker",
         "Kubernetes",
-        "AWS"
+        "AWS",
+        "gRPC"
       ],
       "source": "lever"
     },
@@ -6540,6 +6842,7 @@
         "Kubernetes",
         "Azure",
         "React",
+        "RAG",
         "Security"
       ],
       "source": "workday"
@@ -6565,12 +6868,16 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
+        "BigQuery",
         "Kafka",
         "Airflow",
         "dbt",
         "AWS",
         "GCP",
         "Azure",
+        "GitHub Actions",
+        "Jenkins",
+        "CI/CD",
         "Security"
       ],
       "source": "ashby"
@@ -6628,14 +6935,22 @@
         "SQL",
         "PostgreSQL",
         "MySQL",
+        "MongoDB",
         "Kafka",
         "Docker",
         "Kubernetes",
         "AWS",
         "GCP",
         "Azure",
+        "ECS",
+        "GitHub Actions",
+        "Jenkins",
+        "CI/CD",
+        "Prometheus",
         "React",
         "Node",
+        "GraphQL",
+        "gRPC",
         "Security"
       ],
       "source": "ashby"
@@ -6663,6 +6978,10 @@
       "technologies": [
         "Python",
         "SQL",
+        "Prometheus",
+        "Grafana",
+        "Machine Learning",
+        "Deep Learning",
         "LLM"
       ],
       "source": "workday"
@@ -6692,7 +7011,8 @@
         "TypeScript",
         "JavaScript",
         "Rust",
-        "Terraform"
+        "Terraform",
+        "CI/CD"
       ],
       "source": "greenhouse"
     },
@@ -6719,7 +7039,8 @@
       "technologies": [
         "Python",
         "Go",
-        "SQL"
+        "SQL",
+        "Linux"
       ],
       "source": "greenhouse"
     },
@@ -6747,7 +7068,8 @@
         "TypeScript",
         "Ruby",
         "AWS",
-        "React"
+        "React",
+        "GraphQL"
       ],
       "source": "ashby"
     },
@@ -6773,10 +7095,13 @@
       "discovered_today": false,
       "technologies": [
         "Python",
+        "BigQuery",
         "Databricks",
+        "Terraform",
         "GCP",
         "Azure",
-        "Terraform"
+        "GitHub Actions",
+        "CI/CD"
       ],
       "source": "workday"
     },
@@ -6807,6 +7132,7 @@
         "AWS",
         "GCP",
         "Azure",
+        "Machine Learning",
         "Security"
       ],
       "source": "workday"
@@ -6836,7 +7162,9 @@
         "Go",
         "Rust",
         "Ruby",
+        "ClickHouse",
         "Kafka",
+        "MCP",
         "Security"
       ],
       "source": "greenhouse"
@@ -6864,10 +7192,13 @@
       "technologies": [
         "Python",
         "SQL",
+        "BigQuery",
         "dbt",
         "Kubernetes",
         "AWS",
         "GCP",
+        "CI/CD",
+        "Machine Learning",
         "LLM"
       ],
       "source": "greenhouse"
@@ -6894,6 +7225,7 @@
       "discovered_today": false,
       "technologies": [
         "Spark",
+        "Machine Learning",
         "LLM"
       ],
       "source": "greenhouse"
@@ -6925,6 +7257,7 @@
         "Ruby",
         "PostgreSQL",
         "MySQL",
+        "Redis",
         "Spark",
         "Kafka",
         "React"
@@ -6978,8 +7311,14 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
+        "OpenSearch",
+        "Terraform",
         "AWS",
-        "Terraform"
+        "EKS",
+        "GitHub Actions",
+        "Linux",
+        "Prometheus",
+        "Grafana"
       ],
       "source": "greenhouse"
     },
@@ -7036,11 +7375,14 @@
         "SQL",
         "PostgreSQL",
         "MySQL",
+        "MongoDB",
         "Spark",
         "Kafka",
         "Kubernetes",
         "AWS",
         "Node",
+        "GraphQL",
+        "gRPC",
         "LLM",
         "Security"
       ],
@@ -7067,7 +7409,8 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
-        "Java"
+        "Java",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -7094,10 +7437,13 @@
       "technologies": [
         "JavaScript",
         "SQL",
+        "SQL Server",
         "PostgreSQL",
         "MySQL",
+        "BigQuery",
         "React",
-        "Node"
+        "Node",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -7124,10 +7470,13 @@
       "technologies": [
         "Python",
         "SQL",
+        "BigQuery",
         "Airflow",
         "Snowflake",
         "Docker",
-        "Kubernetes"
+        "Kubernetes",
+        "GraphQL",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -7154,7 +7503,8 @@
       "technologies": [
         "Python",
         "TypeScript",
-        "React"
+        "React",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -7182,12 +7532,15 @@
         "Python",
         "SQL",
         "PostgreSQL",
+        "Elasticsearch",
+        "OpenSearch",
         "PySpark",
         "Spark",
         "Kafka",
         "Databricks",
         "AWS",
         "Azure",
+        "CI/CD",
         "LLM"
       ],
       "source": "workday"
@@ -7217,7 +7570,11 @@
         "Docker",
         "Kubernetes",
         "Azure",
-        "Node"
+        "CI/CD",
+        "Linux",
+        "Node",
+        "RAG",
+        "MCP"
       ],
       "source": "workday"
     },
@@ -7302,10 +7659,15 @@
         "Go",
         "Java",
         "Kubernetes",
+        "Terraform",
         "AWS",
         "Azure",
-        "Terraform",
+        "CI/CD",
+        "MLflow",
         "LLM",
+        "LangChain",
+        "RAG",
+        "MCP",
         "Security"
       ],
       "source": "workday"
@@ -7334,7 +7696,10 @@
         "Python",
         "PostgreSQL",
         "AWS",
-        "React"
+        "React",
+        "Machine Learning",
+        "LangChain",
+        "LangGraph"
       ],
       "source": "lever"
     },
@@ -7361,9 +7726,12 @@
       "technologies": [
         "Python",
         "SQL",
+        "SQL Server",
+        "Ansible",
+        "Terraform",
         "AWS",
         "Azure",
-        "Terraform",
+        "Linux",
         "Security"
       ],
       "source": "workday"
@@ -7391,10 +7759,12 @@
       "technologies": [
         "Python",
         "TypeScript",
-        "AWS",
         "Terraform",
+        "AWS",
+        "CI/CD",
         "React",
-        "LLM"
+        "LLM",
+        "RAG"
       ],
       "source": "workday"
     },
@@ -7424,13 +7794,18 @@
         "Go",
         "Java",
         "SQL",
+        "Power BI",
         "Docker",
         "Kubernetes",
         "AWS",
         "GCP",
         "Azure",
+        "CI/CD",
+        "Grafana",
         "React",
+        "Next.js",
         "Node",
+        "GraphQL",
         "LLM",
         "Security"
       ],
@@ -7458,9 +7833,16 @@
       "discovered_today": false,
       "technologies": [
         "Java",
+        "SQL Server",
+        "MongoDB",
+        "Redis",
         "Kafka",
         "AWS",
-        "GCP"
+        "GCP",
+        "EKS",
+        "GitHub Actions",
+        "Jenkins",
+        "Grafana"
       ],
       "source": "workday"
     },
@@ -7519,8 +7901,10 @@
       "discovered_today": false,
       "technologies": [
         "JavaScript",
+        "SQL Server",
         "MySQL",
-        "React"
+        "React",
+        "Next.js"
       ],
       "source": "lever"
     },
@@ -7544,7 +7928,10 @@
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
       "discovered_today": false,
-      "technologies": [],
+      "technologies": [
+        "CI/CD",
+        "GraphQL"
+      ],
       "source": "lever"
     },
     {
@@ -7572,12 +7959,17 @@
         "Java",
         "Scala",
         "SQL",
+        "Redis",
         "Spark",
         "Airflow",
         "Databricks",
+        "Delta Lake",
+        "Tableau",
         "Docker",
         "Kubernetes",
-        "AWS"
+        "AWS",
+        "Jenkins",
+        "CI/CD"
       ],
       "source": "ashby"
     },
@@ -7607,6 +7999,7 @@
         "MySQL",
         "Kubernetes",
         "GCP",
+        "CI/CD",
         "React"
       ],
       "source": "greenhouse"
@@ -7640,10 +8033,12 @@
         "Spark",
         "Airflow",
         "Databricks",
+        "Delta Lake",
+        "Unity Catalog",
         "Docker",
         "Kubernetes",
-        "AWS",
-        "Terraform"
+        "Terraform",
+        "AWS"
       ],
       "source": "greenhouse"
     },
@@ -7670,6 +8065,7 @@
       "technologies": [
         "Java",
         "MySQL",
+        "Oracle",
         "dbt",
         "Docker",
         "Kubernetes",
@@ -7700,6 +8096,7 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
+        "BigQuery",
         "Snowflake",
         "AWS"
       ],
@@ -7726,7 +8123,8 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
-        "Java"
+        "Java",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -7754,11 +8152,15 @@
         "Python",
         "Go",
         "SQL",
+        "SQL Server",
         "PostgreSQL",
+        "ClickHouse",
+        "Ansible",
+        "Terraform",
         "AWS",
         "GCP",
         "Azure",
-        "Terraform"
+        "Grafana"
       ],
       "source": "lever"
     },
@@ -7788,7 +8190,8 @@
         "Ruby",
         "Kafka",
         "AWS",
-        "React"
+        "React",
+        "GraphQL"
       ],
       "source": "ashby"
     },
@@ -7814,8 +8217,9 @@
       "discovered_today": false,
       "technologies": [
         "Java",
+        "Terraform",
         "AWS",
-        "Terraform"
+        "CI/CD"
       ],
       "source": "workday"
     },
@@ -7840,7 +8244,8 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
-        "Java"
+        "Java",
+        "CI/CD"
       ],
       "source": "workday"
     },
@@ -7869,8 +8274,9 @@
         "JavaScript",
         "Java",
         "SQL",
+        "Terraform",
         "AWS",
-        "Terraform"
+        "GitHub Actions"
       ],
       "source": "workday"
     },
@@ -7900,8 +8306,9 @@
         "PySpark",
         "Spark",
         "Databricks",
+        "Terraform",
         "Azure",
-        "Terraform"
+        "CI/CD"
       ],
       "source": "lever"
     },
@@ -7928,8 +8335,11 @@
       "technologies": [
         "Java",
         "SQL",
+        "SQL Server",
+        "Oracle",
         "AWS",
         "Azure",
+        "Jenkins",
         "Node"
       ],
       "source": "workday"
@@ -7958,7 +8368,9 @@
         "Java",
         "SQL",
         "PostgreSQL",
-        "MySQL"
+        "MySQL",
+        "MongoDB",
+        "CI/CD"
       ],
       "source": "workday"
     },
@@ -8038,7 +8450,8 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
-        "SQL"
+        "SQL",
+        "CI/CD"
       ],
       "source": "workday"
     },
@@ -8068,13 +8481,21 @@
         "JavaScript",
         "Java",
         "SQL",
+        "SQL Server",
+        "MongoDB",
+        "Redis",
         "Spark",
         "Databricks",
         "Docker",
         "Kubernetes",
-        "Azure",
+        "Helm",
         "Terraform",
+        "Azure",
+        "Azure Data Factory",
+        "GitHub Actions",
+        "CI/CD",
         "React",
+        "Next.js",
         "Node",
         "LLM"
       ],
@@ -8101,12 +8522,14 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
-        "Python",
         "SQL",
         "PySpark",
         "Spark",
         "Databricks",
-        "Azure"
+        "Azure",
+        "Azure Data Factory",
+        "Machine Learning",
+        "Python"
       ],
       "source": "workday"
     },
@@ -8136,13 +8559,21 @@
         "JavaScript",
         "Java",
         "SQL",
+        "SQL Server",
+        "MongoDB",
+        "Redis",
         "Spark",
         "Databricks",
         "Docker",
         "Kubernetes",
-        "Azure",
+        "Helm",
         "Terraform",
+        "Azure",
+        "Azure Data Factory",
+        "GitHub Actions",
+        "CI/CD",
         "React",
+        "Next.js",
         "Node",
         "LLM"
       ],
@@ -8173,8 +8604,10 @@
         "SQL",
         "PostgreSQL",
         "Azure",
+        "CI/CD",
         "React",
-        "LLM"
+        "LLM",
+        "RAG"
       ],
       "source": "workday"
     },
@@ -8200,8 +8633,11 @@
       "discovered_today": false,
       "technologies": [
         "TypeScript",
+        "Redis",
         "Kubernetes",
         "Azure",
+        "GitHub Actions",
+        "CI/CD",
         "React",
         "Node"
       ],
@@ -8227,7 +8663,10 @@
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
       "discovered_today": false,
-      "technologies": [],
+      "technologies": [
+        "Jenkins",
+        "CI/CD"
+      ],
       "source": "workday"
     },
     {
@@ -8279,7 +8718,10 @@
         "Python",
         "PostgreSQL",
         "AWS",
-        "React"
+        "React",
+        "Machine Learning",
+        "LangChain",
+        "LangGraph"
       ],
       "source": "lever"
     },
@@ -8306,7 +8748,8 @@
       "technologies": [
         "TypeScript",
         "Ruby",
-        "React"
+        "React",
+        "GraphQL"
       ],
       "source": "ashby"
     },
@@ -8365,6 +8808,7 @@
         "AWS",
         "GCP",
         "Azure",
+        "CI/CD",
         "React"
       ],
       "source": "workday"
@@ -8394,10 +8838,14 @@
         "Java",
         "Kotlin",
         "Kubernetes",
-        "Azure",
         "Terraform",
+        "Azure",
+        "GitHub Actions",
+        "Jenkins",
+        "CI/CD",
         "React",
-        "Node"
+        "Node",
+        "GraphQL"
       ],
       "source": "workday"
     },
@@ -8427,13 +8875,19 @@
         "JavaScript",
         "Java",
         "SQL",
+        "SQL Server",
+        "MongoDB",
+        "Redis",
         "Spark",
         "Databricks",
         "Docker",
         "Kubernetes",
-        "Azure",
         "Terraform",
+        "Azure",
+        "Azure Data Factory",
+        "GitHub Actions",
         "React",
+        "Next.js",
         "Node"
       ],
       "source": "workday"
@@ -8462,6 +8916,9 @@
         "JavaScript",
         "Kubernetes",
         "Azure",
+        "GitHub Actions",
+        "Jenkins",
+        "CI/CD",
         "React",
         "Node",
         "Security"
@@ -8492,6 +8949,9 @@
         "JavaScript",
         "Kubernetes",
         "Azure",
+        "GitHub Actions",
+        "Jenkins",
+        "CI/CD",
         "React",
         "Node",
         "Security"
@@ -8523,9 +8983,13 @@
         "JavaScript",
         "Docker",
         "Kubernetes",
+        "Ansible",
+        "Terraform",
         "AWS",
         "Azure",
-        "Terraform"
+        "CI/CD",
+        "Bash",
+        "Prometheus"
       ],
       "source": "workday"
     },
@@ -8552,11 +9016,17 @@
       "technologies": [
         "Python",
         "Java",
+        "MongoDB",
         "Databricks",
         "Kubernetes",
         "Azure",
+        "GitHub Actions",
         "React",
         "LLM",
+        "LangChain",
+        "LangGraph",
+        "RAG",
+        "MCP",
         "Security"
       ],
       "source": "workday"
@@ -8583,7 +9053,9 @@
       "discovered_today": false,
       "technologies": [
         "Kubernetes",
-        "Azure"
+        "Azure",
+        "Prometheus",
+        "Grafana"
       ],
       "source": "lever"
     },
@@ -8640,7 +9112,8 @@
       "technologies": [
         "Python",
         "Go",
-        "Kubernetes"
+        "Kubernetes",
+        "EKS"
       ],
       "source": "greenhouse"
     },
@@ -8668,8 +9141,10 @@
         "Python",
         "Go",
         "Kubernetes",
+        "Terraform",
         "AWS",
-        "Terraform"
+        "EKS",
+        "CI/CD"
       ],
       "source": "greenhouse"
     },
@@ -8718,11 +9193,17 @@
       "discovered_today": false,
       "technologies": [
         "MySQL",
+        "MongoDB",
         "Kafka",
         "Docker",
         "Kubernetes",
-        "AWS",
+        "Helm",
         "Terraform",
+        "AWS",
+        "EKS",
+        "GitHub Actions",
+        "CI/CD",
+        "Bash",
         "Node"
       ],
       "source": "lever"
@@ -8751,6 +9232,7 @@
         "TypeScript",
         "Go",
         "Java",
+        "MongoDB",
         "Docker",
         "Kubernetes",
         "AWS",
@@ -8785,6 +9267,7 @@
         "AWS",
         "GCP",
         "Azure",
+        "Machine Learning",
         "LLM"
       ],
       "source": "greenhouse"
@@ -8812,7 +9295,9 @@
       "technologies": [
         "Python",
         "Java",
-        "Docker"
+        "Docker",
+        "GitHub Actions",
+        "CI/CD"
       ],
       "source": "ashby"
     },
@@ -8886,7 +9371,8 @@
       "discovered_today": false,
       "technologies": [
         "Ruby",
-        "React"
+        "React",
+        "GraphQL"
       ],
       "source": "lever"
     },
@@ -8912,7 +9398,8 @@
       "discovered_today": false,
       "technologies": [
         "Ruby",
-        "React"
+        "React",
+        "GraphQL"
       ],
       "source": "lever"
     },
@@ -8940,7 +9427,11 @@
         "Python",
         "JavaScript",
         "Ruby",
+        "GraphQL",
+        "gRPC",
         "LLM",
+        "LangChain",
+        "LangGraph",
         "Security"
       ],
       "source": "greenhouse"
@@ -8972,6 +9463,9 @@
         "PostgreSQL",
         "Docker",
         "Kubernetes",
+        "Helm",
+        "CI/CD",
+        "gRPC",
         "Security"
       ],
       "source": "greenhouse"
@@ -9136,6 +9630,7 @@
         "Python",
         "TypeScript",
         "Go",
+        "BigQuery",
         "Airflow",
         "Kubernetes",
         "AWS",
@@ -9143,7 +9638,8 @@
         "Azure",
         "React",
         "Node",
-        "LLM"
+        "LLM",
+        "MCP"
       ],
       "source": "ashby"
     },
@@ -9194,7 +9690,9 @@
       "discovered_today": false,
       "technologies": [
         "TypeScript",
+        "MongoDB",
         "React",
+        "Next.js",
         "Node"
       ],
       "source": "ashby"
@@ -9221,8 +9719,10 @@
       "discovered_today": false,
       "technologies": [
         "TypeScript",
+        "MongoDB",
         "AWS",
         "React",
+        "Next.js",
         "Node"
       ],
       "source": "ashby"
@@ -9250,13 +9750,19 @@
       "technologies": [
         "Python",
         "Java",
+        "Elasticsearch",
         "Kafka",
         "Docker",
         "Kubernetes",
         "AWS",
         "GCP",
         "Azure",
-        "LLM"
+        "CI/CD",
+        "gRPC",
+        "Machine Learning",
+        "LLM",
+        "LangGraph",
+        "RAG"
       ],
       "source": "workday"
     },
@@ -9287,8 +9793,15 @@
         "AWS",
         "GCP",
         "Azure",
+        "GitHub Actions",
+        "Jenkins",
+        "Bash",
         "PyTorch",
-        "TensorFlow"
+        "TensorFlow",
+        "Machine Learning",
+        "Deep Learning",
+        "LangChain",
+        "RAG"
       ],
       "source": "workday"
     },
@@ -9316,12 +9829,17 @@
         "Python",
         "Go",
         "Java",
+        "Redis",
+        "BigQuery",
         "Spark",
         "Kafka",
         "Airflow",
         "PyTorch",
         "TensorFlow",
-        "LLM"
+        "Machine Learning",
+        "Deep Learning",
+        "LLM",
+        "RAG"
       ],
       "source": "greenhouse"
     },
@@ -9349,12 +9867,17 @@
         "Python",
         "Go",
         "Java",
+        "Redis",
+        "BigQuery",
         "Spark",
         "Kafka",
         "Airflow",
         "PyTorch",
         "TensorFlow",
-        "LLM"
+        "Machine Learning",
+        "Deep Learning",
+        "LLM",
+        "RAG"
       ],
       "source": "greenhouse"
     },
@@ -9384,6 +9907,8 @@
         "Java",
         "Scala",
         "PostgreSQL",
+        "Redis",
+        "BigQuery",
         "Spark",
         "Kafka",
         "Docker",
@@ -9417,10 +9942,13 @@
         "Java",
         "Scala",
         "PostgreSQL",
+        "Redis",
+        "BigQuery",
         "Spark",
         "Kafka",
         "Docker",
-        "Kubernetes"
+        "Kubernetes",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -9447,7 +9975,9 @@
       "technologies": [
         "Docker",
         "Kubernetes",
-        "AWS"
+        "AWS",
+        "GraphQL",
+        "gRPC"
       ],
       "source": "greenhouse"
     },
@@ -9474,7 +10004,9 @@
       "technologies": [
         "Docker",
         "Kubernetes",
-        "AWS"
+        "AWS",
+        "GraphQL",
+        "gRPC"
       ],
       "source": "greenhouse"
     },
@@ -9524,7 +10056,9 @@
       "technologies": [
         "Docker",
         "Kubernetes",
-        "AWS"
+        "AWS",
+        "GraphQL",
+        "gRPC"
       ],
       "source": "greenhouse"
     },
@@ -9574,7 +10108,9 @@
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
       "discovered_today": false,
-      "technologies": [],
+      "technologies": [
+        "MongoDB"
+      ],
       "source": "greenhouse"
     },
     {
@@ -9652,7 +10188,9 @@
       "technologies": [
         "Python",
         "Java",
-        "AWS"
+        "AWS",
+        "CI/CD",
+        "RAG"
       ],
       "source": "workday"
     },
@@ -9678,6 +10216,7 @@
       "discovered_today": false,
       "technologies": [
         "AWS",
+        "Linux",
         "Security"
       ],
       "source": "workday"
@@ -9738,10 +10277,13 @@
         "Java",
         "SQL",
         "PostgreSQL",
+        "Oracle",
         "Kafka",
         "Docker",
         "Kubernetes",
+        "Ansible",
         "AWS",
+        "Jenkins",
         "React"
       ],
       "source": "workday"
@@ -9770,6 +10312,8 @@
         "Kubernetes",
         "AWS",
         "Azure",
+        "EKS",
+        "Linux",
         "Security"
       ],
       "source": "workday"
@@ -9794,7 +10338,9 @@
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
       "discovered_today": false,
-      "technologies": [],
+      "technologies": [
+        "Machine Learning"
+      ],
       "source": "greenhouse"
     },
     {
@@ -9817,7 +10363,9 @@
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
       "discovered_today": false,
-      "technologies": [],
+      "technologies": [
+        "Linux"
+      ],
       "source": "greenhouse"
     },
     {
@@ -9841,7 +10389,10 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
-        "Python"
+        "Python",
+        "CI/CD",
+        "Linux",
+        "Machine Learning"
       ],
       "source": "greenhouse"
     },
@@ -10014,7 +10565,9 @@
         "TypeScript",
         "React",
         "Node",
-        "LLM"
+        "Machine Learning",
+        "LLM",
+        "RAG"
       ],
       "source": "ashby"
     },
@@ -10063,7 +10616,9 @@
       "discovered_today": false,
       "technologies": [
         "Python",
-        "PyTorch"
+        "PyTorch",
+        "Machine Learning",
+        "Deep Learning"
       ],
       "source": "lever"
     },
@@ -10090,7 +10645,9 @@
       "technologies": [
         "Python",
         "Rust",
-        "PyTorch"
+        "PyTorch",
+        "Machine Learning",
+        "Deep Learning"
       ],
       "source": "lever"
     },
@@ -10140,7 +10697,9 @@
       "last_verified": "2026-11-04",
       "discovered_today": false,
       "technologies": [
-        "Python"
+        "Python",
+        "Machine Learning",
+        "Deep Learning"
       ],
       "source": "lever"
     },
@@ -10164,7 +10723,9 @@
       "first_seen": "2026-11-04",
       "last_verified": "2026-11-04",
       "discovered_today": false,
-      "technologies": [],
+      "technologies": [
+        "Helm"
+      ],
       "source": "ashby"
     }
   ]

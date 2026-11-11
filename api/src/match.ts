@@ -3,6 +3,7 @@ import { jobMatchesFilters } from "./search";
 
 /**
  * Deterministic profile matching — port of site/match-engine.js intent.
+ * Keep aliases aligned with jobseek/skills/tech_extract.py.
  * No LLM. Does not store profiles. Never claims qualification without evidence.
  */
 
@@ -10,43 +11,57 @@ function norm(s: string): string {
   return s.trim().toLowerCase();
 }
 
-/** Profile→job related hits. Job python must not count as spark. */
+/** Conservative exact-match related hits (broad ≠ specific). */
 const RELATED: Record<string, string[]> = {
-  sql: ["postgresql", "mysql"],
   postgresql: ["sql"],
   mysql: ["sql"],
+  "sql server": ["sql"],
   pyspark: ["python", "spark"],
-  python: ["pyspark"],
-  spark: ["pyspark"],
   "node.js": ["javascript", "node"],
   node: ["node.js", "javascript"],
-  javascript: ["node.js", "typescript"],
-  typescript: ["javascript"],
+  javascript: ["node.js"],
 };
 
-/** Expand exported job tags only (not full RELATED graph). */
 const JOB_EXPAND: Record<string, string[]> = {
-  postgresql: ["sql"],
-  mysql: ["sql"],
   pyspark: ["python", "spark"],
+  "sql server": ["sql"],
   node: ["node.js"],
   "node.js": ["node"],
 };
 
 const SKILL_ALIASES: Record<string, string> = {
-  tsql: "sql",
-  "t-sql": "sql",
   plsql: "sql",
   "pl/sql": "sql",
-  "sql server": "sql",
+  tsql: "sql server",
+  "t-sql": "sql server",
+  sqlserver: "sql server",
+  "ms sql": "sql server",
+  mssql: "sql server",
+  "microsoft sql server": "sql server",
   postgres: "postgresql",
   nodejs: "node.js",
   golang: "go",
   k8s: "kubernetes",
+  "control m": "control-m",
+  controlm: "control-m",
+  "google cloud": "gcp",
+  "google cloud platform": "gcp",
+  "github actions": "github actions",
+  "gh actions": "github actions",
+  "ci cd": "ci/cd",
+  "ci-cd": "ci/cd",
+  nextjs: "next.js",
+  powerbi: "power bi",
+  "machine learning": "machine learning",
+  "model context protocol": "mcp",
 };
 
 function canonicalSkill(skill: string): string {
-  const s = norm(skill);
+  const s = norm(skill)
+    .replace(/_/g, " ")
+    .replace(/[/-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   return SKILL_ALIASES[s] || s;
 }
 

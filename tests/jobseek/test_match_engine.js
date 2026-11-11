@@ -113,7 +113,16 @@ describe("extractProfileFromText", () => {
 
   it("normalizes T-SQL / PL/SQL and SQL Server", () => {
     const p = M.extractProfileFromText("T-SQL, PL/SQL, SQL Server");
-    assert.ok(p.skills.includes("SQL"));
+    assert.ok(p.skills.includes("SQL")); // PL/SQL
+    assert.ok(p.skills.includes("SQL Server")); // T-SQL / SQL Server
+  });
+
+  it("extracts Control-M, Redis, Terraform, K8s", () => {
+    const p = M.extractProfileFromText("Control-M, Redis, Terraform, K8s");
+    assert.ok(p.skills.includes("Control-M"));
+    assert.ok(p.skills.includes("Redis"));
+    assert.ok(p.skills.includes("Terraform"));
+    assert.ok(p.skills.includes("Kubernetes"));
   });
 
   it("extracts MySQL and Databricks distinctly", () => {
@@ -151,12 +160,31 @@ describe("matchJobs", () => {
     assert.ok(results[0].match.unconfirmed_skills.length >= 1);
   });
 
-  it("SQL profile skill matches PostgreSQL job tags", () => {
+  it("SQL does not exact-match PostgreSQL-only job tags", () => {
     const results = M.matchJobs(profile, [job({ technologies: ["PostgreSQL", "Python"] })], {
       limit: 5,
     });
-    assert.ok(results[0].match.matched_skills.includes("SQL"));
+    assert.ok(!results[0].match.matched_skills.includes("SQL"));
     assert.ok(results[0].match.matched_skills.includes("Python"));
+  });
+
+  it("PostgreSQL profile matches SQL job tag", () => {
+    const results = M.matchJobs(
+      { ...profile, skills: ["PostgreSQL"] },
+      [job({ technologies: ["SQL", "Python"] })],
+      { limit: 5 }
+    );
+    assert.ok(results[0].match.matched_skills.includes("PostgreSQL"));
+  });
+
+  it("K8s profile matches Kubernetes job tag", () => {
+    const results = M.matchJobs(
+      { ...profile, skills: ["K8s", "Terraform"] },
+      [job({ technologies: ["Kubernetes", "Terraform"] })],
+      { limit: 5 }
+    );
+    assert.ok(results[0].match.matched_skills.includes("Kubernetes"));
+    assert.ok(results[0].match.matched_skills.includes("Terraform"));
   });
 
   it("does not fabricate matches for unrelated skills", () => {

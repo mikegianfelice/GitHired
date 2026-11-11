@@ -15,13 +15,20 @@
   const SALARY_MAX_UI = 300000;
   const SALARY_STEP = 10000;
 
-  // Profile résumé extraction. PostgreSQL/MySQL imply SQL for the person;
-  // job export does not auto-tag SQL from platforms (see jobseek/skills/tech_extract.py).
+  // Keep in sync with jobseek/skills/tech_extract.py (canonical labels).
+  // Profile résumé extraction: PostgreSQL/MySQL also add SQL for the person.
   const TECH_ALIASES = [
     ["Python", [/\bpython\b/i, /\bpyspark\b/i]],
-    ["SQL", [/\bt-?sql\b/i, /\bpl\/?sql\b/i, /\bsql\s*server\b/i, /\bsql\b/i, /\bpostgres(?:ql)?\b/i, /\bmysql\b/i]],
+    ["SQL", [/\bsql\b/i, /\bpl\/?sql\b/i, /\bpostgres(?:ql)?\b/i, /\bmysql\b/i]],
+    ["SQL Server", [/\bt-?sql\b/i, /\bsql\s*server\b/i, /\bmssql\b/i, /\bms[\s-]?sql\b/i]],
     ["PostgreSQL", [/\bpostgres(?:ql)?\b/i]],
     ["MySQL", [/\bmysql\b/i]],
+    ["Redis", [/\bredis(?:\s+cache)?\b/i]],
+    ["MongoDB", [/\bmongo(?:db)?\b/i]],
+    ["ClickHouse", [/\bclickhouse\b/i]],
+    ["Elasticsearch", [/\belasticsearch\b/i]],
+    ["OpenSearch", [/\bopensearch\b/i]],
+    ["BigQuery", [/\bbigquery\b/i, /\bbig\s*query\b/i]],
     ["PySpark", [/\bpyspark\b/i]],
     ["JavaScript", [/\bjavascript\b/i, /\b(?<![a-z])js(?![a-z])\b/i]],
     ["TypeScript", [/\btypescript\b/i, /\b(?<![a-z])ts(?![a-z])\b/i]],
@@ -29,31 +36,52 @@
     ["Go", [/\bgolang\b/i, /\bgo(?:lang)?\s+(?:engineer|developer)\b/i, /\bgo(?:lang)?\b/i]],
     ["Rust", [/\brust\b/i]],
     ["React", [/\breact(?:\.?js)?\b/i]],
+    ["Next.js", [/\bnext\.?js\b/i]],
     ["Node.js", [/\bnode\.?js\b/i]],
+    ["GraphQL", [/\bgraphql\b/i]],
+    ["gRPC", [/\bgrpc\b/i]],
     ["AWS", [/\baws\b/i, /\bamazon web services\b/i]],
     ["Azure", [/\bazure\b/i]],
-    ["GCP", [/\bgcp\b/i, /\bgoogle cloud\b/i]],
+    ["GCP", [/\bgcp\b/i, /\bgoogle cloud(?:\s+platform)?\b/i]],
     ["Databricks", [/\bdatabricks\b/i]],
     ["Snowflake", [/\bsnowflake\b/i]],
+    ["Delta Lake", [/\bdelta\s*lake\b/i]],
     ["Spark", [/\bspark\b/i, /\bpyspark\b/i]],
     ["Kubernetes", [/\bkubernetes\b/i, /\bk8s\b/i]],
     ["Docker", [/\bdocker\b/i]],
+    ["Helm", [/\bhelm\b/i]],
     ["Terraform", [/\bterraform\b/i]],
+    ["Ansible", [/\bansible\b/i]],
     ["Airflow", [/\bairflow\b/i]],
     ["dbt", [/\bdbt\b/i]],
     ["Kafka", [/\bkafka\b/i]],
+    ["Control-M", [/\bcontrol[\s-]?m\b/i, /\bcontrolm\b/i]],
+    ["GitHub Actions", [/\bgithub\s+actions\b/i, /\bgh\s+actions\b/i]],
+    ["Jenkins", [/\bjenkins\b/i]],
+    ["CI/CD", [/\bci\s*\/\s*cd\b/i, /\bci-cd\b/i]],
+    ["Prometheus", [/\bprometheus\b/i]],
+    ["Grafana", [/\bgrafana\b/i]],
     ["PyTorch", [/\bpytorch\b/i]],
     ["TensorFlow", [/\btensorflow\b/i]],
+    ["Machine Learning", [/\bmachine\s+learning\b/i]],
     ["LLM", [/\bllm\b/i, /\blarge language models?\b/i]],
+    ["LangChain", [/\blangchain\b/i]],
+    ["LangGraph", [/\blanggraph\b/i]],
+    ["RAG", [/\bretrieval[\-\s]augmented(?:\s+generation)?\b/i, /\brag\b/i]],
+    ["MCP", [/\bmodel\s+context\s+protocol\b/i, /\bmcp\b/i]],
+    ["Tableau", [/\btableau\b/i]],
+    ["Power BI", [/\bpower\s*bi\b/i]],
   ];
 
   const SKILL_ALIASES = {
-    tsql: "SQL",
-    "t-sql": "SQL",
     plsql: "SQL",
     "pl/sql": "SQL",
-    "sql server": "SQL",
-    sqlserver: "SQL",
+    tsql: "SQL Server",
+    "t-sql": "SQL Server",
+    "sql server": "SQL Server",
+    sqlserver: "SQL Server",
+    mssql: "SQL Server",
+    "ms sql": "SQL Server",
     postgres: "PostgreSQL",
     postgresql: "PostgreSQL",
     mysql: "MySQL",
@@ -63,27 +91,37 @@
     golang: "Go",
     k8s: "Kubernetes",
     pyspark: "PySpark",
+    "control m": "Control-M",
+    controlm: "Control-M",
+    "control-m": "Control-M",
+    "google cloud": "GCP",
+    "google cloud platform": "GCP",
+    "github actions": "GitHub Actions",
+    "gh actions": "GitHub Actions",
+    "ci cd": "CI/CD",
+    "ci-cd": "CI/CD",
+    "next.js": "Next.js",
+    nextjs: "Next.js",
+    "power bi": "Power BI",
+    powerbi: "Power BI",
+    "machine learning": "Machine Learning",
+    "model context protocol": "MCP",
   };
 
-  // Profile→job related hits (one-hop). Job Python must not count as Spark.
+  // Conservative exact-match related hits (broad ≠ specific).
   const RELATED_SKILLS = {
-    SQL: ["PostgreSQL", "MySQL"],
     PostgreSQL: ["SQL"],
     MySQL: ["SQL"],
+    "SQL Server": ["SQL"],
     PySpark: ["Python", "Spark"],
-    Python: ["PySpark"],
-    Spark: ["PySpark"],
     "Node.js": ["JavaScript", "Node"],
     Node: ["Node.js", "JavaScript"],
-    JavaScript: ["Node.js", "TypeScript"],
-    TypeScript: ["JavaScript"],
+    JavaScript: ["Node.js"],
   };
 
-  // Expand exported job tags only (compound / alias). Not full RELATED graph.
   const JOB_SKILL_EXPAND = {
-    PostgreSQL: ["SQL"],
-    MySQL: ["SQL"],
     PySpark: ["Python", "Spark"],
+    "SQL Server": ["SQL"],
     Node: ["Node.js"],
     "Node.js": ["Node"],
   };
@@ -310,10 +348,15 @@
   function normalizeSkill(s) {
     const raw = String(s || "").trim();
     if (!raw) return "";
-    const key = raw.toLowerCase().replace(/_/g, " ").replace(/\s+/g, " ");
+    const key = raw
+      .toLowerCase()
+      .replace(/_/g, " ")
+      .replace(/[\/\-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
     if (SKILL_ALIASES[key]) return SKILL_ALIASES[key];
     for (const [label] of TECH_ALIASES) {
-      if (label.toLowerCase() === key) return label;
+      if (label.toLowerCase() === key || label.toLowerCase() === raw.toLowerCase()) return label;
     }
     return raw;
   }
