@@ -8,8 +8,30 @@ from typing import Any
 from urllib.parse import urljoin, urlsplit
 
 from jobseek.adapters.base import AdapterResult
+from jobseek.filters.salary import (
+    apply_salary_info_to_raw,
+    currency_hint_from_location,
+    extract_salary_from_text,
+    strip_html,
+)
 from jobseek.http_client import RateLimitedClient
 from jobseek.models import RawJob
+
+
+def _salary_from_text(
+    description: str | None,
+    *,
+    location_raw: str | None = None,
+) -> tuple[str | None, float | None, float | None, str | None]:
+    plain = strip_html(description or "")
+    if not plain.strip():
+        return None, None, None, None
+    info = extract_salary_from_text(
+        plain,
+        currency_hint=currency_hint_from_location(location_raw),
+        location_hint=location_raw,
+    )
+    return apply_salary_info_to_raw(info=info)
 
 _ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
 _LINK_FEED = re.compile(
@@ -75,6 +97,7 @@ def parse_feed_xml(body: str, *, company_name: str, source_url: str) -> list[Raw
             if not title or not (apply or job_id):
                 continue
             url = apply or f"{source_url}#{job_id}"
+            sraw, smin, smax, scur = _salary_from_text(desc, location_raw=loc or None)
             jobs.append(
                 RawJob(
                     company=company,
@@ -86,6 +109,10 @@ def parse_feed_xml(body: str, *, company_name: str, source_url: str) -> list[Raw
                     ats_job_id=job_id or url,
                     location_raw=loc or None,
                     description=desc or None,
+                    salary_raw=sraw,
+                    salary_min=smin,
+                    salary_max=smax,
+                    salary_currency=scur,
                     posted_date=listed or None,
                     raw_payload={"title": title, "applyUrl": apply, "partnerJobId": job_id},
                 )
@@ -106,6 +133,7 @@ def parse_feed_xml(body: str, *, company_name: str, source_url: str) -> list[Raw
             if not title or not (link or guid):
                 continue
             url = link or guid
+            sraw, smin, smax, scur = _salary_from_text(desc)
             jobs.append(
                 RawJob(
                     company=company_name,
@@ -116,6 +144,10 @@ def parse_feed_xml(body: str, *, company_name: str, source_url: str) -> list[Raw
                     ats_provider="rss",
                     ats_job_id=guid or url,
                     description=desc or None,
+                    salary_raw=sraw,
+                    salary_min=smin,
+                    salary_max=smax,
+                    salary_currency=scur,
                     posted_date=pub or None,
                     location_raw=None,
                     raw_payload={"title": title, "link": link, "guid": guid},
@@ -149,6 +181,7 @@ def parse_feed_xml(body: str, *, company_name: str, source_url: str) -> list[Raw
         if not title or not (href or entry_id):
             continue
         url = href or entry_id
+        sraw, smin, smax, scur = _salary_from_text(summary)
         jobs.append(
             RawJob(
                 company=company_name,
@@ -159,6 +192,10 @@ def parse_feed_xml(body: str, *, company_name: str, source_url: str) -> list[Raw
                 ats_provider="rss",
                 ats_job_id=entry_id or url,
                 description=summary or None,
+                salary_raw=sraw,
+                salary_min=smin,
+                salary_max=smax,
+                salary_currency=scur,
                 posted_date=updated or None,
                 raw_payload={"title": title, "link": href, "id": entry_id},
             )

@@ -20,15 +20,24 @@ _TAG = re.compile(r"<[^>]+>")
 _WS = re.compile(r"\s+")
 
 # Annual / range patterns — match FULL amounts (do not strip commas before matching).
-# Supports: CAD $95,000–$135,000 | CA$95K–CA$135K | $120k–$160k CAD | 95000–135000
+# Supports:
+#   CAD $95,000–$135,000 | CA$95K–CA$135K | $120k–$160k CAD | 95000–135000
+#   between $171,000 CAD and $248,000 CAD
+#   $150,000 to $200,000 | CAD 150,000 to CAD 200,000
 _CUR = r"(?:CAD|USD|CDN|C\$|CA\$|US\$|\$)"
 _NUM = r"(?:\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d{4,7}(?:\.\d+)?|\d{1,3}(?:\.\d+)?[Kk])"
 _AMOUNT_TOKEN = rf"(?:{_CUR}\s*)?{_NUM}"
+# "and" is a valid range separator (1Password / Ashby prose). Require word boundaries
+# so we do not glue unrelated clauses.
+_RANGE_SEP = r"(?:-|–|—|to|\band\b)"
 _RANGE = re.compile(
+    rf"(?:between\s+)?"
     rf"(?:(?P<cur_lead>{_CUR})\s*)?"
     rf"\$?\s*"
     rf"(?P<a>{_NUM})"
-    rf"\s*(?:-|–|—|to)\s*"
+    # Currency may sit after the first amount: "$171,000 CAD and $248,000 CAD"
+    rf"(?:\s*(?P<cur_a>CAD|USD|CDN))?"
+    rf"\s*{_RANGE_SEP}\s*"
     rf"(?:(?P<cur_mid>{_CUR})\s*)?"
     rf"\$?\s*"
     rf"(?P<b>{_NUM})"
@@ -37,7 +46,11 @@ _RANGE = re.compile(
 )
 # Also match CA$95K–CA$135K where currency sticks to the number
 _RANGE_STUCK = re.compile(
-    rf"(?P<a>{_AMOUNT_TOKEN})\s*(?:-|–|—|to)\s*(?P<b>{_AMOUNT_TOKEN})"
+    rf"(?:between\s+)?"
+    rf"(?P<a>{_AMOUNT_TOKEN})"
+    rf"(?:\s*(?P<cur_a>CAD|USD|CDN))?"
+    rf"\s*{_RANGE_SEP}\s*"
+    rf"(?P<b>{_AMOUNT_TOKEN})"
     rf"(?:\s*(?P<cur_trail>CAD|USD|CDN))?",
     re.I,
 )
@@ -47,6 +60,12 @@ _SINGLE = re.compile(
     rf"(?P<a>{_NUM})"
     rf"(?:\s*(?P<cur_trail>CAD|USD|CDN))?"
     rf"(?=\s*(?:per\s+year|annually|/?\s*year|base|salary|market|\.|,|;|$))",
+    re.I,
+)
+# Reject single-amount matches that are clearly one side of a between/and range.
+_BETWEEN_PREFIX = re.compile(r"\bbetween\b[\s\S]{0,40}$", re.I)
+_AND_AMOUNT_AFTER = re.compile(
+    rf"^\s*(?:CAD|USD|CDN)?\s*(?:and|to|-|–|—)\s*(?:{_CUR}\s*)?\$?\s*{_NUM}",
     re.I,
 )
 _HOURLY = re.compile(
@@ -218,6 +237,8 @@ _US_CITY_BAND = re.compile(
     \b(?:menlo\s+park|new\s+york|bellevue|washington|denver|westlake|
        chicago|lake\s+mary|clearwater|gainesville|san\s+francisco|
        seattle|austin|boston|atlanta|miami|los\s+angeles)\b |
+    \b(?:usa[\s-]*based|u\.?s\.?[\s-]*based|united\s+states[\s-]*based|
+       us[\s-]*only|usa[\s-]*only|u\.?s\.?a?\.?[\s-]*only)\b |
     \b(?:,\s*(?:NY|CA|WA|TX|IL|CO|FL|DC|MA|GA)\b)
     """,
     re.I | re.X,
@@ -226,6 +247,7 @@ _CAD_CITY_BAND = re.compile(
     r"""
     \b(?:toronto|vancouver|montreal|ottawa|calgary|edmonton|winnipeg|
        halifax|victoria|mississauga|canada|canadian)\b |
+    \b(?:canada[\s-]*based|canadian[\s-]*based|canada[\s-]*only)\b |
     \b(?:,\s*(?:ON|QC|AB|BC|MB|SK|NS|NB|PE|NL)\b) |
     \bCAD\b | \bCA\$ | \bC\$
     """,
@@ -260,8 +282,12 @@ def _range_matches(blob: str) -> list[re.Match[str]]:
     return matches
 
 
-def _band_context(blob: str, match: re.Match[str], *, before: int = 220, after: int = 24) -> str:
-    """Location labels almost always precede the pay figures — bias lookbehind."""
+def _band_context(blob: str, match: re.Match[str], *, before: int = 100, after: int = 24) -> str:
+    """Location labels almost always precede the pay figures — bias lookbehind.
+
+    Keep the window short so a prior USA band does not bleed into a Canada band
+    (and vice versa) in multi-geo postings.
+    """
     return blob[max(0, match.start() - before) : match.end() + after]
 
 
@@ -269,7 +295,7 @@ def _match_currency(match: re.Match[str]) -> str | None:
     """Currency evidenced on the matched salary snippet itself."""
     raw = match.group(0)
     tokens = [raw]
-    for g in ("cur_lead", "cur_mid", "cur_trail"):
+    for g in ("cur_lead", "cur_a", "cur_mid", "cur_trail"):
         if match.groupdict().get(g):
             tokens.append(match.group(g))
     for tok in tokens:
@@ -278,6 +304,33 @@ def _match_currency(match: re.Match[str]) -> str | None:
         if re.search(r"US\$|\bUSD\b", tok or "", re.I):
             return "USD"
     return _detect_currency(raw)
+
+
+def _nearest_geo_cue(blob: str, match: re.Match[str]) -> str | None:
+    """Return ``cad`` / ``usd`` from the nearest preceding geo salary label."""
+    before = blob[max(0, match.start() - 140) : match.start()]
+    cad_hits = list(_CAD_CITY_BAND.finditer(before))
+    usd_hits = list(_US_CITY_BAND.finditer(before))
+    last_cad = cad_hits[-1].end() if cad_hits else -1
+    last_usd = usd_hits[-1].end() if usd_hits else -1
+    if last_cad < 0 and last_usd < 0:
+        return None
+    if last_cad > last_usd:
+        return "cad"
+    if last_usd > last_cad:
+        return "usd"
+    return None
+
+
+def _is_range_fragment_single(blob: str, match: re.Match[str]) -> bool:
+    """True when a single-amount hit is one side of a between/and range."""
+    before = blob[max(0, match.start() - 48) : match.start()]
+    after = blob[match.end() : min(len(blob), match.end() + 48)]
+    if _BETWEEN_PREFIX.search(before):
+        return True
+    if _AND_AMOUNT_AFTER.match(after):
+        return True
+    return False
 
 
 def _select_location_band(
@@ -306,15 +359,32 @@ def _select_location_band(
     for m in matches:
         ctx = _band_context(blob, m)
         band_cur = _match_currency(m)
+        nearest = _nearest_geo_cue(blob, m)
         score = 0
         if preferred_cur and band_cur == preferred_cur:
             score += 12
         elif preferred_cur and band_cur and band_cur != preferred_cur:
             score -= 12
+        # Explicit amount currency is strong evidence even without preferred_cur.
+        if loc_cad and band_cur == "CAD":
+            score += 10
+        if loc_cad and band_cur == "USD":
+            score -= 6
+        if loc_usd and band_cur == "USD":
+            score += 10
+        if loc_usd and band_cur == "CAD":
+            score -= 6
+        # Dual US|Canada boards (preferred_cur None, loc_cad True): still prefer CAD.
+        if not preferred_cur and not loc_usd and loc_cad and band_cur == "CAD":
+            score += 4
+        if nearest == "cad":
+            score += 8
+        elif nearest == "usd":
+            score += 8 if loc_usd or not loc_cad else -4
         if loc:
             # Token overlap between location hint and preceding band label.
             for token in re.findall(r"[A-Za-z]{3,}", loc):
-                if token.casefold() in {"remote", "hybrid", "onsite", "office"}:
+                if token.casefold() in {"remote", "hybrid", "onsite", "office", "united", "states"}:
                     continue
                 if re.search(rf"\b{re.escape(token)}\b", ctx, re.I):
                     score += 4
@@ -322,9 +392,9 @@ def _select_location_band(
             score += 5
         if loc_usd and _US_CITY_BAND.search(ctx):
             score += 5
-        if loc_cad and _US_CITY_BAND.search(ctx) and not _CAD_CITY_BAND.search(ctx):
+        if loc_cad and nearest == "usd" and band_cur == "USD":
             score -= 8
-        if loc_usd and _CAD_CITY_BAND.search(ctx) and not _US_CITY_BAND.search(ctx):
+        if loc_usd and nearest == "cad" and band_cur == "CAD":
             score -= 8
         scored.append((score, m))
 
@@ -531,17 +601,22 @@ def extract_salary_from_text(
         amin = _parse_amount(m.group("a"))
         amax = _parse_amount(m.group("b"))
         raw = m.group(0)
-        for g in ("cur_lead", "cur_mid", "cur_trail"):
+        for g in ("cur_lead", "cur_a", "cur_mid", "cur_trail"):
             if m.groupdict().get(g):
                 matched_currency_tokens.append(m.group(g))
         # Stuck form embeds currency in a/b tokens
         matched_currency_tokens.extend([m.group("a"), m.group("b")])
-        # Prefer currency token adjacent to the selected band over whole-doc scan.
-        band_cur = _detect_currency(_band_context(blob, m), None)
+        # Prefer currency on the matched snippet, then nearby band context.
+        band_cur = _match_currency(m) or _detect_currency(_band_context(blob, m), None)
         if band_cur:
             currency = band_cur
     else:
-        m2 = _SINGLE.search(blob)
+        m2 = None
+        for cand in _SINGLE.finditer(blob):
+            if _is_range_fragment_single(blob, cand):
+                continue
+            m2 = cand
+            break
         if m2:
             amin = amax = _parse_amount(m2.group("a"))
             raw = m2.group(0)

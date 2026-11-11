@@ -5,6 +5,12 @@ from __future__ import annotations
 from typing import Any
 
 from jobseek.adapters.base import AdapterResult
+from jobseek.filters.salary import (
+    apply_salary_info_to_raw,
+    currency_hint_from_location,
+    extract_salary_from_text,
+    strip_html,
+)
 from jobseek.http_client import RateLimitedClient
 from jobseek.models import RawJob
 
@@ -115,8 +121,37 @@ def _collect_tier_components(compensation: dict[str, Any]) -> list[Any]:
     return out
 
 
-def _salary(job: dict[str, Any]) -> tuple[str | None, float | None, float | None, str | None]:
-    """Parse advertised annual base salary from an Ashby job posting payload."""
+def _salary_from_description(
+    description: str,
+    *,
+    location_raw: str | None,
+) -> tuple[str | None, float | None, float | None, str | None]:
+    """Fall back to employer prose when Ashby omits structured compensation.
+
+    Common on multi-geo boards (e.g. 1Password): CAD/USD bands only in description.
+    Never invents amounts — shared extractor requires clear evidence.
+    """
+    plain = strip_html(description or "")
+    if not plain.strip():
+        return None, None, None, None
+    hint = currency_hint_from_location(location_raw)
+    info = extract_salary_from_text(
+        plain, currency_hint=hint, location_hint=location_raw
+    )
+    return apply_salary_info_to_raw(info=info)
+
+
+def _salary(
+    job: dict[str, Any],
+    *,
+    description: str | None = None,
+    location_raw: str | None = None,
+) -> tuple[str | None, float | None, float | None, str | None]:
+    """Parse advertised annual base salary from an Ashby job posting payload.
+
+    Prefer verified structured ``compensation`` components; fall back to
+    description text when structure is absent or multi-currency (refused).
+    """
     compensation = job.get("compensation")
     if isinstance(compensation, dict):
         # Prefer Ashby's published summary (already envelope-aggregated).
@@ -134,7 +169,7 @@ def _salary(job: dict[str, Any]) -> tuple[str | None, float | None, float | None
 
         # Legacy flat shape (minValue directly on compensation).
         if any(k in compensation for k in ("minValue", "maxValue", "min", "max")):
-            return _salary_from_components(
+            parsed = _salary_from_components(
                 [
                     {
                         "compensationType": _BASE_SALARY_TYPE,
@@ -146,6 +181,8 @@ def _salary(job: dict[str, Any]) -> tuple[str | None, float | None, float | None
                     }
                 ]
             )
+            if parsed[1] is not None or parsed[2] is not None:
+                return parsed
 
     # Rare: tiers at job root (older fixtures / partner feeds).
     root_tiers = job.get("compensationTiers")
@@ -167,12 +204,14 @@ def _salary(job: dict[str, Any]) -> tuple[str | None, float | None, float | None
                             "maxValue": tier.get("maxValue", tier.get("max")),
                         }
                     )
-        return _salary_from_components(comps)
+        parsed = _salary_from_components(comps)
+        if parsed[1] is not None or parsed[2] is not None:
+            return parsed
 
     # Legacy: job.salary flat object
     salary = job.get("salary")
     if isinstance(salary, dict):
-        return _salary_from_components(
+        parsed = _salary_from_components(
             [
                 {
                     "compensationType": _BASE_SALARY_TYPE,
@@ -183,8 +222,13 @@ def _salary(job: dict[str, Any]) -> tuple[str | None, float | None, float | None
                 }
             ]
         )
+        if parsed[1] is not None or parsed[2] is not None:
+            return parsed
 
-    return None, None, None, None
+    return _salary_from_description(
+        description or "",
+        location_raw=location_raw or _location(job),
+    )
 
 
 class AshbyAdapter:
@@ -240,13 +284,15 @@ class AshbyAdapter:
                     or item.get("description")
                     or ""
                 )
-                salary_raw, smin, smax, scur = _salary(item)
                 is_remote = item.get("isRemote")
                 loc = _location(item)
                 if is_remote and loc and "remote" not in loc.lower():
                     loc = f"{loc} (Remote)"
                 elif is_remote and not loc:
                     loc = "Remote"
+                salary_raw, smin, smax, scur = _salary(
+                    item, description=str(description or ""), location_raw=loc
+                )
                 result.jobs.append(
                     RawJob(
                         company=company_name,

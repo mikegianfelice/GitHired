@@ -5,7 +5,13 @@ from __future__ import annotations
 from typing import Any
 
 from jobseek.adapters.base import AdapterResult
-from jobseek.filters.salary import apply_salary_info_to_raw, from_structured
+from jobseek.filters.salary import (
+    apply_salary_info_to_raw,
+    currency_hint_from_location,
+    extract_salary_from_text,
+    from_structured,
+    strip_html,
+)
 from jobseek.http_client import RateLimitedClient
 from jobseek.models import RawJob
 
@@ -58,44 +64,61 @@ def _location(job: dict[str, Any]) -> str | None:
     return f"{loc}, {country_label}"
 
 
-def _salary(job: dict[str, Any]) -> tuple[str | None, float | None, float | None, str | None]:
+def _salary(
+    job: dict[str, Any],
+    *,
+    description: str | None = None,
+    location_raw: str | None = None,
+) -> tuple[str | None, float | None, float | None, str | None]:
     """Parse Lever salaryRange with interval awareness.
 
-    Annual intervals populate salary_min/max. Hourly/monthly keep salary_raw only.
-    ``salaryDescriptionPlain`` is preserved in raw when structured amounts exist.
+    Prefer structured ``salaryRange``. Fall back to ``salaryDescriptionPlain``
+    then full description prose. Annual intervals populate salary_min/max;
+    hourly/monthly keep salary_raw only.
     """
     salary = job.get("salaryRange") or job.get("salary") or {}
     plain = job.get("salaryDescriptionPlain")
     plain_s = str(plain).strip() if plain else ""
-    if not isinstance(salary, dict):
-        return (plain_s or None), None, None, None
 
-    amin = salary.get("min")
-    amax = salary.get("max")
-    currency = salary.get("currency")
-    interval = salary.get("interval")
-    if amin is None and amax is None:
-        return (plain_s or None), None, None, None
+    if isinstance(salary, dict):
+        amin = salary.get("min")
+        amax = salary.get("max")
+        currency = salary.get("currency")
+        interval = salary.get("interval")
+        if amin is not None or amax is not None:
+            try:
+                smin = float(amin) if amin is not None else None
+                smax = float(amax) if amax is not None else None
+            except (TypeError, ValueError):
+                smin = smax = None
+            if smin is not None or smax is not None:
+                structured_raw = f"{currency or ''} {smin or ''}-{smax or ''}".strip()
+                raw = plain_s or structured_raw
+                info = from_structured(
+                    amin=smin,
+                    amax=smax,
+                    currency=str(currency) if currency else None,
+                    interval=str(interval) if interval else None,
+                    raw=raw,
+                    source="structured_ats",
+                )
+                out_raw, out_min, out_max, out_cur = apply_salary_info_to_raw(info=info)
+                if plain_s:
+                    out_raw = plain_s
+                if out_min is not None:
+                    return out_raw, out_min, out_max, out_cur
 
-    try:
-        smin = float(amin) if amin is not None else None
-        smax = float(amax) if amax is not None else None
-    except (TypeError, ValueError):
+    # Description / plain prose fallback (never invent).
+    blob_parts = [plain_s, strip_html(description or "")]
+    blob = " ".join(p for p in blob_parts if p).strip()
+    if not blob:
         return (plain_s or None), None, None, None
-
-    structured_raw = f"{currency or ''} {smin or ''}-{smax or ''}".strip()
-    raw = plain_s or structured_raw
-    info = from_structured(
-        amin=smin,
-        amax=smax,
-        currency=str(currency) if currency else None,
-        interval=str(interval) if interval else None,
-        raw=raw,
-        source="structured_ats",
+    hint = currency_hint_from_location(location_raw)
+    info = extract_salary_from_text(
+        blob, currency_hint=hint, location_hint=location_raw
     )
     out_raw, out_min, out_max, out_cur = apply_salary_info_to_raw(info=info)
-    # Always retain employer salary blurb when present.
-    if plain_s:
+    if plain_s and not out_raw:
         out_raw = plain_s
     return out_raw, out_min, out_max, out_cur
 
@@ -143,7 +166,10 @@ class LeverAdapter:
                                 extras.append(content)
                     if extras:
                         description = (description or "") + "\n" + "\n".join(extras)
-                salary_raw, smin, smax, scur = _salary(item)
+                loc = _location(item)
+                salary_raw, smin, smax, scur = _salary(
+                    item, description=str(description or ""), location_raw=loc
+                )
                 result.jobs.append(
                     RawJob(
                         company=company_name,
@@ -152,7 +178,7 @@ class LeverAdapter:
                         source="lever",
                         ats_provider="lever",
                         ats_job_id=job_id,
-                        location_raw=_location(item),
+                        location_raw=loc,
                         apply_url=item.get("applyUrl") or hosted,
                         description=description,
                         salary_raw=salary_raw,

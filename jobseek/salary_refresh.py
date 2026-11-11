@@ -179,8 +179,8 @@ def refresh_salaries(
     )
     sql = f"""
         SELECT id, company, title, ats_provider, source, ats_job_id, url,
-               description, salary_raw, salary_min, salary_max, salary_currency,
-               salary_confidence
+               location_raw, description, salary_raw, salary_min, salary_max,
+               salary_currency, salary_confidence
         FROM jobs
         WHERE {' AND '.join(clauses)}
         ORDER BY id

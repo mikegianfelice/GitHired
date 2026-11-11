@@ -15,6 +15,13 @@ from urllib.parse import urlencode
 
 from jobseek.adapters.base import AdapterResult
 from jobseek.filters.apply_url import select_actionable_apply_url
+from jobseek.filters.salary import (
+    apply_salary_info_to_raw,
+    currency_hint_from_location,
+    extract_salary_from_text,
+    from_structured,
+    strip_html,
+)
 from jobseek.http_client import RateLimitedClient
 from jobseek.models import RawJob
 
@@ -99,9 +106,28 @@ def normalize_freehire_job(item: dict[str, Any]) -> tuple[RawJob | None, dict[st
     salary_currency = enrichment.get("salary_currency")
     salary_raw = None
     if salary_min is not None or salary_max is not None:
-        lo = salary_min if salary_min is not None else salary_max
-        hi = salary_max if salary_max is not None else salary_min
-        salary_raw = f"{salary_currency or ''} {lo}-{hi}".strip()
+        structured = from_structured(
+            amin=float(salary_min) if isinstance(salary_min, (int, float)) else None,
+            amax=float(salary_max) if isinstance(salary_max, (int, float)) else None,
+            currency=str(salary_currency).upper() if salary_currency else None,
+            interval=str(enrichment.get("salary_period") or enrichment.get("salary_interval") or "")
+            or None,
+            raw=None,
+            source="structured_ats",
+        )
+        salary_raw, salary_min, salary_max, salary_currency = apply_salary_info_to_raw(
+            info=structured
+        )
+    if salary_min is None and description:
+        # Prefer Freehire enrichment; fall back to description prose only.
+        info = extract_salary_from_text(
+            strip_html(description),
+            currency_hint=currency_hint_from_location(location),
+            location_hint=location,
+        )
+        salary_raw, salary_min, salary_max, salary_currency = apply_salary_info_to_raw(
+            info=info
+        )
 
     # Provenance: keep Freehire listing URL as `url` when apply is affiliate so
     # the row remains findable; actionable apply_url only when direct.
