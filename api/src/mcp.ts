@@ -45,16 +45,33 @@ const TOOLS = [
   {
     name: "match_profile",
     description:
-      "Deterministically match skills/experience preferences to GitHired jobs. Does not store résumés or call an LLM. Match scores are relevance, not hiring decisions.",
+      "Deterministically match skills/experience preferences to GitHired jobs. Uses role-family title matching (not exact titles). work_arrangements is a hard filter when set; remote_preference=true alone means remote-only. salary_mode defaults to flexible (advertised max may meet floor). Scores are relevance, not hire probability. Does not store résumés or call an LLM.",
     inputSchema: {
       type: "object",
       properties: {
         skills: { type: "array", items: { type: "string" } },
         years_experience: { type: "number" },
-        preferred_roles: { type: "array", items: { type: "string" } },
+        preferred_roles: {
+          type: "array",
+          items: { type: "string" },
+          description: "Preferred titles; matched by role family tokens (e.g. Senior Data Engineer also matches Data Platform Engineer).",
+        },
         preferred_locations: { type: "array", items: { type: "string" } },
-        remote_preference: { type: "boolean" },
-        minimum_salary: { type: "number" },
+        remote_preference: {
+          type: "boolean",
+          description: "Legacy: true → remote-only hard filter when work_arrangements omitted.",
+        },
+        work_arrangements: {
+          type: "array",
+          items: { type: "string", enum: ["remote", "hybrid", "onsite"] },
+          description: "Hard allow-list of work arrangements. Overrides remote_preference when provided.",
+        },
+        minimum_salary: { type: "number", description: "CAD-normalized annual base floor." },
+        salary_mode: {
+          type: "string",
+          enum: ["strict", "flexible"],
+          description: "strict: advertised min must meet floor. flexible (default): advertised max may meet floor.",
+        },
         seniority: { type: "string" },
         limit: { type: "number" },
       },

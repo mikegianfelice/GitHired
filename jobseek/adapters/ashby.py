@@ -42,6 +42,83 @@ def _location(job: dict[str, Any]) -> str | None:
     return None
 
 
+def _location_suggests_canada(location_raw: str | None) -> bool:
+    """True when primary location text is Canada-facing (not US-only)."""
+    blob = (location_raw or "").casefold()
+    if not blob.strip():
+        return False
+    markers = (
+        "canada",
+        "toronto",
+        "vancouver",
+        "montréal",
+        "montreal",
+        "ottawa",
+        "calgary",
+        "edmonton",
+        "ontario",
+        "british columbia",
+        "quebec",
+        "québec",
+        "alberta",
+        "manitoba",
+        "saskatchewan",
+        "nova scotia",
+    )
+    return any(m in blob for m in markers)
+
+
+def _tier_label(tier: dict[str, Any]) -> str:
+    parts: list[str] = []
+    for key in ("title", "tierSummary", "name", "label"):
+        val = tier.get(key)
+        if val:
+            parts.append(str(val))
+    return " ".join(parts)
+
+
+def _canada_tier_components(compensation: dict[str, Any]) -> list[Any] | None:
+    """Return salary components from Canada-labeled tiers, if any."""
+    tiers = compensation.get("compensationTiers") or []
+    if not isinstance(tiers, list):
+        return None
+    out: list[Any] = []
+    for tier in tiers:
+        if not isinstance(tier, dict):
+            continue
+        label = _tier_label(tier).casefold()
+        if "canada" not in label and "canadian" not in label:
+            continue
+        comps = tier.get("components") or []
+        if isinstance(comps, list):
+            out.extend(comps)
+    return out or None
+
+
+def _annotate_location_arrangement(item: dict[str, Any], loc: str | None) -> str | None:
+    """Prefer Ashby workplaceType over the isRemote boolean when labeling location.
+
+    Cohere (and others) set isRemote=true with workplaceType=Hybrid. Annotating
+    "(Remote)" from isRemote alone poisons downstream arrangement inference.
+    """
+    workplace = str(item.get("workplaceType") or item.get("workplace") or "").strip().casefold()
+    is_remote = item.get("isRemote")
+    base = (loc or "").strip() or None
+
+    if workplace == "hybrid":
+        if base and "hybrid" not in base.casefold():
+            return f"{base} (Hybrid)"
+        return base or "Hybrid"
+    if workplace in {"onsite", "on-site", "office"}:
+        return base
+    if workplace == "remote" or is_remote:
+        if base and "remote" not in base.casefold() and "hybrid" not in base.casefold():
+            return f"{base} (Remote)"
+        if not base:
+            return "Remote"
+    return base
+
+
 def _as_float(value: Any) -> float | None:
     if value is None:
         return None
@@ -154,6 +231,16 @@ def _salary(
     """
     compensation = job.get("compensation")
     if isinstance(compensation, dict):
+        # Prefer Canada geo tier when the posting's primary location is Canada-
+        # facing. Ashby summaryComponents often envelope all geo bands
+        # (e.g. US low + Canada high), which misstates the Canada range.
+        if _location_suggests_canada(location_raw):
+            canada_comps = _canada_tier_components(compensation)
+            if canada_comps:
+                parsed = _salary_from_components(canada_comps)
+                if parsed[1] is not None or parsed[2] is not None:
+                    return parsed
+
         # Prefer Ashby's published summary (already envelope-aggregated).
         summary = compensation.get("summaryComponents")
         if isinstance(summary, list) and summary:
@@ -284,12 +371,7 @@ class AshbyAdapter:
                     or item.get("description")
                     or ""
                 )
-                is_remote = item.get("isRemote")
-                loc = _location(item)
-                if is_remote and loc and "remote" not in loc.lower():
-                    loc = f"{loc} (Remote)"
-                elif is_remote and not loc:
-                    loc = "Remote"
+                loc = _annotate_location_arrangement(item, _location(item))
                 salary_raw, smin, smax, scur = _salary(
                     item, description=str(description or ""), location_raw=loc
                 )

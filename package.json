@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "test:site": "node --test tests/jobseek/test_match_engine.js tests/jobseek/test_public_site_ux.js tests/jobseek/test_public_site_interactions.js tests/jobseek/test_resume_privacy.js",
+    "test:site": "node --test tests/jobseek/test_match_engine.js tests/jobseek/test_match_qa_personas.js tests/jobseek/test_public_site_ux.js tests/jobseek/test_public_site_interactions.js tests/jobseek/test_resume_privacy.js",
     "test:browser": "node tests/jobseek/browser_ux_smoke.mjs"
   },
   "devDependencies": {

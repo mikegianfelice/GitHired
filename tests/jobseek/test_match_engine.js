@@ -44,13 +44,27 @@ describe("salaryFilterPass", () => {
     assert.equal(r.meets_with_max_only, false);
   });
 
-  it("$150K with range max only", () => {
+  it("$150K with range max only — flexible mode", () => {
     const r = M.salaryFilterPass(
       job({ salary_min: 120000, salary_max: 160000, salary_max_cad: 160000 }),
       150000,
-      true
+      true,
+      1.35,
+      "flexible"
     );
     assert.equal(r.pass, true);
+    assert.equal(r.meets_with_max_only, true);
+  });
+
+  it("$150K with range max only — strict mode excludes", () => {
+    const r = M.salaryFilterPass(
+      job({ salary_min: 120000, salary_max: 160000, salary_max_cad: 160000 }),
+      150000,
+      true,
+      1.35,
+      "strict"
+    );
+    assert.equal(r.pass, false);
     assert.equal(r.meets_with_max_only, true);
   });
 

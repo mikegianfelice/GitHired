@@ -143,19 +143,23 @@
                 "properties": {
                   "skills": { "type": "array", "items": { "type": "string" } },
                   "years_experience": { "type": "number" },
-                  "preferred_roles": { "type": "array", "items": { "type": "string" } },
+                  "preferred_roles": { "type": "array", "items": { "type": "string" }, "description": "Matched by role-family tokens, not exact title equality" },
                   "preferred_locations": { "type": "array", "items": { "type": "string" } },
-                  "remote_preference": { "type": "boolean" },
-                  "minimum_salary": { "type": "number" },
+                  "remote_preference": { "type": "boolean", "description": "Legacy: true → remote-only when work_arrangements omitted" },
+                  "work_arrangements": { "type": "array", "items": { "type": "string", "enum": ["remote", "hybrid", "onsite"] }, "description": "Hard allow-list; overrides remote_preference" },
+                  "minimum_salary": { "type": "number", "description": "CAD-normalized annual base floor" },
+                  "salary_mode": { "type": "string", "enum": ["strict", "flexible"], "description": "Default flexible (max may meet floor). strict requires advertised min ≥ floor." },
                   "seniority": { "type": "string" },
                   "limit": { "type": "integer" }
                 }
               },
               "example": {
                 "skills": ["Python", "Spark", "Airflow"],
-                "preferred_roles": ["Data Engineer"],
-                "remote_preference": true,
+                "preferred_roles": ["Senior Data Engineer"],
+                "years_experience": 6,
+                "work_arrangements": ["remote", "hybrid"],
                 "minimum_salary": 150000,
+                "salary_mode": "flexible",
                 "seniority": "senior",
                 "limit": 5
               }

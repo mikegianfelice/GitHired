@@ -78,8 +78,19 @@ export interface MatchProfileInput {
   years_experience?: number;
   preferred_roles?: string[];
   preferred_locations?: string[];
+  /** When true and work_arrangements omitted → remote-only hard filter (legacy). */
   remote_preference?: boolean;
+  /**
+   * Explicit allowed arrangements (hard filter). Values: remote | hybrid | onsite.
+   * When set, overrides remote_preference for arrangement filtering.
+   */
+  work_arrangements?: string[];
   minimum_salary?: number;
+  /**
+   * Salary floor semantics. Default flexible (max may meet floor) for API/MCP
+   * backward compatibility. Website client defaults to strict.
+   */
+  salary_mode?: "strict" | "flexible";
   seniority?: string;
   limit?: number;
 }

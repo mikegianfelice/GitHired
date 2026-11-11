@@ -203,6 +203,17 @@
       <p class="docs-note"><code>total</code> is the full match count before pagination. Cursors are opaque — do not invent them.</p>
     </section>
 
+    <section aria-labelledby="match-heading">
+      <h2 id="match-heading">Profile matching (<code>POST /api/v1/match</code>)</h2>
+      <ul>
+        <li>Titles match by <strong>role family</strong> (token overlap with seniority words stripped), not exact equality — e.g. <code>Senior Data Engineer</code> also considers Data Platform / Lead Data Engineer variants.</li>
+        <li><code>remote_preference: true</code> alone is a <strong>remote-only</strong> hard filter (legacy).</li>
+        <li><code>work_arrangements: ["remote","hybrid"]</code> is the preferred hard allow-list and overrides <code>remote_preference</code>.</li>
+        <li><code>salary_mode</code>: default <code>flexible</code> (advertised max may meet your CAD floor). Pass <code>strict</code> so the advertised minimum must meet the floor. Website Find My Matches defaults to strict.</li>
+        <li>Match scores are deterministic relevance — not hire probability. Unmentioned skills are unconfirmed, not confirmed gaps.</li>
+      </ul>
+    </section>
+
     <section aria-labelledby="salary-heading">
       <h2 id="salary-heading">Salary filtering</h2>
       <ul>
@@ -210,6 +221,7 @@
         <li>USD is converted with the snapshot <code>usd_to_cad</code> rate for comparison; employer currency stays on the job.</li>
         <li>Missing / non-annual pay is undisclosed — never estimated.</li>
         <li>Non-positive <code>salary_min</code> / <code>salary_max</code> values are ignored.</li>
+        <li>Search <code>salary_min</code> compares against advertised max CAD (flexible). Profile match supports optional <code>salary_mode</code>.</li>
       </ul>
     </section>
 

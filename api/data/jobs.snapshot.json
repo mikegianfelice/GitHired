@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "dataset_id": "12f5a8b1fad59fda",
-  "generated_at": "2026-11-11T11:59:51Z",
+  "generated_at": "2026-11-11T12:25:39Z",
   "source": "githired-api-snapshot",
   "limit": 400,
   "count": 358,
@@ -28,7 +28,7 @@
   "stats": {
     "total_jobs": 358,
     "total_companies": 58,
-    "remote_jobs": 239,
+    "remote_jobs": 238,
     "jobs_with_advertised_salary": 300
   },
   "companies": [
@@ -298,13 +298,13 @@
       "id": "82d4aa797f949b4f",
       "title": "Senior Staff Data Engineer",
       "company": "Cohere",
-      "location": "Toronto (Remote)",
+      "location": "Toronto (Hybrid)",
       "province": null,
-      "work_arrangement": "remote",
+      "work_arrangement": "hybrid",
       "remote_scope": "unspecified",
       "seniority": "senior",
       "track": "data_engineering",
-      "salary_min": 275000.0,
+      "salary_min": 380000.0,
       "salary_max": 450000.0,
       "salary_currency": "USD",
       "salary_available": true,
@@ -314,7 +314,7 @@
       "apply_url": "https://jobs.ashbyhq.com/cohere/4ef5101e-b083-49cd-808a-54c754d159e5/application",
       "verified": true,
       "first_seen": "2026-11-04",
-      "last_verified": "2026-11-04",
+      "last_verified": "2026-11-11",
       "discovered_today": false,
       "technologies": [
         "BigQuery",

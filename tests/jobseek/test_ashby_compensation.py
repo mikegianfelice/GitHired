@@ -6,7 +6,7 @@ import json
 import unittest
 from unittest.mock import MagicMock
 
-from jobseek.adapters.ashby import AshbyAdapter, _salary
+from jobseek.adapters.ashby import AshbyAdapter, _annotate_location_arrangement, _salary
 from jobseek.http_client import HttpResponse
 
 
@@ -234,6 +234,95 @@ class AshbySalaryParseTests(unittest.TestCase):
     def test_missing_compensation_returns_none(self):
         self.assertEqual(_salary({"title": "Engineer"}), (None, None, None, None))
 
+    def test_canada_location_prefers_canada_tier_over_summary_envelope(self):
+        """Cohere-shaped multi-geo board: Canada tier beats USA+Canada summary."""
+        job = {
+            "compensation": {
+                "summaryComponents": [
+                    {
+                        "compensationType": "Salary",
+                        "interval": "1 YEAR",
+                        "currencyCode": "USD",
+                        "minValue": 275000,
+                        "maxValue": 450000,
+                    }
+                ],
+                "compensationTiers": [
+                    {
+                        "title": "USA - California, New York and Washington",
+                        "components": [
+                            {
+                                "compensationType": "Salary",
+                                "interval": "1 YEAR",
+                                "currencyCode": "USD",
+                                "minValue": 300000,
+                                "maxValue": 350000,
+                            }
+                        ],
+                    },
+                    {
+                        "title": "USA - All Other States",
+                        "components": [
+                            {
+                                "compensationType": "Salary",
+                                "interval": "1 YEAR",
+                                "currencyCode": "USD",
+                                "minValue": 275000,
+                                "maxValue": 320000,
+                            }
+                        ],
+                    },
+                    {
+                        "title": "Canada",
+                        "components": [
+                            {
+                                "compensationType": "Salary",
+                                "interval": "1 YEAR",
+                                "currencyCode": "USD",
+                                "minValue": 380000,
+                                "maxValue": 450000,
+                            }
+                        ],
+                    },
+                ],
+            }
+        }
+        _, amin, amax, cur = _salary(job, location_raw="Toronto (Hybrid)")
+        self.assertEqual(cur, "USD")
+        self.assertEqual(amin, 380000.0)
+        self.assertEqual(amax, 450000.0)
+
+    def test_summary_envelope_kept_without_canada_location(self):
+        job = {
+            "compensation": {
+                "summaryComponents": [
+                    {
+                        "compensationType": "Salary",
+                        "interval": "1 YEAR",
+                        "currencyCode": "USD",
+                        "minValue": 275000,
+                        "maxValue": 450000,
+                    }
+                ],
+                "compensationTiers": [
+                    {
+                        "title": "Canada",
+                        "components": [
+                            {
+                                "compensationType": "Salary",
+                                "interval": "1 YEAR",
+                                "currencyCode": "USD",
+                                "minValue": 380000,
+                                "maxValue": 450000,
+                            }
+                        ],
+                    }
+                ],
+            }
+        }
+        _, amin, amax, cur = _salary(job, location_raw="San Francisco")
+        self.assertEqual((amin, amax, cur), (275000.0, 450000.0, "USD"))
+
 
 class AshbyAdapterCompensationTests(unittest.TestCase):
     def test_requests_include_compensation_flag(self):
@@ -263,6 +352,30 @@ class AshbyAdapterCompensationTests(unittest.TestCase):
             {"name": "7shifts", "board_token": "7shifts"}
         )
         self.assertEqual(result.jobs, [])
+
+    def test_workplace_type_hybrid_beats_is_remote_flag(self):
+        """Cohere: isRemote=true + workplaceType=Hybrid must not become Remote."""
+        item = {
+            "isRemote": True,
+            "workplaceType": "Hybrid",
+            "location": "Toronto",
+        }
+        self.assertEqual(
+            _annotate_location_arrangement(item, "Toronto"),
+            "Toronto (Hybrid)",
+        )
+
+    def test_fetch_annotates_hybrid_not_remote(self):
+        job = seven_shifts_mid_market()
+        job["isRemote"] = True
+        job["workplaceType"] = "Hybrid"
+        job["location"] = "Toronto"
+        result = AshbyAdapter(client=_client({"jobs": [job]})).fetch_company(
+            {"name": "Cohere", "board_token": "Cohere"}
+        )
+        self.assertEqual(len(result.jobs), 1)
+        self.assertIn("Hybrid", result.jobs[0].location_raw or "")
+        self.assertNotIn("(Remote)", result.jobs[0].location_raw or "")
 
 
 if __name__ == "__main__":

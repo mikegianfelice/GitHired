@@ -6,6 +6,7 @@ bun.lock
 api/.wrangler/
 api/.wrangler-logs/
 api/.dry-run-out/
+api/test/.cache/
 .wrangler/
 
 # Python

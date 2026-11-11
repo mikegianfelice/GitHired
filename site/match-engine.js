@@ -196,7 +196,50 @@
       work_arrangements: [],
       minimum_salary_cad: 0,
       include_undisclosed_salary: true,
+      // Website default: advertised min must meet floor. API/MCP default remains flexible.
+      salary_filter_mode: "strict",
     };
+  }
+
+  const SENIORITY_STOP = new Set([
+    "senior",
+    "sr",
+    "junior",
+    "jr",
+    "staff",
+    "principal",
+    "lead",
+    "intern",
+    "entry",
+    "mid",
+    "intermediate",
+    "level",
+  ]);
+
+  const BAND_YEARS = {
+    intern: 0,
+    junior: 1,
+    mid: 3,
+    senior: 6,
+    staff: 9,
+    principal: 12,
+    lead: 8,
+  };
+
+  function inferSeniorityFromYears(years) {
+    if (years == null || !Number.isFinite(years) || years < 0) return null;
+    if (years < 2) return "junior";
+    if (years < 5) return "mid";
+    if (years < 8) return "senior";
+    if (years < 12) return "staff";
+    return "principal";
+  }
+
+  function roleFamilyTokens(text) {
+    return String(text || "")
+      .toLowerCase()
+      .split(/[^a-z0-9+#.]+/)
+      .filter((t) => t.length > 2 && !SENIORITY_STOP.has(t));
   }
 
   function extractSkills(text) {
@@ -306,10 +349,14 @@
   }
 
   /**
+   * @param {"strict"|"flexible"|undefined} mode — strict: advertised min must meet floor;
+   *   flexible: advertised max may meet floor. Default flexible for call-site compat;
+   *   website profiles default salary_filter_mode to strict.
    * @returns {{pass:boolean, reason:string, meets_with_max_only:boolean}}
    */
-  function salaryFilterPass(job, minimumCad, includeUndisclosed, fx) {
+  function salaryFilterPass(job, minimumCad, includeUndisclosed, fx, mode) {
     const min = Math.max(0, Number(minimumCad) || 0);
+    const filterMode = mode === "strict" ? "strict" : "flexible";
     if (min <= 0) {
       return { pass: true, reason: "no minimum", meets_with_max_only: false };
     }
@@ -331,13 +378,21 @@
     if (maxCad < min) {
       return { pass: false, reason: "below minimum", meets_with_max_only: false };
     }
+    const rate = Number(fx) > 0 ? Number(fx) : DEFAULT_FX;
     const minCad =
       job.salary_min != null
         ? String(job.salary_currency || "").toUpperCase() === "USD"
-          ? Number(job.salary_min) * (Number(fx) > 0 ? Number(fx) : DEFAULT_FX)
+          ? Number(job.salary_min) * rate
           : Number(job.salary_min)
         : maxCad;
     const meetsWithMaxOnly = Number.isFinite(minCad) && minCad < min && maxCad >= min;
+    if (filterMode === "strict" && meetsWithMaxOnly) {
+      return {
+        pass: false,
+        reason: "range starts below minimum",
+        meets_with_max_only: true,
+      };
+    }
     return {
       pass: true,
       reason: meetsWithMaxOnly ? "max meets minimum" : "meets minimum",
@@ -375,6 +430,18 @@
     return set;
   }
 
+  function tokenInTitle(title, token) {
+    // Whole-token match only — "data" must not hit "datastores" / "database".
+    const parts = new Set([
+      ...roleFamilyTokens(title),
+      ...String(title || "")
+        .toLowerCase()
+        .split(/[^a-z0-9+#.]+/)
+        .filter((t) => t.length > 1),
+    ]);
+    return parts.has(token);
+  }
+
   function titleRelevance(profile, job) {
     const norm = (t) => String(t || "").toLowerCase();
     const titles = [profile.current_title, ...(profile.desired_titles || [])]
@@ -384,13 +451,22 @@
     if (!titles.length) return 0.5; // neutral when unknown
     let best = 0;
     for (const nt of titles) {
-      if (jobTitle.includes(nt) || nt.includes(jobTitle)) best = Math.max(best, 1);
-      else {
-        const tokens = nt.split(/[^a-z0-9+#.]+/).filter((x) => x.length > 2);
-        if (!tokens.length) continue;
-        const hit = tokens.filter((tok) => jobTitle.includes(tok)).length;
-        best = Math.max(best, hit / tokens.length);
+      if (jobTitle.includes(nt) || nt.includes(jobTitle)) {
+        best = Math.max(best, 1);
+        continue;
       }
+      // Prefer role-family tokens (strip seniority) so "Senior Data Engineer"
+      // aligns with "Lead Data Engineer" / "Senior Data Platform Engineer".
+      const family = roleFamilyTokens(nt);
+      if (family.length) {
+        const hit = family.filter((tok) => tokenInTitle(jobTitle, tok)).length;
+        best = Math.max(best, hit / family.length);
+        continue;
+      }
+      const tokens = nt.split(/[^a-z0-9+#.]+/).filter((x) => x.length > 2);
+      if (!tokens.length) continue;
+      const hit = tokens.filter((tok) => tokenInTitle(jobTitle, tok)).length;
+      best = Math.max(best, hit / tokens.length);
     }
     return best;
   }
@@ -418,24 +494,63 @@
   }
 
   function seniorityScore(profile, job) {
-    const wanted = (profile.seniority || []).map((s) => String(s).toLowerCase());
+    let wanted = (profile.seniority || []).map((s) => String(s).toLowerCase());
+    const inferred = inferSeniorityFromYears(profile.years_experience);
+    if (!wanted.length && inferred) wanted = [inferred];
     const jobSen = String(job.seniority || "").toLowerCase();
-    if (!wanted.length) return 0.5;
-    if (!jobSen) return 0.55; // unknown job seniority — not a hard miss
-    if (wanted.includes(jobSen)) return 1;
-    // adjacent bands
-    const order = ["junior", "mid", "senior", "staff", "principal", "lead"];
-    const ji = order.indexOf(jobSen);
-    if (ji < 0) return 0.4;
-    const dists = wanted.map((w) => {
-      const wi = order.indexOf(w);
-      return wi < 0 ? 3 : Math.abs(wi - ji);
-    });
-    const d = Math.min(...dists);
-    if (d === 0) return 1;
-    if (d === 1) return 0.7;
-    if (d === 2) return 0.4;
-    return 0.15;
+    if (!wanted.length) return { score: 0.5, note: null };
+    if (!jobSen) return { score: 0.55, note: "Job seniority unspecified — compatibility uncertain" };
+
+    const order = ["junior", "mid", "senior", "staff", "principal", "lead", "intern"];
+    let band = 0.4;
+    if (wanted.includes(jobSen)) band = 1;
+    else {
+      const ji = order.indexOf(jobSen);
+      if (ji >= 0) {
+        const dists = wanted.map((w) => {
+          const wi = order.indexOf(w);
+          return wi < 0 ? 3 : Math.abs(wi - ji);
+        });
+        const d = Math.min(...dists);
+        if (d === 0) band = 1;
+        else if (d === 1) band = 0.7;
+        else if (d === 2) band = 0.35;
+        else band = 0.12;
+      }
+    }
+
+    // Explicit years in the listing beat invented thresholds.
+    const jobYears = extractYears(job.description_excerpt || job.description || "");
+    const candYears = profile.years_experience;
+    let mult = 1;
+    let note = null;
+    if (candYears != null && Number.isFinite(candYears) && jobYears != null) {
+      const gap = jobYears - candYears;
+      if (gap >= 4) {
+        mult = 0.25;
+        note = `Strong skill overlap possible, but this role may require more experience than your profile indicates (listing ~${jobYears}+ years; profile ${candYears})`;
+      } else if (gap >= 2) {
+        mult = 0.45;
+        note = `Listing asks for ~${jobYears}+ years; your profile shows ${candYears}`;
+      } else if (gap > 0) {
+        mult = 0.75;
+        note = `Listing asks for ~${jobYears}+ years; your profile shows ${candYears}`;
+      }
+    } else if (candYears != null && Number.isFinite(candYears) && jobSen && BAND_YEARS[jobSen] != null) {
+      // Soft heuristic only — never invent a hard JD requirement.
+      const gap = BAND_YEARS[jobSen] - candYears;
+      if (gap >= 5) {
+        mult = 0.35;
+        note = `This ${jobSen} role typically expects more experience than your ${candYears} years indicate`;
+      } else if (gap >= 3) {
+        mult = 0.55;
+        note = `Seniority band may require more experience than your profile indicates`;
+      }
+    } else if (!jobYears && candYears == null) {
+      note = null;
+    }
+
+    return { score: Math.min(1, band * mult), note };
   }
 
   function disciplineScore(profile, job) {
@@ -460,10 +575,15 @@
 
   function arrangementScore(profile, job) {
     const wanted = profile.work_arrangements || [];
-    if (!wanted.length) return 0.5;
+    if (!wanted.length) return { score: 0.5, ok: true };
     const arr = job.work_arrangement || "unspecified";
-    if (arr === "unspecified") return 0.55;
-    return wanted.includes(arr) ? 1 : 0.25;
+    if (arr === "unspecified" || arr === "unknown") {
+      // Unknown: soft-allow (Canada eligibility already applied upstream).
+      return { score: 0.55, ok: true };
+    }
+    if (wanted.includes(arr)) return { score: 1, ok: true };
+    // Explicit allow-list is a hard filter when arrangements are selected.
+    return { score: 0, ok: false };
   }
 
   function locationHardFilter(profile, job) {
@@ -505,11 +625,13 @@
    * @returns {{status:'confirmed'|'possible'|'ineligible', score:number, percent:number, matched_skills:string[], unconfirmed_skills:string[], reasons:string[], salary_note:string|null, meets_with_max_only:boolean}}
    */
   function scoreJob(profile, job, fx) {
+    const salaryMode = profile.salary_filter_mode === "flexible" ? "flexible" : "strict";
     const sal = salaryFilterPass(
       job,
       profile.minimum_salary_cad || 0,
       profile.include_undisclosed_salary !== false,
-      fx
+      fx,
+      salaryMode
     );
     if (!sal.pass) {
       return {
@@ -519,8 +641,10 @@
         matched_skills: [],
         unconfirmed_skills: [],
         reasons: [`Salary: ${sal.reason}`],
-        salary_note: null,
-        meets_with_max_only: false,
+        salary_note: sal.meets_with_max_only
+          ? "Salary range overlaps your minimum, but starts below it"
+          : null,
+        meets_with_max_only: sal.meets_with_max_only,
       };
     }
     const loc = locationHardFilter(profile, job);
@@ -537,29 +661,78 @@
       };
     }
 
+    const arr = arrangementScore(profile, job);
+    if (!arr.ok) {
+      return {
+        status: "ineligible",
+        score: 0,
+        percent: 0,
+        matched_skills: [],
+        unconfirmed_skills: [],
+        reasons: [`Work arrangement ${job.work_arrangement || "unknown"} not in your allowed list`],
+        salary_note: null,
+        meets_with_max_only: sal.meets_with_max_only,
+      };
+    }
+
     const title = titleRelevance(profile, job);
     const skills = skillOverlap(profile, job);
     const sen = seniorityScore(profile, job);
     const disc = disciplineScore(profile, job);
-    const arr = arrangementScore(profile, job);
-    const other = (arr + (loc.reason.includes("match") || loc.reason.includes("canada") ? 1 : 0.5)) / 2;
+    const hasTitlePref = !!(
+      profile.current_title ||
+      (profile.desired_titles && profile.desired_titles.length)
+    );
+    // Align with API/MCP: require role-family overlap when the user stated a title.
+    // Strong discipline adjacency can soft-rescue near-miss titles as "possible".
+    if (hasTitlePref && title < 0.6 && disc < 0.9) {
+      return {
+        status: "ineligible",
+        score: 0,
+        percent: 0,
+        matched_skills: [],
+        unconfirmed_skills: [],
+        reasons: ["Title / role family does not sufficiently match your preferred roles"],
+        salary_note: null,
+        meets_with_max_only: sal.meets_with_max_only,
+      };
+    }
+    const other =
+      (arr.score + (loc.reason.includes("match") || loc.reason.includes("canada") ? 1 : 0.5)) / 2;
 
-    const score =
-      title * 0.3 + skills.score * 0.3 + sen * 0.15 + disc * 0.15 + other * 0.1;
+    // Weight seniority more heavily; large experience gaps must not look like strong matches.
+    let score =
+      title * 0.25 + skills.score * 0.25 + sen.score * 0.3 + disc * 0.1 + other * 0.1;
+    if (sen.score < 0.4) {
+      // Cap: staff/principal vs junior cannot land in the 80%+ band on skills alone.
+      score = Math.min(score, 0.4 + sen.score * 0.25);
+    }
     const percent = Math.round(Math.max(0, Math.min(1, score)) * 100);
 
     const reasons = [];
-    if (title >= 0.7) reasons.push("Title aligns with your experience");
-    if (skills.matched.length) reasons.push(`Skills evidenced: ${skills.matched.slice(0, 5).join(", ")}`);
+    if (title >= 0.7) reasons.push("Title aligns with your preferred role family");
+    else if (title >= 0.5) reasons.push("Partial title / role-family overlap");
+    if (skills.matched.length) {
+      reasons.push(`Confirmed matching skills: ${skills.matched.slice(0, 5).join(", ")}`);
+    }
+    if (skills.unconfirmed.length) {
+      reasons.push(
+        `Skills not mentioned in the listing are unconfirmed, not necessarily missing: ${skills.unconfirmed.slice(0, 4).join(", ")}`
+      );
+    }
     if (disc >= 0.9) reasons.push("Discipline matches your preferred tracks");
-    if (sen >= 0.9) reasons.push("Seniority compatible");
+    if (sen.note) reasons.push(sen.note);
+    else if (sen.score >= 0.9) reasons.push("Seniority compatible");
+    else if (sen.score < 0.5) {
+      reasons.push("Seniority / experience may be a stretch for this listing");
+    }
     if (job.remote_scope === "canada" && job.work_arrangement === "remote") {
       reasons.push("Canada-wide remote");
     } else if (job.remote_scope === "province") {
       reasons.push("Province-scoped remote (not Canada-wide)");
     }
     if (sal.meets_with_max_only) {
-      reasons.push("Advertised max meets your salary minimum (range low end is below)");
+      reasons.push("Salary range overlaps your minimum, but starts below it");
     }
 
     // Insufficient listing metadata → possible rather than confirmed
@@ -570,6 +743,7 @@
     let status = "confirmed";
     if (percent < 45) status = "possible";
     if (thinListing && percent < 70) status = "possible";
+    if (sen.score < 0.4 && percent >= 45) status = "possible";
 
     return {
       status,
@@ -578,7 +752,9 @@
       matched_skills: skills.matched,
       unconfirmed_skills: skills.unconfirmed,
       reasons: reasons.length ? reasons : ["Partial overlap with your profile"],
-      salary_note: sal.meets_with_max_only ? "Max of range meets your minimum" : null,
+      salary_note: sal.meets_with_max_only
+        ? "Salary range overlaps your minimum, but starts below it"
+        : null,
       meets_with_max_only: sal.meets_with_max_only,
     };
   }
@@ -618,6 +794,8 @@
     );
     const minSal = Number(filters.minimum_salary_cad) || 0;
     const includeUndisclosed = filters.include_undisclosed_salary !== false;
+    // Browse UI defaults to strict when a minimum is set (advertised min must meet floor).
+    const salaryMode = filters.salary_filter_mode === "flexible" ? "flexible" : "strict";
     // Default: newest verification date (last_verified). This is NOT the original
     // employer posting date — only when GitHired last confirmed the listing.
     const sort = filters.sort || "verified";
@@ -632,7 +810,7 @@
       if (provinces.length && !provinces.includes(job.province)) return false;
       if (arrangements.length && !arrangements.includes(job.work_arrangement)) return false;
       if (seniorities.length && !seniorities.includes(job.seniority)) return false;
-      const sal = salaryFilterPass(job, minSal, includeUndisclosed, fx);
+      const sal = salaryFilterPass(job, minSal, includeUndisclosed, fx, salaryMode);
       return sal.pass;
     });
 
@@ -663,7 +841,7 @@
       out.sort((a, b) => a.company.localeCompare(b.company) || a.title.localeCompare(b.title));
     }
     return out.map((job) => {
-      const sal = salaryFilterPass(job, minSal, includeUndisclosed, fx);
+      const sal = salaryFilterPass(job, minSal, includeUndisclosed, fx, salaryMode);
       return { job, salary_meta: sal };
     });
   }
@@ -676,11 +854,17 @@
     emptyProfile,
     extractProfileFromText,
     extractSkills,
+    extractYears,
     salaryMaxCad,
     salaryFilterPass,
+    titleRelevance,
+    seniorityScore,
+    arrangementScore,
     scoreJob,
     matchJobs,
     filterBrowseJobs,
     asFilterList,
+    inferSeniorityFromYears,
+    roleFamilyTokens,
   };
 });
