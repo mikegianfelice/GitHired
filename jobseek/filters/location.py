@@ -567,6 +567,23 @@ def _nationwide_canada_signal(location: str, description: str, loc_cfg: dict[str
     return None
 
 
+def default_city_office_arrangement(location: str) -> str | None:
+    """If location is a Canadian city with no remote/hybrid token, return ``onsite``.
+
+    Used by eligibility refine + public export so city-only postings (e.g.
+    ``Toronto, Canada``) are treated as local office roles — never as remote.
+    Returns None when arrangement remains unknown / not city-local.
+    """
+    loc = (location or "").strip()
+    if not loc:
+        return None
+    if _REMOTE.search(loc) or _HYBRID.search(loc) or _ONSITE.search(loc):
+        return None
+    if find_any_canadian_cities(loc):
+        return "onsite"
+    return None
+
+
 def infer_work_arrangement(location: str, description: str = "") -> str:
     """Infer work arrangement independently of geographic eligibility.
 
@@ -710,11 +727,25 @@ def refine_candidate_geography(
     # options — description WFA marketing must not override them.
     structured_office_cities = bool(job_cities and not loc_remote and not _CANADA_WORD.search(location))
 
+    # City-only Canadian locations (e.g. "Toronto, Canada") with no remote/hybrid
+    # token are local office postings. When onsite is an allowed mode, treat
+    # unspecified arrangement as onsite for the arrangement gate — never invent
+    # remote Canada. Remote/hybrid-only candidates still fail the gate (correct).
+    arrangement_for_gate = arrangement
+    if arrangement == "unknown" and "onsite" in modes:
+        city_default = default_city_office_arrangement(location)
+        if city_default == "onsite":
+            arrangement_for_gate = "onsite"
+            reasons.append(
+                "work arrangement treated as onsite from city-only Canadian location "
+                "(no remote/hybrid token; onsite mode allowed)"
+            )
+
     def _done(
         elig: str, verdict: str, rsn: list[str], ev: list[str]
     ) -> tuple[str, str, list[str], list[str]]:
         return _apply_arrangement_gate(
-            elig, verdict, rsn, ev, arrangement=arrangement, modes=modes
+            elig, verdict, rsn, ev, arrangement=arrangement_for_gate, modes=modes
         )
 
     # --- Structured location wins over description WFA ---

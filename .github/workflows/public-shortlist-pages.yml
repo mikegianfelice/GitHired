@@ -96,7 +96,7 @@ jobs:
         id: export
         run: |
           set +e
-          python scripts/export_public_shortlist.py --site-dir site --limit 400 --max-age-days 21
+          python scripts/export_public_shortlist.py --site-dir site --limit 500 --max-age-days 21
           code=$?
           echo "exit=$code" >> "$GITHUB_OUTPUT"
           if [ "$code" -eq 1 ]; then

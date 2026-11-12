@@ -94,7 +94,7 @@ jobs:
         run: githired enrich --mode standard
 
       - name: Export API snapshot
-        run: python scripts/export_api_snapshot.py --limit 400 --out api/data/jobs.snapshot.json
+        run: python scripts/export_api_snapshot.py --limit 500 --out api/data/jobs.snapshot.json
 
       - name: Snapshot schema tests
         run: python -m pytest tests/jobseek/test_api_snapshot.py tests/jobseek/test_api_dataset_workflow.py -q

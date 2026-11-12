@@ -65,7 +65,7 @@ Project Pages use the `/GitHired/` base path; the static assets use **relative**
 ```bash
 python -m pip install -e .
 githired discover && githired enrich
-python scripts/export_public_shortlist.py --site-dir site --limit 400
+python scripts/export_public_shortlist.py --site-dir site --limit 500
 cd site && python3 -m http.server 8080
 ```
 

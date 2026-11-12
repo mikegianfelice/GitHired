@@ -74,6 +74,35 @@ class InferArrangementTests(unittest.TestCase):
     def test_unknown_when_bare_city(self):
         self.assertEqual(infer_work_arrangement("Toronto, Ontario", ""), "unknown")
 
+    def test_city_only_toronto_eligible_when_onsite_allowed(self):
+        """ATS city-only locations are local office roles, not remote Canada."""
+        elig, verdict, reasons, _ = classify_canada_eligibility(
+            {
+                "title": "Software Engineer",
+                "location_raw": "Toronto, Canada",
+                "description": "Build products with the Toronto engineering team.",
+            },
+            _cfg(city="Toronto", modes=["remote_canada", "hybrid", "onsite"]),
+        )
+        self.assertEqual(elig, "ELIGIBLE")
+        self.assertEqual(verdict, "PASS")
+        self.assertTrue(any("treated as onsite" in r for r in reasons))
+
+    def test_city_only_toronto_fails_remote_hybrid_only_candidate(self):
+        elig, verdict, reasons, _ = classify_canada_eligibility(
+            {
+                "title": "Software Engineer",
+                "location_raw": "Toronto, Canada",
+                "description": "Build products with the Toronto engineering team.",
+            },
+            _cfg(city="Toronto", modes=["remote_canada", "hybrid"]),
+        )
+        # Without onsite mode, bare city remains arrangement-unknown → UNCERTAIN
+        # (do not invent remote eligibility).
+        self.assertEqual(elig, "UNCERTAIN")
+        self.assertEqual(verdict, "FLAG")
+        self.assertTrue(any("work_arrangement_unspecified" in r for r in reasons))
+
 
 class ArrangementModeMatrixTests(unittest.TestCase):
     def test_onsite_requires_onsite_mode(self):
