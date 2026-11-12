@@ -32,7 +32,12 @@ def main(argv: list[str] | None = None) -> int:
         default=ROOT / "site",
         help="Static site directory (default: ./site)",
     )
-    parser.add_argument("--limit", type=int, default=400)
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Soft count ceiling (default: publish all unique eligible jobs)",
+    )
     parser.add_argument("--max-age-days", type=int, default=21)
     parser.add_argument(
         "--allow-empty",
@@ -48,11 +53,14 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     from jobseek.public_shortlist.export import (
+        DEFAULT_LIMIT,
         build_public_snapshot,
         load_jobs_from_db,
         select_public_jobs,
         write_public_site,
     )
+
+    limit = int(args.limit) if args.limit is not None else DEFAULT_LIMIT
 
     if args.jobs_json is not None:
         jobs = json.loads(Path(args.jobs_json).read_text(encoding="utf-8"))
@@ -73,10 +81,10 @@ def main(argv: list[str] | None = None) -> int:
 
     selected = select_public_jobs(
         jobs,
-        limit=int(args.limit),
+        limit=limit,
         max_age_days=int(args.max_age_days),
     )
-    snapshot = build_public_snapshot(selected, limit=int(args.limit))
+    snapshot = build_public_snapshot(selected, limit=limit)
     meta = write_public_site(
         snapshot,
         Path(args.site_dir),

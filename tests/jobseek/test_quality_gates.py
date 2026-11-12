@@ -74,9 +74,9 @@ class SnapshotSyncGates(unittest.TestCase):
 
 
 class PublicExportCapGate(unittest.TestCase):
-    def test_default_limit_covers_post_fix_inventory(self):
-        # After city-office recovery, inventory approached ~500.
-        self.assertGreaterEqual(DEFAULT_LIMIT, 500)
+    def test_default_limit_is_soft_ceiling_not_inventory_cap(self):
+        # Soft count ceiling; payload-size safeguard is authoritative for API.
+        self.assertGreaterEqual(DEFAULT_LIMIT, 1000)
         self.assertEqual(PUBLIC_SEARCH["salary"]["policy"], "none")
 
 

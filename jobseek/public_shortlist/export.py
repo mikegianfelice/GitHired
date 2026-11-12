@@ -21,7 +21,6 @@ from jobseek.filters.location import (
     _CANADA_HIRE,
     _CANADA_WORD,
     _US_GEO,
-    default_city_office_arrangement,
     find_any_canadian_province,
     infer_work_arrangement,
 )
@@ -35,9 +34,9 @@ from jobseek.showcase.top_paying import (
 from jobseek.skills.tech_extract import extract_technologies as _extract_technologies
 
 SCHEMA_VERSION = 2
-# Public/API snapshot cap. Sized for Cloudflare Worker bundle while covering
-# the Canada-eligible shortlist after city-office eligibility recovery (~500).
-DEFAULT_LIMIT = 500
+# Soft count ceiling only — publish all unique Canada-eligible jobs unless a
+# payload-size safeguard trims (see api_snapshot.MAX_SNAPSHOT_BYTES).
+DEFAULT_LIMIT = 10_000
 DEFAULT_MAX_AGE_DAYS = 21
 MIN_ANNUAL = 30_000.0
 MAX_ANNUAL = 800_000.0
@@ -323,11 +322,9 @@ def select_public_jobs(
         arrangement = infer_work_arrangement(
             raw_location, description
         ) or infer_work_arrangement(location, description)
-        # City-only Canadian locations with no remote/hybrid token → onsite for
-        # public cards (matches eligibility refine; never invent remote).
-        if arrangement not in ("remote", "hybrid", "onsite"):
-            arrangement = default_city_office_arrangement(raw_location) or arrangement
-        # Public cards: never claim remote/hybrid without evidence
+        # Public cards: never invent arrangement. City-only locations may still
+        # be Canada-eligible under onsite mode (eligibility gate), but cards stay
+        # unspecified unless remote/hybrid/onsite is evidenced.
         work = arrangement if arrangement in ("remote", "hybrid", "onsite") else "unspecified"
         provinces = find_any_canadian_province(location) or find_any_canadian_province(raw_location)
         scope = _remote_scope(location, work if work != "unspecified" else arrangement, provinces)

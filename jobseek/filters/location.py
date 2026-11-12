@@ -495,6 +495,12 @@ def find_any_canadian_cities(location: str) -> list[str]:
                     found.append("London")
                     seen.add("London")
             continue
+        # "Victoria" is also an Australian state — skip AU office strings.
+        if city == "victoria" and re.search(
+            r"\b(australia|melbourne|sydney|new\s+south\s+wales|\bnsw\b)\b",
+            loc_cf,
+        ):
+            continue
         if _has_canadian_city_mention(city, location, loc_cf):
             label = city.title() if city != "montréal" else "Montreal"
             if city == "montreal" or city == "montréal":
@@ -568,10 +574,12 @@ def _nationwide_canada_signal(location: str, description: str, loc_cfg: dict[str
 
 
 def default_city_office_arrangement(location: str) -> str | None:
-    """If location is a Canadian city with no remote/hybrid token, return ``onsite``.
+    """Signal city-office *eligibility* for bare Canadian city locations.
 
-    Used by eligibility refine + public export so city-only postings (e.g.
-    ``Toronto, Canada``) are treated as local office roles — never as remote.
+    Returns ``\"onsite\"`` as a **gate signal only** when the location names a
+    Canadian city and has no remote/hybrid/onsite token. This does **not** mean
+    the employer confirmed an onsite arrangement — public cards must keep
+    ``unspecified`` unless arrangement evidence exists. Never invents remote.
     Returns None when arrangement remains unknown / not city-local.
     """
     loc = (location or "").strip()
@@ -727,25 +735,29 @@ def refine_candidate_geography(
     # options — description WFA marketing must not override them.
     structured_office_cities = bool(job_cities and not loc_remote and not _CANADA_WORD.search(location))
 
-    # City-only Canadian locations (e.g. "Toronto, Canada") with no remote/hybrid
-    # token are local office postings. When onsite is an allowed mode, treat
-    # unspecified arrangement as onsite for the arrangement gate — never invent
-    # remote Canada. Remote/hybrid-only candidates still fail the gate (correct).
-    arrangement_for_gate = arrangement
-    if arrangement == "unknown" and "onsite" in modes:
-        city_default = default_city_office_arrangement(location)
-        if city_default == "onsite":
-            arrangement_for_gate = "onsite"
-            reasons.append(
-                "work arrangement treated as onsite from city-only Canadian location "
-                "(no remote/hybrid token; onsite mode allowed)"
-            )
+    # City-only Canadian locations (e.g. "Toronto, Canada") with no arrangement
+    # token: when onsite mode is allowed, pass the arrangement gate for matching
+    # cities without rewriting arrangement to confirmed onsite. Public cards keep
+    # unspecified. Remote/hybrid evidence still wins via infer_work_arrangement.
+    # Remote/hybrid-only candidates still FLAG/FAIL (correct).
+    city_office_eligible = (
+        arrangement == "unknown"
+        and "onsite" in modes
+        and default_city_office_arrangement(location) == "onsite"
+    )
 
     def _done(
         elig: str, verdict: str, rsn: list[str], ev: list[str]
     ) -> tuple[str, str, list[str], list[str]]:
+        if elig == "ELIGIBLE" and city_office_eligible:
+            rsn = list(rsn)
+            rsn.append(
+                "city-only Canadian location eligible under onsite mode "
+                "(arrangement remains unspecified; not employer-confirmed onsite)"
+            )
+            return "ELIGIBLE", "PASS", rsn, ev
         return _apply_arrangement_gate(
-            elig, verdict, rsn, ev, arrangement=arrangement_for_gate, modes=modes
+            elig, verdict, rsn, ev, arrangement=arrangement, modes=modes
         )
 
     # --- Structured location wins over description WFA ---

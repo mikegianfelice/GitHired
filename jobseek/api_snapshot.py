@@ -28,8 +28,11 @@ from jobseek.public_shortlist.export import (
 )
 
 API_SCHEMA_VERSION = 1
-# Keep Worker bundles under Cloudflare free-tier compressed size limits.
+# Keep Worker bundles under Cloudflare free-tier uncompressed size limits (~1 MiB).
 MAX_DESCRIPTION_EXCERPT = 900
+# Soft payload safeguard (bytes of compact JSON). Prefer publishing all eligible
+# jobs; trim lowest-ranked rows only when the Worker bundle would exceed this.
+MAX_SNAPSHOT_BYTES = 950_000
 _TAG = re.compile(r"<[^>]+>")
 _WS = re.compile(r"\s+")
 
@@ -109,27 +112,13 @@ def build_api_job(public: PublicJob, raw: dict[str, Any] | None) -> dict[str, An
     }
 
 
-def build_api_snapshot(
-    raw_jobs: list[dict[str, Any]],
+def _snapshot_payload(
+    api_jobs: list[dict[str, Any]],
     *,
-    limit: int = DEFAULT_LIMIT,
-    max_age_days: int = DEFAULT_MAX_AGE_DAYS,
-    generated_at: datetime | None = None,
-    repo_url: str = "https://github.com/mikegianfelice/GitHired",
+    limit: int,
+    generated_at: datetime,
+    repo_url: str,
 ) -> dict[str, Any]:
-    """Build the versioned API/MCP dataset from DB-shaped job rows."""
-    generated_at = generated_at or datetime.now(timezone.utc)
-    selected = select_public_jobs(
-        raw_jobs,
-        limit=limit,
-        max_age_days=max_age_days,
-        now=generated_at,
-        search_cfg=PUBLIC_SEARCH,
-        require_complete=True,
-    )
-    by_id = _index_raw_jobs(raw_jobs)
-    api_jobs = [build_api_job(j, by_id.get(j.id)) for j in selected]
-
     companies: dict[str, int] = {}
     remote = 0
     with_salary = 0
@@ -140,7 +129,7 @@ def build_api_snapshot(
         if j["salary_available"]:
             with_salary += 1
 
-    payload = {
+    return {
         "schema_version": API_SCHEMA_VERSION,
         "dataset_id": hashlib.sha256(
             json.dumps(
@@ -189,6 +178,60 @@ def build_api_snapshot(
         ),
         "jobs": api_jobs,
     }
+
+
+def _trim_jobs_to_byte_budget(
+    api_jobs: list[dict[str, Any]],
+    *,
+    limit: int,
+    generated_at: datetime,
+    repo_url: str,
+    max_bytes: int = MAX_SNAPSHOT_BYTES,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Drop trailing (lowest-ranked) jobs until compact JSON fits max_bytes."""
+    trimmed = list(api_jobs)
+    payload = _snapshot_payload(
+        trimmed, limit=limit, generated_at=generated_at, repo_url=repo_url
+    )
+    while trimmed:
+        raw = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        if len(raw) <= max_bytes:
+            break
+        trimmed.pop()
+        payload = _snapshot_payload(
+            trimmed, limit=limit, generated_at=generated_at, repo_url=repo_url
+        )
+    return trimmed, payload
+
+
+def build_api_snapshot(
+    raw_jobs: list[dict[str, Any]],
+    *,
+    limit: int = DEFAULT_LIMIT,
+    max_age_days: int = DEFAULT_MAX_AGE_DAYS,
+    generated_at: datetime | None = None,
+    repo_url: str = "https://github.com/mikegianfelice/GitHired",
+    max_bytes: int = MAX_SNAPSHOT_BYTES,
+) -> dict[str, Any]:
+    """Build the versioned API/MCP dataset from DB-shaped job rows."""
+    generated_at = generated_at or datetime.now(timezone.utc)
+    selected = select_public_jobs(
+        raw_jobs,
+        limit=limit,
+        max_age_days=max_age_days,
+        now=generated_at,
+        search_cfg=PUBLIC_SEARCH,
+        require_complete=True,
+    )
+    by_id = _index_raw_jobs(raw_jobs)
+    api_jobs = [build_api_job(j, by_id.get(j.id)) for j in selected]
+    _, payload = _trim_jobs_to_byte_budget(
+        api_jobs,
+        limit=limit,
+        generated_at=generated_at,
+        repo_url=repo_url,
+        max_bytes=max_bytes,
+    )
     return payload
 
 

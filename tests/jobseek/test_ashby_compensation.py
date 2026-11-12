@@ -333,6 +333,16 @@ class AshbyAdapterCompensationTests(unittest.TestCase):
         url = client.get.call_args[0][0]
         self.assertIn("includeCompensation=true", url)
 
+    def test_board_token_with_spaces_is_url_encoded(self):
+        """Blackpoint Cyber uses board token 'blackpoint cyber' — spaces must be %20."""
+        client = _client({"jobs": []})
+        AshbyAdapter(client=client).fetch_company(
+            {"name": "Blackpoint Cyber", "board_token": "blackpoint cyber"}
+        )
+        url = client.get.call_args[0][0]
+        self.assertIn("/job-board/blackpoint%20cyber?", url)
+        self.assertNotIn("/job-board/blackpoint cyber", url)
+
     def test_parses_7shifts_job_into_rawjob(self):
         payload = {"jobs": [seven_shifts_mid_market()]}
         result = AshbyAdapter(client=_client(payload)).fetch_company(

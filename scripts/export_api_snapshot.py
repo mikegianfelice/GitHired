@@ -27,7 +27,12 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=ROOT / "api" / "data" / "jobs.snapshot.json",
     )
-    parser.add_argument("--limit", type=int, default=400)
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Soft count ceiling (default: publish all eligible within size budget)",
+    )
     parser.add_argument("--max-age-days", type=int, default=21)
     parser.add_argument(
         "--jobs-json",
@@ -38,6 +43,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     from jobseek.api_snapshot import build_api_snapshot, write_api_snapshot
+    from jobseek.public_shortlist.export import DEFAULT_LIMIT
+
+    limit = int(args.limit) if args.limit is not None else DEFAULT_LIMIT
 
     if args.jobs_json is not None:
         jobs = json.loads(Path(args.jobs_json).read_text(encoding="utf-8"))
@@ -59,7 +67,7 @@ def main(argv: list[str] | None = None) -> int:
 
     snapshot = build_api_snapshot(
         jobs,
-        limit=int(args.limit),
+        limit=limit,
         max_age_days=int(args.max_age_days),
     )
     meta = write_api_snapshot(snapshot, Path(args.out))

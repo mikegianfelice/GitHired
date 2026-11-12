@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 
 from jobseek.adapters.base import AdapterResult
 from jobseek.filters.salary import (
@@ -328,9 +329,11 @@ class AshbyAdapter:
         board = (company.get("board_token") or company.get("site_slug") or "").strip()
         if not board:
             return AdapterResult(errors=[f"ashby: missing board_token for {company.get('name')}"])
+        # Path-encode board tokens that contain spaces (e.g. "blackpoint cyber").
+        board_path = quote(board, safe="")
         # Compensation is omitted unless includeCompensation=true (Ashby docs).
         url = (
-            f"https://api.ashbyhq.com/posting-api/job-board/{board}"
+            f"https://api.ashbyhq.com/posting-api/job-board/{board_path}"
             f"?includeCompensation=true"
         )
         result = AdapterResult(request_key=f"ashby:{board}")

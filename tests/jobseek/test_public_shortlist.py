@@ -60,6 +60,47 @@ class PublicShortlistSelectTests(unittest.TestCase):
         self.assertTrue(j.discovered_today)
         self.assertIn("Python", j.technologies)
 
+    def test_city_only_canada_eligible_but_arrangement_unspecified(self):
+        """City-only locations stay eligible under onsite mode without inventing onsite."""
+        jobs = select_public_jobs(
+            [
+                _job(
+                    location_raw="Toronto, Canada",
+                    title="Software Engineer",
+                    description=(
+                        "Join our Toronto engineering team building products. "
+                        "Python TypeScript." + (" y" * 40)
+                    ),
+                    url="https://boards.greenhouse.io/exampleco/jobs/toronto-1",
+                    apply_url="https://boards.greenhouse.io/exampleco/jobs/toronto-1",
+                )
+            ],
+            limit=10,
+            now=NOW,
+        )
+        self.assertEqual(len(jobs), 1)
+        self.assertEqual(jobs[0].work_arrangement, "unspecified")
+
+    def test_city_only_explicit_hybrid_description_wins(self):
+        jobs = select_public_jobs(
+            [
+                _job(
+                    location_raw="Vancouver, Canada",
+                    title="Software Engineer",
+                    description=(
+                        "This is a hybrid position based in Vancouver. "
+                        "Python TypeScript." + (" y" * 40)
+                    ),
+                    url="https://boards.greenhouse.io/exampleco/jobs/van-1",
+                    apply_url="https://boards.greenhouse.io/exampleco/jobs/van-1",
+                )
+            ],
+            limit=10,
+            now=NOW,
+        )
+        self.assertEqual(len(jobs), 1)
+        self.assertEqual(jobs[0].work_arrangement, "hybrid")
+
     def test_rejects_uncertain_us_remote(self):
         jobs = select_public_jobs(
             [

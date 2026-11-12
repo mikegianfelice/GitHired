@@ -57,7 +57,7 @@ class ProvinceCodeTests(unittest.TestCase):
     def test_toronto_on_in_location_field(self):
         self.assertEqual(find_province_in_location("Toronto, ON"), "Ontario")
         self.assertEqual(find_province_in_location("Hybrid - Ottawa, ON, Canada"), "Ontario")
-        elig, verdict, _, evidence = classify_canada_eligibility(
+        elig, verdict, reasons, evidence = classify_canada_eligibility(
             {
                 "title": "Senior Data Engineer",
                 "location_raw": "Toronto, ON",
@@ -65,9 +65,10 @@ class ProvinceCodeTests(unittest.TestCase):
             },
             SEARCH,
         )
-        # City/province match without arrangement evidence → UNCERTAIN (not invented on-site).
-        self.assertEqual(elig, "UNCERTAIN")
-        self.assertEqual(verdict, "FLAG")
+        # City/province match with onsite mode allowed → ELIGIBLE; arrangement stays unspecified.
+        self.assertEqual(elig, "ELIGIBLE")
+        self.assertEqual(verdict, "PASS")
+        self.assertTrue(any("arrangement remains unspecified" in r for r in reasons))
         self.assertTrue(any("Ontario" in e or "Toronto" in e for e in evidence))
 
         elig2, verdict2, _, _ = classify_canada_eligibility(
@@ -169,12 +170,15 @@ class UatFalsePositiveTests(unittest.TestCase):
                 "Office locations: Toronto, Seattle, South San Francisco HQ."
             ),
         }
-        # Title must match data engineering track; bare Toronto office without
-        # hybrid/remote evidence is UNCERTAIN for remote/hybrid-only profiles.
+        # Title matches data engineering; bare Toronto is ELIGIBLE when onsite mode
+        # is allowed, without inventing a confirmed onsite arrangement.
         result = apply_hard_filters(job, SEARCH)
         self.assertTrue(result.title_match)
-        self.assertEqual(result.eligibility, "UNCERTAIN")
-        self.assertEqual(result.verdict, "FLAG")
+        self.assertEqual(result.eligibility, "ELIGIBLE")
+        self.assertEqual(result.verdict, "PASS")
+        self.assertTrue(
+            any("arrangement remains unspecified" in r for r in result.reasons)
+        )
 
     def test_cohere_toronto_data_engineer(self):
         job = {

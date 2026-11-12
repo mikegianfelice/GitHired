@@ -75,7 +75,7 @@ class InferArrangementTests(unittest.TestCase):
         self.assertEqual(infer_work_arrangement("Toronto, Ontario", ""), "unknown")
 
     def test_city_only_toronto_eligible_when_onsite_allowed(self):
-        """ATS city-only locations are local office roles, not remote Canada."""
+        """City-only Canada locations are eligible under onsite mode without inventing onsite."""
         elig, verdict, reasons, _ = classify_canada_eligibility(
             {
                 "title": "Software Engineer",
@@ -86,7 +86,12 @@ class InferArrangementTests(unittest.TestCase):
         )
         self.assertEqual(elig, "ELIGIBLE")
         self.assertEqual(verdict, "PASS")
-        self.assertTrue(any("treated as onsite" in r for r in reasons))
+        self.assertTrue(any("arrangement remains unspecified" in r for r in reasons))
+        self.assertFalse(any("treated as onsite" in r for r in reasons))
+        self.assertEqual(
+            infer_work_arrangement("Toronto, Canada", "Build products with the Toronto engineering team."),
+            "unknown",
+        )
 
     def test_city_only_toronto_fails_remote_hybrid_only_candidate(self):
         elig, verdict, reasons, _ = classify_canada_eligibility(
@@ -102,6 +107,36 @@ class InferArrangementTests(unittest.TestCase):
         self.assertEqual(elig, "UNCERTAIN")
         self.assertEqual(verdict, "FLAG")
         self.assertTrue(any("work_arrangement_unspecified" in r for r in reasons))
+
+    def test_city_only_explicit_remote_description_wins(self):
+        self.assertEqual(
+            infer_work_arrangement(
+                "Montreal, Canada",
+                "This is a fully remote role open to candidates across Canada.",
+            ),
+            "remote",
+        )
+
+    def test_city_only_explicit_onsite_description_wins(self):
+        self.assertEqual(
+            infer_work_arrangement(
+                "Toronto, Ontario, Canada",
+                "This is an on-site role based in our Toronto office.",
+            ),
+            "onsite",
+        )
+
+    def test_victoria_australia_not_canadian_city(self):
+        from jobseek.filters.location import find_any_canadian_cities
+
+        self.assertEqual(
+            find_any_canadian_cities("Melbourne, Victoria, Australia"),
+            [],
+        )
+        self.assertIn(
+            "Victoria",
+            find_any_canadian_cities("Victoria, British Columbia, Canada"),
+        )
 
 
 class ArrangementModeMatrixTests(unittest.TestCase):

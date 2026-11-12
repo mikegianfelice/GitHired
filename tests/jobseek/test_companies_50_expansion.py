@@ -98,10 +98,6 @@ class Companies50ExpansionTests(unittest.TestCase):
         # Live validation left these disabled (no structured Canadian locations).
         must_disable = {
             "Vercel",
-            "Cockroach Labs",
-            "PlanetScale",
-            "PostHog",
-            "Supabase",
             "Nango",
             "Perplexity",
             "Modal",
@@ -114,7 +110,17 @@ class Companies50ExpansionTests(unittest.TestCase):
             )
 
     def test_canada_evidenced_boards_enabled(self):
-        must_enable = {"Tailscale", "Tenstorrent", "Fullscript", "Grafana Labs", "7shifts"}
+        must_enable = {
+            "Tailscale",
+            "Tenstorrent",
+            "Fullscript",
+            "Grafana Labs",
+            "7shifts",
+            "Cockroach Labs",
+            "PlanetScale",
+            "PostHog",
+            "Supabase",
+        }
         by_name = {c["name"]: c for c in self.companies}
         for name in must_enable:
             self.assertTrue(by_name[name].get("enabled"), f"{name} should be enabled")

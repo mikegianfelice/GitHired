@@ -8,6 +8,7 @@ import unittest
 from pathlib import Path
 
 from jobseek.api_snapshot import (
+    MAX_SNAPSHOT_BYTES,
     build_api_snapshot,
     description_excerpt,
     write_api_snapshot,
@@ -73,6 +74,26 @@ class ApiSnapshotTests(unittest.TestCase):
         self.assertEqual(job["salary_kind"], "advertised_base")
         self.assertTrue(job["salary_available"])
         self.assertEqual(snap["salary_policy"]["estimates"], False)
+
+    def test_payload_size_safeguard_trims_instead_of_hard_count_cap(self):
+        jobs = [
+            _job(
+                title=f"Software Engineer {i}",
+                company=f"Co{i}",
+                url=f"https://boards.greenhouse.io/co{i}/jobs/{1000 + i}",
+                apply_url=f"https://boards.greenhouse.io/co{i}/jobs/{1000 + i}",
+                ats_job_id=str(1000 + i),
+                description=("Build with Python TypeScript. " * 80),
+            )
+            for i in range(40)
+        ]
+        full = build_api_snapshot(jobs, limit=100, max_bytes=MAX_SNAPSHOT_BYTES)
+        self.assertEqual(full["count"], 40)
+        tiny = build_api_snapshot(jobs, limit=100, max_bytes=25_000)
+        self.assertLess(tiny["count"], 40)
+        self.assertGreater(tiny["count"], 0)
+        raw = json.dumps(tiny, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        self.assertLessEqual(len(raw), 25_000)
 
     def test_write_snapshot(self):
         snap = build_api_snapshot([_job()], limit=10)

@@ -62,12 +62,11 @@ class DxDocsPagesTests(unittest.TestCase):
         self.assertIn("https://api.githired.ca/api/v1/health", js)
         self.assertIn("navigator.clipboard", js)
 
-    def test_default_snapshot_limit_covers_inventory_headroom(self) -> None:
+    def test_default_snapshot_limit_is_soft_ceiling(self) -> None:
         from jobseek.public_shortlist.export import DEFAULT_LIMIT
 
-        # 400 covers current ~358 eligible roles with modest headroom; keeps Worker bundle small.
-        self.assertGreaterEqual(DEFAULT_LIMIT, 350)
-        self.assertLessEqual(DEFAULT_LIMIT, 500)
+        # Soft count ceiling — publish all unique eligible jobs; size safeguard trims if needed.
+        self.assertGreaterEqual(DEFAULT_LIMIT, 1000)
 
 
 if __name__ == "__main__":
