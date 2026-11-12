@@ -330,7 +330,7 @@ describe("filterBrowseJobs", () => {
     assert.equal(out[0].job.company, "B");
   });
 
-  it("defaults to newest verified (last_verified), not salary", () => {
+  it("defaults to highest advertised salary", () => {
     const jobs = [
       job({
         company: "OldHigh",
@@ -346,7 +346,39 @@ describe("filterBrowseJobs", () => {
       }),
     ];
     const out = M.filterBrowseJobs(jobs, { minimum_salary_cad: 0 }, 1.35);
-    assert.equal(out[0].job.company, "NewLow");
+    assert.equal(out[0].job.company, "OldHigh");
+  });
+
+  it("matchJobs sorts by relevance (match percent), not salary", () => {
+    const profile = {
+      ...M.emptyProfile(),
+      current_title: "Senior Data Engineer",
+      desired_titles: ["Senior Data Engineer"],
+      skills: ["Python", "SQL"],
+      disciplines: ["data_engineering"],
+      seniority: ["senior"],
+      work_arrangements: ["remote"],
+      minimum_salary_cad: 0,
+    };
+    const jobs = [
+      job({
+        company: "HighPayWeakFit",
+        title: "Senior Data Engineer",
+        technologies: [],
+        salary_max: 300000,
+        salary_max_cad: 300000,
+      }),
+      job({
+        company: "LowerPayStrongFit",
+        title: "Senior Data Engineer",
+        technologies: ["Python", "SQL", "Databricks"],
+        salary_max: 160000,
+        salary_max_cad: 160000,
+      }),
+    ];
+    const results = M.matchJobs(profile, jobs, { limit: 5 });
+    assert.equal(results[0].job.company, "LowerPayStrongFit");
+    assert.ok(results[0].match.percent >= results[1].match.percent);
   });
 
   it("sort=verified uses last_verified; sort=recent uses first_seen", () => {

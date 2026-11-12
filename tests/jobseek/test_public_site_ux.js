@@ -43,7 +43,7 @@ describe("homepage UX markup", () => {
     assert.match(indexHtml, /id="filter-chips"/);
     assert.match(indexHtml, /id="include-undisclosed"/);
     assert.match(indexHtml, /id="btn-load-more"/);
-    assert.match(indexHtml, /value="verified" selected/);
+    assert.match(indexHtml, /value="salary" selected/);
   });
 
   it("rewrites Find My Matches in plain language with privacy banner", () => {
@@ -81,7 +81,10 @@ describe("homepage UX behaviour contracts", () => {
     assert.match(stylesCss, /@media \(max-width: 767px\)/);
   });
 
-  it("match engine default sort remains verified", () => {
+  it("browse default sort is highest advertised salary; matches stay relevance-sorted", () => {
+    assert.match(indexHtml, /option value="salary" selected/);
+    assert.match(appJs, /els\.sort\.value = "salary"/);
+    assert.match(appJs, /b\.match\.percent - a\.match\.percent|matchJobs\(draftProfile/);
     const jobs = [
       {
         title: "A",
@@ -115,6 +118,6 @@ describe("homepage UX behaviour contracts", () => {
       },
     ];
     const out = M.filterBrowseJobs(jobs, { minimum_salary_cad: 0 }, 1.35);
-    assert.equal(out[0].job.company, "New");
+    assert.equal(out[0].job.company, "Old");
   });
 });

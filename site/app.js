@@ -273,7 +273,7 @@
       seniorities: selectedValues(els.seniorityPanel),
       minimum_salary_cad: Number(els.salaryMin.value) || 0,
       include_undisclosed_salary: els.includeUndisclosed.checked,
-      sort: els.sort.value || "verified",
+      sort: els.sort.value || "salary",
     };
   }
 
@@ -292,7 +292,7 @@
     els.search.value = "";
     els.salaryMin.value = "0";
     els.includeUndisclosed.checked = true;
-    els.sort.value = "verified";
+    els.sort.value = "salary";
     document.querySelectorAll(".multi-filter-panel input[type='checkbox']").forEach((input) => {
       input.checked = false;
     });
@@ -607,7 +607,7 @@
       setOrDel("q", f.query || "");
       setOrDel("salary", f.minimum_salary_cad > 0 ? f.minimum_salary_cad : "");
       setOrDel("undisclosed", f.include_undisclosed_salary ? "" : "0");
-      setOrDel("sort", f.sort === "verified" ? "" : f.sort);
+      setOrDel("sort", f.sort === "salary" ? "" : f.sort);
       setOrDel("province", f.provinces.join(",") || "");
       setOrDel("arrangement", f.arrangements.join(",") || "");
       setOrDel("seniority", f.seniorities.join(",") || "");

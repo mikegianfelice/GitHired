@@ -796,9 +796,9 @@
     const includeUndisclosed = filters.include_undisclosed_salary !== false;
     // Browse UI defaults to strict when a minimum is set (advertised min must meet floor).
     const salaryMode = filters.salary_filter_mode === "flexible" ? "flexible" : "strict";
-    // Default: newest verification date (last_verified). This is NOT the original
-    // employer posting date — only when GitHired last confirmed the listing.
-    const sort = filters.sort || "verified";
+    // Browse default: highest advertised salary (CAD-normalized max).
+    // Find My Matches uses matchJobs() and sorts by relevance separately.
+    const sort = filters.sort || "salary";
 
     let out = (jobs || []).filter((job) => {
       if (q) {
