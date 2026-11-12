@@ -260,6 +260,109 @@ describe("matchJobs", () => {
     });
     assert.equal(results.length, 1);
   });
+
+  it("remote-only excludes unspecified, hybrid, and onsite", () => {
+    const p = {
+      ...M.emptyProfile(),
+      current_title: "Backend Engineer",
+      desired_titles: ["Backend Engineer"],
+      skills: ["Python"],
+      work_arrangements: ["remote"],
+      minimum_salary_cad: 0,
+    };
+    const jobs = [
+      job({
+        company: "RemoteCo",
+        title: "Backend Engineer",
+        work_arrangement: "remote",
+        seniority: "mid",
+        technologies: ["Python"],
+      }),
+      job({
+        company: "UnspecCo",
+        title: "Backend Engineer",
+        work_arrangement: "unspecified",
+        seniority: "mid",
+        technologies: ["Python"],
+      }),
+      job({
+        company: "HybridCo",
+        title: "Backend Engineer",
+        work_arrangement: "hybrid",
+        seniority: "mid",
+        technologies: ["Python"],
+      }),
+    ];
+    const results = M.matchJobs(p, jobs, { limit: 10 });
+    assert.equal(results.length, 1);
+    assert.equal(results[0].job.company, "RemoteCo");
+  });
+
+  it("no arrangement preference keeps unspecified jobs", () => {
+    const p = {
+      ...M.emptyProfile(),
+      current_title: "Backend Engineer",
+      desired_titles: ["Backend Engineer"],
+      skills: ["Python"],
+      work_arrangements: [],
+      minimum_salary_cad: 0,
+    };
+    const jobs = [
+      job({
+        company: "UnspecCo",
+        title: "Backend Engineer",
+        work_arrangement: "unspecified",
+        seniority: "mid",
+        technologies: ["Python"],
+      }),
+    ];
+    const results = M.matchJobs(p, jobs, { limit: 5 });
+    assert.equal(results.length, 1);
+  });
+
+  it("junior / 0-YOE ranks confirmed junior above mid and senior", () => {
+    const p = {
+      ...M.emptyProfile(),
+      current_title: "Junior Software Engineer",
+      desired_titles: ["Software Engineer", "Python Developer"],
+      skills: ["Python"],
+      seniority: ["junior"],
+      years_experience: 0,
+      work_arrangements: ["remote", "hybrid"],
+      minimum_salary_cad: 0,
+    };
+    const jobs = [
+      job({
+        company: "JuniorCo",
+        title: "Junior Software Engineer",
+        seniority: "junior",
+        track: "software_engineering",
+        technologies: ["Python"],
+        salary_max_cad: 90000,
+      }),
+      job({
+        company: "MidCo",
+        title: "Software Engineer",
+        seniority: "mid",
+        track: "software_engineering",
+        technologies: ["Python"],
+        salary_max_cad: 140000,
+      }),
+      job({
+        company: "SeniorCo",
+        title: "Senior Software Engineer",
+        seniority: "senior",
+        track: "software_engineering",
+        technologies: ["Python"],
+        salary_max_cad: 180000,
+      }),
+    ];
+    const results = M.matchJobs(p, jobs, { limit: 10 });
+    assert.equal(results[0].job.company, "JuniorCo");
+    const byCo = Object.fromEntries(results.map((r) => [r.job.company, r.match.percent]));
+    assert.ok(byCo.JuniorCo > byCo.MidCo);
+    assert.ok(byCo.JuniorCo > byCo.SeniorCo);
+  });
 });
 
 describe("filterBrowseJobs", () => {

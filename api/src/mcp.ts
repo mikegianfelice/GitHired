@@ -119,7 +119,17 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       location: typeof args.location === "string" ? args.location : undefined,
       province: typeof args.province === "string" ? args.province.toUpperCase() : undefined,
       remote: typeof args.remote === "boolean" ? args.remote : undefined,
-      work_mode: typeof args.work_mode === "string" ? args.work_mode : undefined,
+      work_mode: (() => {
+        if (typeof args.work_mode !== "string") return undefined;
+        const mode = args.work_mode.trim().toLowerCase();
+        if (!mode) return undefined;
+        if (!["remote", "hybrid", "onsite"].includes(mode)) {
+          throw new Error(
+            `Unsupported work_mode '${args.work_mode}'. Allowed values: remote, hybrid, onsite.`,
+          );
+        }
+        return mode;
+      })(),
       salary_min:
         typeof args.minimum_salary === "number" && Number.isFinite(args.minimum_salary) && args.minimum_salary > 0
           ? args.minimum_salary

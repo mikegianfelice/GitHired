@@ -133,6 +133,65 @@ class ForeignGeoIneligibleTests(unittest.TestCase):
         self.assertEqual(elig, "INELIGIBLE")
         self.assertEqual(verdict, "FAIL")
 
+    def test_mexico_remote_ineligible_even_with_wfa_copy(self):
+        """Country Mexico must not become Canada-eligible via work-from-anywhere marketing."""
+        elig, verdict, reasons, _ = classify_canada_eligibility(
+            _job(
+                "Mexico (Remote)",
+                description=(
+                    "We are remote-first, so it can be executed from anywhere. "
+                    "Build voice AI products."
+                ),
+            ),
+            SEARCH,
+        )
+        self.assertEqual(elig, "INELIGIBLE")
+        self.assertEqual(verdict, "FAIL")
+        self.assertTrue(
+            any("non-Canadian" in r or "US/overseas" in r or "without Canada" in r for r in reasons)
+        )
+
+    def test_mexico_only_remote_ineligible(self):
+        elig, verdict, _, _ = classify_canada_eligibility(
+            _job("Remote - Mexico"), SEARCH
+        )
+        self.assertEqual(elig, "INELIGIBLE")
+        self.assertEqual(verdict, "FAIL")
+
+    def test_new_mexico_not_confused_with_country_mexico(self):
+        """US state New Mexico remains US-ineligible, not matched as country Mexico overseas."""
+        elig, verdict, _, _ = classify_canada_eligibility(
+            _job("New Mexico-Remote"), SEARCH
+        )
+        self.assertEqual(elig, "INELIGIBLE")
+        self.assertEqual(verdict, "FAIL")
+
+    def test_canada_only_remote_eligible(self):
+        elig, verdict, _, _ = classify_canada_eligibility(
+            _job("Remote - Canada Only"), SEARCH
+        )
+        self.assertEqual(elig, "ELIGIBLE")
+        self.assertEqual(verdict, "PASS")
+
+    def test_canada_us_dual_remote_eligible(self):
+        elig, verdict, _, _ = classify_canada_eligibility(
+            _job("Remote (United States | Canada)"), SEARCH
+        )
+        self.assertEqual(elig, "ELIGIBLE")
+        self.assertEqual(verdict, "PASS")
+
+    def test_genuine_worldwide_remote_without_foreign_office_eligible(self):
+        elig, verdict, _, _ = classify_canada_eligibility(
+            {
+                "title": "Software Engineer",
+                "location_raw": "Remote",
+                "description": "Fully remote worldwide. Work from anywhere.",
+            },
+            SEARCH,
+        )
+        self.assertEqual(elig, "ELIGIBLE")
+        self.assertEqual(verdict, "PASS")
+
     def test_french_montreal_recognized(self):
         cfg = {
             "location": {

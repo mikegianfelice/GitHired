@@ -198,6 +198,8 @@ _OVERSEAS_LOCATION = re.compile(
         france | paris | spain | madrid | portugal | lisbon | greece | athens |
         australia | sydney | melbourne | japan | tokyo | singapore |
         brazil | sao\s+paulo | mexico\s+city |
+        # Country Mexico (not US state New Mexico — excluded via negative lookbehind)
+        (?<!new\s)mexico |
         poland | warsaw | israel | tel\s+aviv |
         philippines | manila | quezon\s+city | lapu[\s-]?lapu | cebu | makati | davao |
         kenya | nairobi |

@@ -200,10 +200,21 @@ const BAND_YEARS: Record<string, number> = {
 function seniorityBandScore(
   jobSeniority: string | null,
   preferredBands: string[],
+  jobTitle: string = "",
 ): { score: number; distance: number } {
   const jobSen = (jobSeniority || "").toLowerCase();
+  const juniorProfile = preferredBands.some((b) => b === "junior" || b === "intern");
   if (!preferredBands.length) return { score: 0.5, distance: 0 };
-  if (!jobSen) return { score: 0.55, distance: 0 };
+  // Unknown job seniority: cautious soft score — never invent junior eligibility.
+  // For junior profiles, prefer titles that explicitly signal entry-level.
+  if (!jobSen) {
+    if (juniorProfile) {
+      if (titleJuniorSignal(jobTitle)) return { score: 0.95, distance: 0 };
+      if (titleSeniorSignal(jobTitle)) return { score: 0.18, distance: 3 };
+      return { score: 0.35, distance: 1 };
+    }
+    return { score: 0.55, distance: 0 };
+  }
   if (preferredBands.includes(jobSen)) return { score: 1, distance: 0 };
   const ji = SENIORITY_ORDER.indexOf(jobSen);
   if (ji < 0) return { score: 0.4, distance: 2 };
@@ -351,11 +362,23 @@ function normalizeArrangements(input: MatchProfileInput): string[] {
 function arrangementAllowed(job: ApiJob, allowed: string[]): boolean {
   if (!allowed.length) return true;
   const arr = (job.work_arrangement || "unknown").toLowerCase();
+  // Explicit arrangement selection is a hard allow-list: remote-only must not
+  // silently include unspecified/hybrid/onsite.
   if (arr === "unknown" || arr === "unspecified") {
-    // Unknown arrangement: do not hard-exclude (Canada eligibility already applied).
-    return true;
+    return false;
   }
   return allowed.includes(arr);
+}
+
+/** Title tokens that confirm junior / entry intent when job.seniority is missing. */
+function titleJuniorSignal(title: string): boolean {
+  return /\b(?:junior|jr\.?|entry[\s-]?level|new[\s-]?grad|graduate|trainee|intern|co-?op|coop)\b/i.test(
+    title || "",
+  );
+}
+
+function titleSeniorSignal(title: string): boolean {
+  return /\b(?:senior|sr\.?|staff|principal|director|vp\b|head of)\b/i.test(title || "");
 }
 
 export interface MatchResult {
@@ -435,7 +458,7 @@ export function matchProfile(
     const matchingSkills = skills.filter((s) => skillHit(job, s));
     const unconfirmedSkills = skills.filter((s) => !skillHit(job, s));
 
-    const band = seniorityBandScore(job.seniority, preferredBands);
+    const band = seniorityBandScore(job.seniority, preferredBands, job.title);
     const jobYears = extractYearsRequired(job.description_excerpt || "");
     const years = yearsGapMultiplier(input.years_experience, jobYears, job.seniority);
     const senScore = Math.min(1, band.score * years.mult);
@@ -455,17 +478,28 @@ export function matchProfile(
     // Discipline / track presence ~10%
     if (job.track) score += 7;
     if (job.verified) score += 3;
-    // Arrangement preference ~10%
+    // Arrangement preference ~10% (confirmed allow-list only; unspecified already filtered)
     if (allowedArrangements.length) {
       const arr = (job.work_arrangement || "").toLowerCase();
       if (allowedArrangements.includes(arr)) score += 10;
-      else score += 4; // unknown arrangement soft credit
     } else {
       score += 5;
     }
     // Large seniority/experience gaps must not look like strong matches on skills alone.
     if (senScore < 0.4) {
       score = Math.min(score, Math.round(40 + senScore * 25));
+    }
+    // Junior / 0-YOE profiles: boost confirmed entry titles; demote explicit senior bands.
+    const juniorProfile = preferredBands.some((b) => b === "junior" || b === "intern");
+    if (juniorProfile) {
+      if (titleJuniorSignal(job.title) || (job.seniority || "").toLowerCase() === "junior") {
+        score = Math.min(99, score + 12);
+      } else if (
+        ["mid", "senior", "staff", "principal", "lead"].includes((job.seniority || "").toLowerCase()) ||
+        titleSeniorSignal(job.title)
+      ) {
+        score = Math.max(1, score - 18);
+      }
     }
 
     // "gaps" retained for API compatibility — unconfirmed / soft notes only.

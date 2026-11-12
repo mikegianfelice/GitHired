@@ -1,7 +1,13 @@
 import { datasetFreshness, loadSnapshot } from "./dataset";
 import { matchProfile } from "./match";
 import { checkRateLimit, clientIp } from "./rate-limit";
-import { compactJob, getJobById, parseSearchFilters, searchJobs } from "./search";
+import {
+  compactJob,
+  getJobById,
+  parseSearchFilters,
+  searchJobs,
+  SearchFilterValidationError,
+} from "./search";
 import type { Env, MatchProfileInput } from "./types";
 
 const CORS: Record<string, string> = {
@@ -125,7 +131,15 @@ export async function handleRest(request: Request, env: Env, url: URL): Promise<
   }
 
   if (path === "/api/v1/jobs" && request.method === "GET") {
-    const filters = parseSearchFilters(url.searchParams);
+    let filters;
+    try {
+      filters = parseSearchFilters(url.searchParams);
+    } catch (err) {
+      if (err instanceof SearchFilterValidationError) {
+        return json({ error: err.code, message: err.message }, 400);
+      }
+      throw err;
+    }
     const result = searchJobs(snapshot, filters);
     return json({
       ...result,

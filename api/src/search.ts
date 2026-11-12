@@ -11,6 +11,17 @@ export function parseBool(value: string | null | undefined): boolean | undefined
   return undefined;
 }
 
+export class SearchFilterValidationError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "SearchFilterValidationError";
+    this.code = code;
+  }
+}
+
+const WORK_MODES = new Set(["remote", "hybrid", "onsite"]);
+
 export function parseSearchFilters(params: URLSearchParams): SearchFilters {
   const sortRaw = (params.get("sort") || "relevance").toLowerCase();
   const sort =
@@ -22,12 +33,19 @@ export function parseSearchFilters(params: URLSearchParams): SearchFilters {
     params.get("salary_min") != null ? Number(params.get("salary_min")) : undefined;
   const salaryMaxRaw =
     params.get("salary_max") != null ? Number(params.get("salary_max")) : undefined;
+  const workModeRaw = params.get("work_mode")?.trim()?.toLowerCase() || undefined;
+  if (workModeRaw && !WORK_MODES.has(workModeRaw)) {
+    throw new SearchFilterValidationError(
+      "invalid_work_mode",
+      `Unsupported work_mode '${workModeRaw}'. Allowed values: remote, hybrid, onsite.`,
+    );
+  }
   return {
     q: params.get("q")?.trim() || undefined,
     location: params.get("location")?.trim() || undefined,
     province: params.get("province")?.trim()?.toUpperCase() || undefined,
     remote: parseBool(params.get("remote")),
-    work_mode: params.get("work_mode")?.trim()?.toLowerCase() || undefined,
+    work_mode: workModeRaw,
     // Non-positive / NaN salary bounds are ignored (never invent floors/ceilings).
     salary_min:
       salaryMinRaw != null && Number.isFinite(salaryMinRaw) && salaryMinRaw > 0

@@ -186,3 +186,100 @@ test("snapshot Persona A: preferred Senior DE + work_arrangements remote/hybrid 
   // Onsite-only BitGo should not appear when arrangements exclude onsite.
   assert.ok(result.matches.every((m) => m.work_arrangement !== "onsite"));
 });
+
+test("remote-only hard-excludes unspecified, hybrid, and onsite", () => {
+  const snap = miniSnapshot([
+    baseJob({ id: "remote", title: "Backend Engineer", work_arrangement: "remote", seniority: "mid" }),
+    baseJob({
+      id: "unspec",
+      title: "Backend Engineer",
+      work_arrangement: "unspecified",
+      seniority: "mid",
+    }),
+    baseJob({ id: "hybrid", title: "Backend Engineer", work_arrangement: "hybrid", seniority: "mid" }),
+    baseJob({ id: "onsite", title: "Backend Engineer", work_arrangement: "onsite", seniority: "mid" }),
+  ]);
+  const result = matchProfile(snap, {
+    preferred_roles: ["Backend Engineer"],
+    work_arrangements: ["remote"],
+    limit: 10,
+  });
+  assert.equal(result.matches.length, 1);
+  assert.equal(result.matches[0].id, "remote");
+  assert.equal(result.filter_semantics.arrangements.join("+"), "remote");
+});
+
+test("no arrangement preference still includes unspecified jobs", () => {
+  const snap = miniSnapshot([
+    baseJob({ id: "unspec", title: "Backend Engineer", work_arrangement: "unspecified", seniority: "mid" }),
+    baseJob({ id: "remote", title: "Backend Engineer", work_arrangement: "remote", seniority: "mid" }),
+  ]);
+  const result = matchProfile(snap, {
+    preferred_roles: ["Backend Engineer"],
+    limit: 10,
+  });
+  assert.equal(result.matches.length, 2);
+});
+
+test("junior / 0-YOE profile ranks confirmed junior above mid/senior", () => {
+  const snap = miniSnapshot([
+    baseJob({
+      id: "junior",
+      title: "Junior Software Engineer",
+      seniority: "junior",
+      track: "software_engineering",
+      technologies: ["Python"],
+      salary_min: 70000,
+      salary_max: 90000,
+      salary_max_cad: 90000,
+    }),
+    baseJob({
+      id: "mid",
+      title: "Software Engineer",
+      seniority: "mid",
+      track: "software_engineering",
+      technologies: ["Python"],
+      salary_min: 110000,
+      salary_max: 140000,
+      salary_max_cad: 140000,
+    }),
+    baseJob({
+      id: "senior",
+      title: "Senior Software Engineer",
+      seniority: "senior",
+      track: "software_engineering",
+      technologies: ["Python"],
+      salary_min: 150000,
+      salary_max: 180000,
+      salary_max_cad: 180000,
+    }),
+    baseJob({
+      id: "unknown",
+      title: "Software Engineer",
+      seniority: "",
+      track: "software_engineering",
+      technologies: ["Python"],
+      salary_available: false,
+      salary_min: null,
+      salary_max: null,
+      salary_max_cad: null,
+    }),
+  ]);
+  const result = matchProfile(snap, {
+    preferred_roles: ["Software Engineer", "Python Developer"],
+    years_experience: 0,
+    seniority: "junior",
+    skills: ["Python"],
+    work_arrangements: ["remote", "hybrid"],
+    limit: 10,
+  });
+  assert.ok(result.matches.length >= 2);
+  assert.equal(result.matches[0].id, "junior");
+  const byId = Object.fromEntries(result.matches.map((m) => [m.id, m.match_score]));
+  assert.ok(byId.junior > byId.mid);
+  assert.ok(byId.junior > byId.senior);
+  // Unknown seniority remains eligible but should not outrank confirmed junior.
+  if (byId.unknown != null) {
+    assert.ok(byId.junior > byId.unknown);
+  }
+});

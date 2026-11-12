@@ -498,8 +498,27 @@
     const inferred = inferSeniorityFromYears(profile.years_experience);
     if (!wanted.length && inferred) wanted = [inferred];
     const jobSen = String(job.seniority || "").toLowerCase();
+    const juniorProfile = wanted.some((b) => b === "junior" || b === "intern");
     if (!wanted.length) return { score: 0.5, note: null };
-    if (!jobSen) return { score: 0.55, note: "Job seniority unspecified — compatibility uncertain" };
+    // Unknown job seniority: cautious — never invent junior eligibility.
+    if (!jobSen) {
+      if (juniorProfile) {
+        if (titleJuniorSignal(job.title)) {
+          return { score: 0.95, note: null };
+        }
+        if (titleSeniorSignal(job.title)) {
+          return {
+            score: 0.18,
+            note: "Title signals a more senior role than your junior profile",
+          };
+        }
+        return {
+          score: 0.35,
+          note: "Job seniority unspecified — compatibility uncertain for junior profiles",
+        };
+      }
+      return { score: 0.55, note: "Job seniority unspecified — compatibility uncertain" };
+    }
 
     const order = ["junior", "mid", "senior", "staff", "principal", "lead", "intern"];
     let band = 0.4;
@@ -573,16 +592,25 @@
     return 0.2;
   }
 
+  function titleJuniorSignal(title) {
+    return /\b(?:junior|jr\.?|entry[\s-]?level|new[\s-]?grad|graduate|trainee|intern|co-?op|coop)\b/i.test(
+      title || ""
+    );
+  }
+
+  function titleSeniorSignal(title) {
+    return /\b(?:senior|sr\.?|staff|principal|director|vp\b|head of)\b/i.test(title || "");
+  }
+
   function arrangementScore(profile, job) {
     const wanted = profile.work_arrangements || [];
     if (!wanted.length) return { score: 0.5, ok: true };
     const arr = job.work_arrangement || "unspecified";
+    // Explicit selection is a hard allow-list — remote-only must not include unspecified.
     if (arr === "unspecified" || arr === "unknown") {
-      // Unknown: soft-allow (Canada eligibility already applied upstream).
-      return { score: 0.55, ok: true };
+      return { score: 0, ok: false };
     }
     if (wanted.includes(arr)) return { score: 1, ok: true };
-    // Explicit allow-list is a hard filter when arrangements are selected.
     return { score: 0, ok: false };
   }
 
@@ -706,6 +734,24 @@
     if (sen.score < 0.4) {
       // Cap: staff/principal vs junior cannot land in the 80%+ band on skills alone.
       score = Math.min(score, 0.4 + sen.score * 0.25);
+    }
+    const wantedSen = (profile.seniority || []).map((s) => String(s).toLowerCase());
+    const inferredSen = inferSeniorityFromYears(profile.years_experience);
+    const juniorProfile =
+      wantedSen.includes("junior") ||
+      wantedSen.includes("intern") ||
+      inferredSen === "junior";
+    if (juniorProfile) {
+      if (titleJuniorSignal(job.title) || String(job.seniority || "").toLowerCase() === "junior") {
+        score = Math.min(1, score + 0.12);
+      } else if (
+        ["mid", "senior", "staff", "principal", "lead"].includes(
+          String(job.seniority || "").toLowerCase()
+        ) ||
+        titleSeniorSignal(job.title)
+      ) {
+        score = Math.max(0, score - 0.18);
+      }
     }
     const percent = Math.round(Math.max(0, Math.min(1, score)) * 100);
 

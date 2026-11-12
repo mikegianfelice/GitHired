@@ -1,0 +1,1163 @@
+{
+  "dataset_id": "266ba13f4680c62a",
+  "generated_at": "2026-11-12T21:18:51Z",
+  "count": 524,
+  "profiles": {
+    "P01": {
+      "name": "Junior Python Developer",
+      "api_count": 10,
+      "site_count": 10,
+      "api_top": [
+        {
+          "id": "a15b4a5c03234589",
+          "title": "Junior Software Engineer (Remote)",
+          "company": "PolicyMe",
+          "score": 99,
+          "arr": "remote"
+        },
+        {
+          "id": "1fc7ec2af1a763ed",
+          "title": "Canada- Jr Software Engineer (SRE)",
+          "company": "PointClickCare",
+          "score": 87,
+          "arr": "remote"
+        },
+        {
+          "id": "fb691a4efe22dc3e",
+          "title": "Back-end Software Engineer (Kotlin)",
+          "company": "Manulife",
+          "score": 49,
+          "arr": "hybrid"
+        },
+        {
+          "id": "5f114bc6ddb375a7",
+          "title": "Full Stack Software Engineer",
+          "company": "Manulife",
+          "score": 49,
+          "arr": "hybrid"
+        },
+        {
+          "id": "6c999f6b9f4ed86d",
+          "title": "Full Stack Software Engineer - Control Plane",
+          "company": "ClickHouse",
+          "score": 49,
+          "arr": "remote"
+        },
+        {
+          "id": "08c34fbc003e525d",
+          "title": "Full-Stack Software Engineer",
+          "company": "Manulife",
+          "score": 49,
+          "arr": "hybrid"
+        },
+        {
+          "id": "0ed5317fa34871db",
+          "title": "Full-Stack Software Engineer - React",
+          "company": "Manulife",
+          "score": 49,
+          "arr": "hybrid"
+        },
+        {
+          "id": "3dc70e6835c941a8",
+          "title": "Globalization Software Engineer",
+          "company": "Okta",
+          "score": 49,
+          "arr": "hybrid"
+        },
+        {
+          "id": "542d30f3d89d135c",
+          "title": "iOS Software Engineer",
+          "company": "Mozilla",
+          "score": 49,
+          "arr": "remote"
+        },
+        {
+          "id": "beeba4b9a555fb9b",
+          "title": "Low-Level Software Engineer, LLK",
+          "company": "Tenstorrent",
+          "score": 49,
+          "arr": "hybrid"
+        }
+      ],
+      "site_top": [
+        {
+          "id": "a15b4a5c03234589",
+          "title": "Junior Software Engineer (Remote)",
+          "company": "PolicyMe",
+          "score": 100,
+          "arr": "remote",
+          "seniority": "junior"
+        },
+        {
+          "id": "1fc7ec2af1a763ed",
+          "title": "Canada- Jr Software Engineer (SRE)",
+          "company": "PointClickCare",
+          "score": 80,
+          "arr": "remote",
+          "seniority": "junior"
+        },
+        {
+          "id": "def026282381f397",
+          "title": "Software Engineer II - CIAM",
+          "company": "Affirm",
+          "score": 49,
+          "arr": "remote",
+          "seniority": null
+        },
+        {
+          "id": "91d08841c492f3a1",
+          "title": "Software Engineer II, Backend (Batch Developer Experience)",
+          "company": "Affirm",
+          "score": 49,
+          "arr": "remote",
+          "seniority": null
+        },
+        {
+          "id": "bb13b72d0caf59fa",
+          "title": "Software Engineer II, Backend (Decisions Orchestration)",
+          "company": "Affirm",
+          "score": 49,
+          "arr": "remote",
+          "seniority": null
+        }
+      ],
+      "mexico_leak": false,
+      "unspecified_under_remote_only": 0,
+      "api_site_id_overlap_top5": 2
+    },
+    "P02": {
+      "name": "Senior Data Engineer",
+      "api_count": 10,
+      "site_count": 10,
+      "api_top": [
+        {
+          "id": "a597096215947988",
+          "title": "Senior Data Platform Engineer",
+          "company": "Later",
+          "score": 92,
+          "arr": "remote"
+        },
+        {
+          "id": "5c9690618aae42f3",
+          "title": "Senior Software Engineer, Data Systems (Python)",
+          "company": "Northbeam",
+          "score": 92,
+          "arr": "remote"
+        },
+        {
+          "id": "6a3c8c313cc44a1a",
+          "title": "Senior Software Engineer, Backend - Data Layer",
+          "company": "Camunda",
+          "score": 83,
+          "arr": "remote"
+        },
+        {
+          "id": "25920a6a1d145c80",
+          "title": "Senior Software Engineer, Backend (Consumer Data Platform)",
+          "company": "Affirm",
+          "score": 83,
+          "arr": "remote"
+        },
+        {
+          "id": "f9a4b22fe7e5e748",
+          "title": "Senior Software Engineer, Backend (Identity Data)",
+          "company": "Affirm",
+          "score": 83,
+          "arr": "remote"
+        },
+        {
+          "id": "c4e78b7fd9f915c3",
+          "title": "FinOps Data Engineer",
+          "company": "Supabase",
+          "score": 79,
+          "arr": "remote"
+        },
+        {
+          "id": "3aa43fc7ba202245",
+          "title": "Software Engineer, Data Systems (Python)",
+          "company": "Northbeam",
+          "score": 79,
+          "arr": "remote"
+        },
+        {
+          "id": "e38e538117f840b7",
+          "title": "Senior Software Engineer, Backend - Data Streaming",
+          "company": "Camunda",
+          "score": 75,
+          "arr": "remote"
+        },
+        {
+          "id": "e73b9986859fb4ab",
+          "title": "Senior Staff Data Platform Engineer",
+          "company": "Benevity",
+          "score": 75,
+          "arr": "remote"
+        },
+        {
+          "id": "31e55cd7326090c1",
+          "title": "Analytics Engineer, Data",
+          "company": "Tailscale",
+          "score": 70,
+          "arr": "remote"
+        }
+      ],
+      "site_top": [
+        {
+          "id": "a597096215947988",
+          "title": "Senior Data Platform Engineer",
+          "company": "Later",
+          "score": 84,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "5c9690618aae42f3",
+          "title": "Senior Software Engineer, Data Systems (Python)",
+          "company": "Northbeam",
+          "score": 84,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "25920a6a1d145c80",
+          "title": "Senior Software Engineer, Backend (Consumer Data Platform)",
+          "company": "Affirm",
+          "score": 76,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "f9a4b22fe7e5e748",
+          "title": "Senior Software Engineer, Backend (Identity Data)",
+          "company": "Affirm",
+          "score": 76,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "6a3c8c313cc44a1a",
+          "title": "Senior Software Engineer, Backend - Data Layer",
+          "company": "Camunda",
+          "score": 76,
+          "arr": "remote",
+          "seniority": "senior"
+        }
+      ],
+      "mexico_leak": false,
+      "unspecified_under_remote_only": 0,
+      "api_site_id_overlap_top5": 5
+    },
+    "P03": {
+      "name": "Frontend Developer",
+      "api_count": 10,
+      "site_count": 10,
+      "api_top": [
+        {
+          "id": "b2a4bd27c679d8a6",
+          "title": "Intermediate Software Engineer",
+          "company": "Jobber",
+          "score": 99,
+          "arr": "remote"
+        },
+        {
+          "id": "8ef694bca258d2d5",
+          "title": "Frontend Engineer - Design Systems",
+          "company": "Mercury",
+          "score": 87,
+          "arr": "remote"
+        },
+        {
+          "id": "5f114bc6ddb375a7",
+          "title": "Full Stack Software Engineer",
+          "company": "Manulife",
+          "score": 87,
+          "arr": "hybrid"
+        },
+        {
+          "id": "6c999f6b9f4ed86d",
+          "title": "Full Stack Software Engineer - Control Plane",
+          "company": "ClickHouse",
+          "score": 87,
+          "arr": "remote"
+        },
+        {
+          "id": "fbd87aa31711faa9",
+          "title": "Software Engineer - Mercury Command",
+          "company": "Mercury",
+          "score": 87,
+          "arr": "remote"
+        },
+        {
+          "id": "56b59c65e52ddc15",
+          "title": "Software Engineer - Product",
+          "company": "Mercury",
+          "score": 87,
+          "arr": "remote"
+        },
+        {
+          "id": "9304bfdfdab2cc4d",
+          "title": "Software Engineer I, Frontend (Upfunnel)",
+          "company": "Affirm",
+          "score": 87,
+          "arr": "remote"
+        },
+        {
+          "id": "7b0d2b89c483a2d3",
+          "title": "Software Engineer, AI Product (Canada)",
+          "company": "Vanta",
+          "score": 87,
+          "arr": "remote"
+        },
+        {
+          "id": "b8ecf6c684ebbf8d",
+          "title": "Software Engineer, International Expansion",
+          "company": "Robinhood",
+          "score": 87,
+          "arr": "onsite"
+        },
+        {
+          "id": "e62911795c248e17",
+          "title": "Software Engineer, Python",
+          "company": "Northbeam",
+          "score": 87,
+          "arr": "remote"
+        }
+      ],
+      "site_top": [
+        {
+          "id": "b2a4bd27c679d8a6",
+          "title": "Intermediate Software Engineer",
+          "company": "Jobber",
+          "score": 93,
+          "arr": "remote",
+          "seniority": "mid"
+        },
+        {
+          "id": "9304bfdfdab2cc4d",
+          "title": "Software Engineer I, Frontend (Upfunnel)",
+          "company": "Affirm",
+          "score": 79,
+          "arr": "remote",
+          "seniority": null
+        },
+        {
+          "id": "6c999f6b9f4ed86d",
+          "title": "Full Stack Software Engineer - Control Plane",
+          "company": "ClickHouse",
+          "score": 79,
+          "arr": "remote",
+          "seniority": null
+        },
+        {
+          "id": "5f114bc6ddb375a7",
+          "title": "Full Stack Software Engineer",
+          "company": "Manulife",
+          "score": 79,
+          "arr": "hybrid",
+          "seniority": null
+        },
+        {
+          "id": "fbd87aa31711faa9",
+          "title": "Software Engineer - Mercury Command",
+          "company": "Mercury",
+          "score": 79,
+          "arr": "remote",
+          "seniority": null
+        }
+      ],
+      "mexico_leak": false,
+      "unspecified_under_remote_only": 0,
+      "api_site_id_overlap_top5": 4
+    },
+    "P04": {
+      "name": "Staff AI Engineer",
+      "api_count": 10,
+      "site_count": 10,
+      "api_top": [
+        {
+          "id": "5349eceacb29eaa6",
+          "title": "Staff Machine Learning Engineer",
+          "company": "Twilio",
+          "score": 92,
+          "arr": "remote"
+        },
+        {
+          "id": "372cb6bf584a6187",
+          "title": "Staff Software Engineer",
+          "company": "Blackpoint Cyber",
+          "score": 92,
+          "arr": "remote"
+        },
+        {
+          "id": "52f9d27bc172115b",
+          "title": "Staff Software Engineer, Backend (Capacity Modeling)",
+          "company": "Affirm",
+          "score": 92,
+          "arr": "remote"
+        },
+        {
+          "id": "dd62138343a1edab",
+          "title": "Staff Software Engineer, Backend (Cost Engineering)",
+          "company": "Affirm",
+          "score": 92,
+          "arr": "remote"
+        },
+        {
+          "id": "99a4e275af239ea4",
+          "title": "Senior Software Engineer II, Applied AI",
+          "company": "Wrapbook",
+          "score": 91,
+          "arr": "remote"
+        },
+        {
+          "id": "93c9654ff92f3ad6",
+          "title": "Software Engineer - Turso",
+          "company": "Supabase",
+          "score": 87,
+          "arr": "remote"
+        },
+        {
+          "id": "42995eb4b5947336",
+          "title": "Senior CX Platform Engineer",
+          "company": "GitLab",
+          "score": 83,
+          "arr": "remote"
+        },
+        {
+          "id": "ba0981669d49f444",
+          "title": "Senior Machine Learning Engineer",
+          "company": "Reddit",
+          "score": 83,
+          "arr": "remote"
+        },
+        {
+          "id": "0d582a8a0a361169",
+          "title": "Senior Site Reliability Engineer - (Canada-Remote)",
+          "company": "ClickHouse",
+          "score": 83,
+          "arr": "remote"
+        },
+        {
+          "id": "a9eafe11fa75adb5",
+          "title": "Senior Software Engineer",
+          "company": "Affirm",
+          "score": 83,
+          "arr": "remote"
+        }
+      ],
+      "site_top": [
+        {
+          "id": "dd62138343a1edab",
+          "title": "Staff Software Engineer, Backend (Cost Engineering)",
+          "company": "Affirm",
+          "score": 84,
+          "arr": "remote",
+          "seniority": "staff"
+        },
+        {
+          "id": "372cb6bf584a6187",
+          "title": "Staff Software Engineer",
+          "company": "Blackpoint Cyber",
+          "score": 84,
+          "arr": "remote",
+          "seniority": "staff"
+        },
+        {
+          "id": "5349eceacb29eaa6",
+          "title": "Staff Machine Learning Engineer",
+          "company": "Twilio",
+          "score": 84,
+          "arr": "remote",
+          "seniority": "staff"
+        },
+        {
+          "id": "99a4e275af239ea4",
+          "title": "Senior Software Engineer II, Applied AI",
+          "company": "Wrapbook",
+          "score": 84,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "91462e5e85539daf",
+          "title": "Staff Platform Engineer",
+          "company": "Acquird",
+          "score": 76,
+          "arr": "remote",
+          "seniority": "staff"
+        }
+      ],
+      "mexico_leak": false,
+      "unspecified_under_remote_only": 0,
+      "api_site_id_overlap_top5": 4
+    },
+    "P05": {
+      "name": "DevOps Engineer",
+      "api_count": 10,
+      "site_count": 10,
+      "api_top": [
+        {
+          "id": "e6ba2c62582a13a8",
+          "title": "Senior Platform Engineer (Auth0)",
+          "company": "Okta",
+          "score": 94,
+          "arr": "hybrid"
+        },
+        {
+          "id": "8148ad14f47f755e",
+          "title": "Senior Platform Engineer, AI & Fabrics",
+          "company": "BMO",
+          "score": 94,
+          "arr": "hybrid"
+        },
+        {
+          "id": "2d89d79f6fe64e11",
+          "title": "Senior Software Engineer, Platform Network (Auth0)",
+          "company": "Okta",
+          "score": 94,
+          "arr": "hybrid"
+        },
+        {
+          "id": "c1e9b7fe3176a1dc",
+          "title": "Senior Software Engineer, Security Engineering - Platform (Auth0)",
+          "company": "Okta",
+          "score": 94,
+          "arr": "hybrid"
+        },
+        {
+          "id": "6a4fa2b79cf7f749",
+          "title": "Senior Staff Software Engineer, Backend (Compute Platform)",
+          "company": "Affirm",
+          "score": 94,
+          "arr": "remote"
+        },
+        {
+          "id": "41a018028c749638",
+          "title": "Sr Platform Engineer",
+          "company": "Air-tek",
+          "score": 94,
+          "arr": "remote"
+        },
+        {
+          "id": "1b41c87a51d41fac",
+          "title": "Cloud Platform Engineer",
+          "company": "GitLab",
+          "score": 87,
+          "arr": "remote"
+        },
+        {
+          "id": "da3874a9d9dd9962",
+          "title": "Platform Engineer - Compute",
+          "company": "Supabase",
+          "score": 87,
+          "arr": "remote"
+        },
+        {
+          "id": "5ba6f121946cf6d5",
+          "title": "Senior Site Reliability Engineer",
+          "company": "Camunda",
+          "score": 87,
+          "arr": "remote"
+        },
+        {
+          "id": "0d582a8a0a361169",
+          "title": "Senior Site Reliability Engineer - (Canada-Remote)",
+          "company": "ClickHouse",
+          "score": 87,
+          "arr": "remote"
+        }
+      ],
+      "site_top": [
+        {
+          "id": "6a4fa2b79cf7f749",
+          "title": "Senior Staff Software Engineer, Backend (Compute Platform)",
+          "company": "Affirm",
+          "score": 93,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "41a018028c749638",
+          "title": "Sr Platform Engineer",
+          "company": "Air-tek",
+          "score": 93,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "8148ad14f47f755e",
+          "title": "Senior Platform Engineer, AI & Fabrics",
+          "company": "BMO",
+          "score": 93,
+          "arr": "hybrid",
+          "seniority": "senior"
+        },
+        {
+          "id": "e6ba2c62582a13a8",
+          "title": "Senior Platform Engineer (Auth0)",
+          "company": "Okta",
+          "score": 93,
+          "arr": "hybrid",
+          "seniority": "senior"
+        },
+        {
+          "id": "2d89d79f6fe64e11",
+          "title": "Senior Software Engineer, Platform Network (Auth0)",
+          "company": "Okta",
+          "score": 93,
+          "arr": "hybrid",
+          "seniority": "senior"
+        }
+      ],
+      "mexico_leak": false,
+      "unspecified_under_remote_only": 0,
+      "api_site_id_overlap_top5": 4
+    },
+    "P06": {
+      "name": "Data Analyst",
+      "api_count": 10,
+      "site_count": 6,
+      "api_top": [
+        {
+          "id": "31e55cd7326090c1",
+          "title": "Analytics Engineer, Data",
+          "company": "Tailscale",
+          "score": 75,
+          "arr": "remote"
+        },
+        {
+          "id": "4898e8f424cbbd74",
+          "title": "Data Engineer",
+          "company": "Samsara",
+          "score": 68,
+          "arr": "remote"
+        },
+        {
+          "id": "9a364d8fef5972a0",
+          "title": "Data Engineer",
+          "company": "Loopio",
+          "score": 68,
+          "arr": "remote"
+        },
+        {
+          "id": "c4e78b7fd9f915c3",
+          "title": "FinOps Data Engineer",
+          "company": "Supabase",
+          "score": 68,
+          "arr": "remote"
+        },
+        {
+          "id": "e13193e8f1e5bd72",
+          "title": "Google Big Data Platform Engineer II",
+          "company": "TD",
+          "score": 55,
+          "arr": "onsite"
+        },
+        {
+          "id": "23d20d5ba0a6958f",
+          "title": "Senior Analytics Engineer",
+          "company": "Mercury",
+          "score": 50,
+          "arr": "remote"
+        },
+        {
+          "id": "e20fed6ed6a78e6b",
+          "title": "Senior Analytics Engineer",
+          "company": "Lightspeed",
+          "score": 50,
+          "arr": "hybrid"
+        },
+        {
+          "id": "62b5293770a54c84",
+          "title": "Senior Backend Engineer - Analytics | Canada | Remote",
+          "company": "Grafana Labs",
+          "score": 50,
+          "arr": "remote"
+        },
+        {
+          "id": "5c28e044062b8b76",
+          "title": "Senior Backend Engineer - Databases - Analytics | Canada | Remote",
+          "company": "Grafana Labs",
+          "score": 50,
+          "arr": "remote"
+        },
+        {
+          "id": "412ee129c7fdd740",
+          "title": "Senior Data Engineer",
+          "company": "BitGo",
+          "score": 50,
+          "arr": "onsite"
+        }
+      ],
+      "site_top": [
+        {
+          "id": "31e55cd7326090c1",
+          "title": "Analytics Engineer, Data",
+          "company": "Tailscale",
+          "score": 67,
+          "arr": "remote",
+          "seniority": null
+        },
+        {
+          "id": "62b5293770a54c84",
+          "title": "Senior Backend Engineer - Analytics | Canada | Remote",
+          "company": "Grafana Labs",
+          "score": 50,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "e20fed6ed6a78e6b",
+          "title": "Senior Analytics Engineer",
+          "company": "Lightspeed",
+          "score": 50,
+          "arr": "hybrid",
+          "seniority": "senior"
+        },
+        {
+          "id": "23d20d5ba0a6958f",
+          "title": "Senior Analytics Engineer",
+          "company": "Mercury",
+          "score": 50,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "5c28e044062b8b76",
+          "title": "Senior Backend Engineer - Databases - Analytics | Canada | Remote",
+          "company": "Grafana Labs",
+          "score": 49,
+          "arr": "remote",
+          "seniority": "senior"
+        }
+      ],
+      "mexico_leak": false,
+      "unspecified_under_remote_only": 0,
+      "api_site_id_overlap_top5": 1
+    },
+    "P07": {
+      "name": "Cybersecurity Engineer",
+      "api_count": 8,
+      "site_count": 8,
+      "api_top": [
+        {
+          "id": "c1e9b7fe3176a1dc",
+          "title": "Senior Software Engineer, Security Engineering - Platform (Auth0)",
+          "company": "Okta",
+          "score": 92,
+          "arr": "hybrid"
+        },
+        {
+          "id": "ef6bfbeab0cd5b74",
+          "title": "Senior Software Engineer, Security Engineering (Auth0)",
+          "company": "Okta",
+          "score": 92,
+          "arr": "hybrid"
+        },
+        {
+          "id": "508650b3f0db1932",
+          "title": "Sr Security Platform Engineer",
+          "company": "Sun Life",
+          "score": 92,
+          "arr": "hybrid"
+        },
+        {
+          "id": "920c31d088d09a0b",
+          "title": "Senior Software Engineer, Security Factory: Code Security",
+          "company": "GitLab",
+          "score": 83,
+          "arr": "remote"
+        },
+        {
+          "id": "46dc59e85cb39233",
+          "title": "Security Infrastructure Engineer",
+          "company": "Tailscale",
+          "score": 79,
+          "arr": "remote"
+        },
+        {
+          "id": "678307c8e122d58e",
+          "title": "Security Platform Engineer - EDR, Proxy",
+          "company": "Sun Life",
+          "score": 79,
+          "arr": "hybrid"
+        },
+        {
+          "id": "b1d3cbaef1ca5fb8",
+          "title": "Software Engineer, Security",
+          "company": "Cohere",
+          "score": 79,
+          "arr": "remote"
+        },
+        {
+          "id": "32a64354abab4ab8",
+          "title": "Staff Software Engineer, Security Factory: Static Analysis",
+          "company": "GitLab",
+          "score": 70,
+          "arr": "remote"
+        }
+      ],
+      "site_top": [
+        {
+          "id": "ef6bfbeab0cd5b74",
+          "title": "Senior Software Engineer, Security Engineering (Auth0)",
+          "company": "Okta",
+          "score": 84,
+          "arr": "hybrid",
+          "seniority": "senior"
+        },
+        {
+          "id": "c1e9b7fe3176a1dc",
+          "title": "Senior Software Engineer, Security Engineering - Platform (Auth0)",
+          "company": "Okta",
+          "score": 84,
+          "arr": "hybrid",
+          "seniority": "senior"
+        },
+        {
+          "id": "508650b3f0db1932",
+          "title": "Sr Security Platform Engineer",
+          "company": "Sun Life",
+          "score": 84,
+          "arr": "hybrid",
+          "seniority": "senior"
+        },
+        {
+          "id": "920c31d088d09a0b",
+          "title": "Senior Software Engineer, Security Factory: Code Security",
+          "company": "GitLab",
+          "score": 76,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "b1d3cbaef1ca5fb8",
+          "title": "Software Engineer, Security",
+          "company": "Cohere",
+          "score": 71,
+          "arr": "remote",
+          "seniority": null
+        }
+      ],
+      "mexico_leak": false,
+      "unspecified_under_remote_only": 0,
+      "api_site_id_overlap_top5": 4
+    },
+    "P08": {
+      "name": "Backend Engineer",
+      "api_count": 10,
+      "site_count": 10,
+      "api_top": [
+        {
+          "id": "5f114bc6ddb375a7",
+          "title": "Full Stack Software Engineer",
+          "company": "Manulife",
+          "score": 75,
+          "arr": "hybrid"
+        },
+        {
+          "id": "3dc70e6835c941a8",
+          "title": "Globalization Software Engineer",
+          "company": "Okta",
+          "score": 75,
+          "arr": "hybrid"
+        },
+        {
+          "id": "09027eb5b45a6def",
+          "title": "Senior Full-Stack Software Engineer",
+          "company": "Manulife",
+          "score": 75,
+          "arr": "hybrid"
+        },
+        {
+          "id": "5fe0a7691bb744e5",
+          "title": "Senior Software Engineer - Cloud Infrastructure - (Canada Remote)",
+          "company": "ClickHouse",
+          "score": 75,
+          "arr": "remote"
+        },
+        {
+          "id": "fcdf7680ebb02781",
+          "title": "Senior Software Engineer - UI Platform",
+          "company": "Okta",
+          "score": 75,
+          "arr": "hybrid"
+        },
+        {
+          "id": "7b778546d8d4b58a",
+          "title": "Senior Software Engineer (Back-end/Server)",
+          "company": "Trulioo",
+          "score": 75,
+          "arr": "remote"
+        },
+        {
+          "id": "74ba0689f6593f12",
+          "title": "Senior Software Engineer I/II - Infrastructure",
+          "company": "Samsara",
+          "score": 75,
+          "arr": "remote"
+        },
+        {
+          "id": "99a4e275af239ea4",
+          "title": "Senior Software Engineer II, Applied AI",
+          "company": "Wrapbook",
+          "score": 75,
+          "arr": "remote"
+        },
+        {
+          "id": "ace9b570eb7ec792",
+          "title": "Senior Software Engineer, Ads",
+          "company": "Reddit",
+          "score": 75,
+          "arr": "remote"
+        },
+        {
+          "id": "6374fc9225c90d7a",
+          "title": "Senior Software Engineer, Back End",
+          "company": "Brex",
+          "score": 75,
+          "arr": "hybrid"
+        }
+      ],
+      "site_top": [
+        {
+          "id": "676a3c30daf05cce",
+          "title": "Senior Software Engineer, Backend (Consumer Authentication Platform)",
+          "company": "Affirm",
+          "score": 71,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "f547865d2fb881aa",
+          "title": "Sr. Software Engineer (AI/ML)",
+          "company": "Blackpoint Cyber",
+          "score": 71,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "6374fc9225c90d7a",
+          "title": "Senior Software Engineer, Back End",
+          "company": "Brex",
+          "score": 71,
+          "arr": "hybrid",
+          "seniority": "senior"
+        },
+        {
+          "id": "6a3c8c313cc44a1a",
+          "title": "Senior Software Engineer, Backend - Data Layer",
+          "company": "Camunda",
+          "score": 71,
+          "arr": "remote",
+          "seniority": "senior"
+        },
+        {
+          "id": "e38e538117f840b7",
+          "title": "Senior Software Engineer, Backend - Data Streaming",
+          "company": "Camunda",
+          "score": 71,
+          "arr": "remote",
+          "seniority": "senior"
+        }
+      ],
+      "mexico_leak": false,
+      "unspecified_under_remote_only": 0,
+      "api_site_id_overlap_top5": 0
+    },
+    "P09": {
+      "name": "Career Switcher",
+      "api_count": 10,
+      "site_count": 10,
+      "api_top": [
+        {
+          "id": "a15b4a5c03234589",
+          "title": "Junior Software Engineer (Remote)",
+          "company": "PolicyMe",
+          "score": 94,
+          "arr": "remote"
+        },
+        {
+          "id": "1fc7ec2af1a763ed",
+          "title": "Canada- Jr Software Engineer (SRE)",
+          "company": "PointClickCare",
+          "score": 81,
+          "arr": "remote"
+        },
+        {
+          "id": "31e55cd7326090c1",
+          "title": "Analytics Engineer, Data",
+          "company": "Tailscale",
+          "score": 49,
+          "arr": "remote"
+        },
+        {
+          "id": "4898e8f424cbbd74",
+          "title": "Data Engineer",
+          "company": "Samsara",
+          "score": 49,
+          "arr": "remote"
+        },
+        {
+          "id": "9a364d8fef5972a0",
+          "title": "Data Engineer",
+          "company": "Loopio",
+          "score": 49,
+          "arr": "remote"
+        },
+        {
+          "id": "c4e78b7fd9f915c3",
+          "title": "FinOps Data Engineer",
+          "company": "Supabase",
+          "score": 49,
+          "arr": "remote"
+        },
+        {
+          "id": "6c999f6b9f4ed86d",
+          "title": "Full Stack Software Engineer - Control Plane",
+          "company": "ClickHouse",
+          "score": 49,
+          "arr": "remote"
+        },
+        {
+          "id": "542d30f3d89d135c",
+          "title": "iOS Software Engineer",
+          "company": "Mozilla",
+          "score": 49,
+          "arr": "remote"
+        },
+        {
+          "id": "9d6e7e607f6541a1",
+          "title": "Software Engineer - AI Tooling",
+          "company": "Supabase",
+          "score": 49,
+          "arr": "remote"
+        },
+        {
+          "id": "a6de504e5a02edd7",
+          "title": "Software Engineer - AI Tooling Infrastructure",
+          "company": "Supabase",
+          "score": 49,
+          "arr": "remote"
+        }
+      ],
+      "site_top": [
+        {
+          "id": "a15b4a5c03234589",
+          "title": "Junior Software Engineer (Remote)",
+          "company": "PolicyMe",
+          "score": 92,
+          "arr": "remote",
+          "seniority": "junior"
+        },
+        {
+          "id": "1fc7ec2af1a763ed",
+          "title": "Canada- Jr Software Engineer (SRE)",
+          "company": "PointClickCare",
+          "score": 80,
+          "arr": "remote",
+          "seniority": "junior"
+        },
+        {
+          "id": "def026282381f397",
+          "title": "Software Engineer II - CIAM",
+          "company": "Affirm",
+          "score": 49,
+          "arr": "remote",
+          "seniority": null
+        },
+        {
+          "id": "91d08841c492f3a1",
+          "title": "Software Engineer II, Backend (Batch Developer Experience)",
+          "company": "Affirm",
+          "score": 49,
+          "arr": "remote",
+          "seniority": null
+        },
+        {
+          "id": "bb13b72d0caf59fa",
+          "title": "Software Engineer II, Backend (Decisions Orchestration)",
+          "company": "Affirm",
+          "score": 49,
+          "arr": "remote",
+          "seniority": null
+        }
+      ],
+      "mexico_leak": false,
+      "unspecified_under_remote_only": 0,
+      "api_site_id_overlap_top5": 2
+    },
+    "P10": {
+      "name": "Senior Solutions Architect",
+      "api_count": 4,
+      "site_count": 4,
+      "api_top": [
+        {
+          "id": "bdb610db29e75a76",
+          "title": "Forward Deployed Engineer",
+          "company": "Tailscale",
+          "score": 79,
+          "arr": "remote"
+        },
+        {
+          "id": "5793983b159516ea",
+          "title": "Forward Deployed Engineer, Infrastructure Specialist (North America)",
+          "company": "Cohere",
+          "score": 79,
+          "arr": "remote"
+        },
+        {
+          "id": "6a7ac27d65453d9c",
+          "title": "Forward Deployed Engineer, Infrastructure Specialist (Public Sector)",
+          "company": "Cohere",
+          "score": 79,
+          "arr": "remote"
+        },
+        {
+          "id": "466c1da93282a568",
+          "title": "Forward Deployed Engineer, Sovereign AI",
+          "company": "Cohere",
+          "score": 62,
+          "arr": "remote"
+        }
+      ],
+      "site_top": [
+        {
+          "id": "5793983b159516ea",
+          "title": "Forward Deployed Engineer, Infrastructure Specialist (North America)",
+          "company": "Cohere",
+          "score": 71,
+          "arr": "remote",
+          "seniority": null
+        },
+        {
+          "id": "6a7ac27d65453d9c",
+          "title": "Forward Deployed Engineer, Infrastructure Specialist (Public Sector)",
+          "company": "Cohere",
+          "score": 71,
+          "arr": "remote",
+          "seniority": null
+        },
+        {
+          "id": "bdb610db29e75a76",
+          "title": "Forward Deployed Engineer",
+          "company": "Tailscale",
+          "score": 71,
+          "arr": "remote",
+          "seniority": null
+        },
+        {
+          "id": "466c1da93282a568",
+          "title": "Forward Deployed Engineer, Sovereign AI",
+          "company": "Cohere",
+          "score": 54,
+          "arr": "remote",
+          "seniority": null
+        }
+      ],
+      "mexico_leak": false,
+      "unspecified_under_remote_only": 0,
+      "api_site_id_overlap_top5": 4
+    }
+  }
+}

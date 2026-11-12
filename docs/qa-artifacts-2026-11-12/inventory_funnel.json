@@ -1,0 +1,1767 @@
+{
+  "generated_at": "2026-11-12T21:19:27Z",
+  "db": "/Users/gianf/GitHired/data/jobseek.db",
+  "inventory": {
+    "raw_jobs": 21503,
+    "active_jobs": 21400,
+    "removed_jobs": 103,
+    "description_complete_active": 16760,
+    "pipeline_eligible_pre_dedupe": 541,
+    "public_export_eligible": 524,
+    "public_export_cap": 10000,
+    "failed_enrichment_proxy": 0,
+    "exposure_rate_pct": 2.44,
+    "active_to_public_pct": 2.45
+  },
+  "primary_exclusion_counts": {
+    "nontechnical_or_off_track": 13094,
+    "insufficient_description": 4640,
+    "outside_canada": 2442,
+    "eligible": 541,
+    "apply_url_not_job_specific": 351,
+    "canada_eligibility_unknown": 223,
+    "seniority_excluded": 108,
+    "closed_or_removed": 103,
+    "geographic_restrictions": 1
+  },
+  "primary_exclusion_categories": {
+    "Nontechnical role": 13094,
+    "Insufficient description": 4640,
+    "Outside Canada": 2442,
+    "Eligible": 541,
+    "Other filtering rules": 459,
+    "Canada eligibility unknown": 223,
+    "Closed or stale job": 103,
+    "Geographic restrictions": 1
+  },
+  "by_ats_provider": {
+    "greenhouse": {
+      "nontechnical_or_off_track": 9401,
+      "outside_canada": 1667,
+      "apply_url_not_job_specific": 351,
+      "eligible": 307,
+      "canada_eligibility_unknown": 143,
+      "closed_or_removed": 103,
+      "seniority_excluded": 82
+    },
+    "workday": {
+      "insufficient_description": 4551,
+      "eligible": 89,
+      "outside_canada": 36,
+      "seniority_excluded": 6,
+      "canada_eligibility_unknown": 1
+    },
+    "ashby": {
+      "nontechnical_or_off_track": 3146,
+      "outside_canada": 724,
+      "eligible": 102,
+      "canada_eligibility_unknown": 44,
+      "seniority_excluded": 18,
+      "geographic_restrictions": 1
+    },
+    "lever": {
+      "nontechnical_or_off_track": 461,
+      "eligible": 43,
+      "outside_canada": 15,
+      "canada_eligibility_unknown": 7,
+      "seniority_excluded": 2
+    },
+    "rss": {
+      "nontechnical_or_off_track": 86,
+      "canada_eligibility_unknown": 28
+    },
+    "workable": {
+      "insufficient_description": 64
+    },
+    "rippling": {
+      "insufficient_description": 25
+    }
+  },
+  "top_companies_by_exclusion": [
+    {
+      "company": "TD",
+      "excluded": 1677,
+      "eligible": 25,
+      "top_reasons": {
+        "insufficient_description": 1671,
+        "eligible": 25,
+        "outside_canada": 6
+      }
+    },
+    {
+      "company": "BMO",
+      "excluded": 969,
+      "eligible": 13,
+      "top_reasons": {
+        "insufficient_description": 966,
+        "eligible": 13,
+        "outside_canada": 3
+      }
+    },
+    {
+      "company": "Databricks",
+      "excluded": 923,
+      "eligible": 5,
+      "top_reasons": {
+        "nontechnical_or_off_track": 621,
+        "outside_canada": 279,
+        "seniority_excluded": 12,
+        "canada_eligibility_unknown": 11,
+        "eligible": 5
+      }
+    },
+    {
+      "company": "OpenAI",
+      "excluded": 817,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 567,
+        "outside_canada": 246,
+        "canada_eligibility_unknown": 4
+      }
+    },
+    {
+      "company": "RBC",
+      "excluded": 769,
+      "eligible": 17,
+      "top_reasons": {
+        "insufficient_description": 767,
+        "eligible": 17,
+        "seniority_excluded": 1,
+        "outside_canada": 1
+      }
+    },
+    {
+      "company": "Stripe",
+      "excluded": 737,
+      "eligible": 16,
+      "top_reasons": {
+        "nontechnical_or_off_track": 620,
+        "outside_canada": 74,
+        "seniority_excluded": 22,
+        "canada_eligibility_unknown": 21,
+        "eligible": 16
+      }
+    },
+    {
+      "company": "Anthropic",
+      "excluded": 681,
+      "eligible": 1,
+      "top_reasons": {
+        "nontechnical_or_off_track": 544,
+        "outside_canada": 137,
+        "eligible": 1
+      }
+    },
+    {
+      "company": "Manulife",
+      "excluded": 551,
+      "eligible": 17,
+      "top_reasons": {
+        "insufficient_description": 525,
+        "outside_canada": 25,
+        "eligible": 17,
+        "canada_eligibility_unknown": 1
+      }
+    },
+    {
+      "company": "Axon",
+      "excluded": 485,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 425,
+        "outside_canada": 54,
+        "closed_or_removed": 5,
+        "canada_eligibility_unknown": 1
+      }
+    },
+    {
+      "company": "Cloudflare",
+      "excluded": 463,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 386,
+        "canada_eligibility_unknown": 74,
+        "seniority_excluded": 3
+      }
+    },
+    {
+      "company": "Elastic",
+      "excluded": 424,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 242,
+        "apply_url_not_job_specific": 182
+      }
+    },
+    {
+      "company": "Datadog",
+      "excluded": 395,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 386,
+        "outside_canada": 6,
+        "seniority_excluded": 3
+      }
+    },
+    {
+      "company": "Zscaler",
+      "excluded": 393,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 347,
+        "outside_canada": 27,
+        "closed_or_removed": 16,
+        "canada_eligibility_unknown": 3
+      }
+    },
+    {
+      "company": "Snowflake",
+      "excluded": 367,
+      "eligible": 3,
+      "top_reasons": {
+        "nontechnical_or_off_track": 262,
+        "outside_canada": 101,
+        "eligible": 3,
+        "seniority_excluded": 3,
+        "geographic_restrictions": 1
+      }
+    },
+    {
+      "company": "Harvey",
+      "excluded": 366,
+      "eligible": 6,
+      "top_reasons": {
+        "nontechnical_or_off_track": 303,
+        "outside_canada": 61,
+        "eligible": 6,
+        "canada_eligibility_unknown": 2
+      }
+    },
+    {
+      "company": "Braze",
+      "excluded": 360,
+      "eligible": 11,
+      "top_reasons": {
+        "nontechnical_or_off_track": 309,
+        "outside_canada": 39,
+        "eligible": 11,
+        "closed_or_removed": 8,
+        "canada_eligibility_unknown": 3
+      }
+    },
+    {
+      "company": "MongoDB",
+      "excluded": 356,
+      "eligible": 4,
+      "top_reasons": {
+        "nontechnical_or_off_track": 293,
+        "outside_canada": 57,
+        "eligible": 4,
+        "seniority_excluded": 3,
+        "canada_eligibility_unknown": 3
+      }
+    },
+    {
+      "company": "Okta",
+      "excluded": 354,
+      "eligible": 33,
+      "top_reasons": {
+        "nontechnical_or_off_track": 254,
+        "outside_canada": 100,
+        "eligible": 33
+      }
+    },
+    {
+      "company": "Verkada",
+      "excluded": 345,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 270,
+        "outside_canada": 63,
+        "closed_or_removed": 7,
+        "seniority_excluded": 5
+      }
+    },
+    {
+      "company": "Toast",
+      "excluded": 344,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 285,
+        "apply_url_not_job_specific": 59
+      }
+    },
+    {
+      "company": "Samsara",
+      "excluded": 310,
+      "eligible": 9,
+      "top_reasons": {
+        "nontechnical_or_off_track": 275,
+        "outside_canada": 33,
+        "eligible": 9,
+        "canada_eligibility_unknown": 1,
+        "seniority_excluded": 1
+      }
+    },
+    {
+      "company": "Sun Life",
+      "excluded": 277,
+      "eligible": 7,
+      "top_reasons": {
+        "insufficient_description": 274,
+        "eligible": 7,
+        "seniority_excluded": 2,
+        "outside_canada": 1
+      }
+    },
+    {
+      "company": "Coinbase",
+      "excluded": 273,
+      "eligible": 4,
+      "top_reasons": {
+        "nontechnical_or_off_track": 196,
+        "outside_canada": 71,
+        "seniority_excluded": 6,
+        "eligible": 4
+      }
+    },
+    {
+      "company": "Brex",
+      "excluded": 259,
+      "eligible": 11,
+      "top_reasons": {
+        "nontechnical_or_off_track": 212,
+        "outside_canada": 47,
+        "eligible": 11
+      }
+    },
+    {
+      "company": "Arc'teryx",
+      "excluded": 247,
+      "eligible": 3,
+      "top_reasons": {
+        "nontechnical_or_off_track": 247,
+        "eligible": 3
+      }
+    },
+    {
+      "company": "Celonis",
+      "excluded": 245,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 219,
+        "closed_or_removed": 16,
+        "outside_canada": 10
+      }
+    },
+    {
+      "company": "GitLab",
+      "excluded": 225,
+      "eligible": 20,
+      "top_reasons": {
+        "nontechnical_or_off_track": 190,
+        "outside_canada": 34,
+        "eligible": 20,
+        "canada_eligibility_unknown": 1
+      }
+    },
+    {
+      "company": "Sierra",
+      "excluded": 214,
+      "eligible": 1,
+      "top_reasons": {
+        "nontechnical_or_off_track": 164,
+        "outside_canada": 44,
+        "seniority_excluded": 6,
+        "eligible": 1
+      }
+    },
+    {
+      "company": "Airbnb",
+      "excluded": 211,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 160,
+        "outside_canada": 51
+      }
+    },
+    {
+      "company": "Block",
+      "excluded": 202,
+      "eligible": 2,
+      "top_reasons": {
+        "nontechnical_or_off_track": 172,
+        "outside_canada": 30,
+        "eligible": 2
+      }
+    },
+    {
+      "company": "AlphaSense",
+      "excluded": 198,
+      "eligible": 4,
+      "top_reasons": {
+        "nontechnical_or_off_track": 182,
+        "outside_canada": 16,
+        "eligible": 4
+      }
+    },
+    {
+      "company": "ClickHouse",
+      "excluded": 197,
+      "eligible": 7,
+      "top_reasons": {
+        "nontechnical_or_off_track": 121,
+        "outside_canada": 63,
+        "canada_eligibility_unknown": 13,
+        "eligible": 7
+      }
+    },
+    {
+      "company": "Flexport",
+      "excluded": 189,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 174,
+        "outside_canada": 15
+      }
+    },
+    {
+      "company": "Affirm",
+      "excluded": 184,
+      "eligible": 50,
+      "top_reasons": {
+        "nontechnical_or_off_track": 98,
+        "outside_canada": 84,
+        "eligible": 50,
+        "seniority_excluded": 2
+      }
+    },
+    {
+      "company": "Pinterest",
+      "excluded": 178,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 116,
+        "apply_url_not_job_specific": 54,
+        "closed_or_removed": 8
+      }
+    },
+    {
+      "company": "Scale AI",
+      "excluded": 167,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 119,
+        "outside_canada": 36,
+        "seniority_excluded": 7,
+        "canada_eligibility_unknown": 5
+      }
+    },
+    {
+      "company": "Ramp",
+      "excluded": 166,
+      "eligible": 0,
+      "top_reasons": {
+        "nontechnical_or_off_track": 141,
+        "outside_canada": 21,
+        "seniority_excluded": 4
+      }
+    },
+    {
+      "company": "Reddit",
+      "excluded": 163,
+      "eligible": 4,
+      "top_reasons": {
+        "nontechnical_or_off_track": 82,
+        "outside_canada": 76,
+        "closed_or_removed": 5,
+        "eligible": 4
+      }
+    },
+    {
+      "company": "Lyft",
+      "excluded": 161,
+      "eligible": 23,
+      "top_reasons": {
+        "nontechnical_or_off_track": 130,
+        "eligible": 23,
+        "outside_canada": 16,
+        "seniority_excluded": 10,
+        "closed_or_removed": 5
+      }
+    },
+    {
+      "company": "Fivetran",
+      "excluded": 152,
+      "eligible": 5,
+      "top_reasons": {
+        "nontechnical_or_off_track": 114,
+        "outside_canada": 33,
+        "eligible": 5,
+        "canada_eligibility_unknown": 5
+      }
+    }
+  ],
+  "notes": [
+    "Primary reason uses select_public_jobs gate order (one bucket per job).",
+    "Public export additionally dedupes company+title and caps at 400.",
+    "PUBLIC_SEARCH salary policy is 'none' \u2014 undisclosed pay is not a public exclusion.",
+    "Raw inventory includes global ATS scrapes; searchable inventory is Canada-eligible tech with direct apply URLs."
+  ],
+  "exclusion_sample": [
+    {
+      "id": 13181,
+      "company": "OpenAI",
+      "title": "Applied AI Delivery Lead",
+      "location_raw": "San Francisco (Remote)",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 18183,
+      "company": "Toast",
+      "title": "Senior Software Engineer - Toast Connect",
+      "location_raw": "Dublin, Ireland",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 5443,
+      "company": "Cloudflare",
+      "title": "Senior Forward Deployed Engineer",
+      "location_raw": "Hybrid",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 15160,
+      "company": "TD",
+      "title": "Sr. Relationship Manager (US)",
+      "location_raw": "2 Locations",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 45,
+      "company": "Axon",
+      "title": "Content Marketing Manager",
+      "location_raw": "Boston, Massachusetts, United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 8524,
+      "company": "Elastic",
+      "title": "Principal Software Engineer - Search Algorithms - Elasticsearch",
+      "location_raw": "Ireland",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 1916,
+      "company": "Verkada",
+      "title": "Sales Enablement Lead",
+      "location_raw": "Tampa, FL United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 14621,
+      "company": "TD",
+      "title": "Associate \u2013 Commercial Card \u2013 Product Manager \u2013 Transaction Banking Product",
+      "location_raw": "Toronto, Ontario",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 10859,
+      "company": "GitLab",
+      "title": "Senior Backend Engineer, Database Excellence (Ruby)",
+      "location_raw": "Remote, United Kingdom",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 15381,
+      "company": "TD",
+      "title": "Customer Experience Associate",
+      "location_raw": "Dryden, Ontario",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 11252,
+      "company": "Integrate.ai",
+      "title": "Backend Engineer",
+      "location_raw": "Seattle, WA",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 8034,
+      "company": "Sun Life",
+      "title": "Senior Data Scientist",
+      "location_raw": "2 Locations",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 11349,
+      "company": "Instacart",
+      "title": "Senior Software Engineer II - Ads Quality",
+      "location_raw": "United States - Remote",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 9133,
+      "company": "Databricks",
+      "title": "Senior Engineering Manager for Workspace Platform",
+      "location_raw": "San Francisco, California",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 20805,
+      "company": "ElevenLabs",
+      "title": "Full-Stack Engineer (Backend Leaning) - Payments Engineering",
+      "location_raw": "Remote",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 14166,
+      "company": "TD",
+      "title": "Senior Relationship Manager",
+      "location_raw": "Vancouver, British Columbia",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 14065,
+      "company": "TD",
+      "title": "Relationship Banker II- Ocala",
+      "location_raw": "Ocala, Florida",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 9261,
+      "company": "Databricks",
+      "title": "Senior Software Engineer - Database Engine Internals",
+      "location_raw": "Belgrade, Serbia",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 17223,
+      "company": "Stripe",
+      "title": "Full Stack Engineer, Web Presence and Platform",
+      "location_raw": "N/A",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 3993,
+      "company": "ClickHouse",
+      "title": "Senior Software Engineer - Integrations - AI/ML",
+      "location_raw": "Germany (Remote)",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 1618,
+      "company": "Reddit",
+      "title": "Software Engineer, Ingestion Platform",
+      "location_raw": "Remote - United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 10757,
+      "company": "TELUS",
+      "title": "Psychologist, Psychotherapist, Social Worker",
+      "location_raw": "Montreal, Quebec, Canada",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 4753,
+      "company": "Manulife",
+      "title": "Global GEO Manager",
+      "location_raw": "Toronto, Ontario",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 20107,
+      "company": "Axon",
+      "title": "Unified Communications Integration Engineer, Public Safety",
+      "location_raw": "Seattle, Washington, United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 16946,
+      "company": "Shopify",
+      "title": "Senior Staff Applied ML Engineer - Consumer Agents (Americas)",
+      "location_raw": "NAMER (Remote)",
+      "ats": "rss",
+      "source": "rss",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 5407,
+      "company": "Cloudflare",
+      "title": "Senior Engineering Manager - Fintech",
+      "location_raw": "Hybrid",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 8408,
+      "company": "Elastic",
+      "title": "Principal Software Engineer I - CI/CD - Platform Engineering Productivity",
+      "location_raw": "Poland",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 7833,
+      "company": "Elastic",
+      "title": "Agentic AI Engineer",
+      "location_raw": "United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 17216,
+      "company": "Stripe",
+      "title": "Full Stack Engineer, Enterprise Engineering",
+      "location_raw": "N/A",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 9647,
+      "company": "Databricks",
+      "title": "Sr. IT Site Reliability Software Engineer",
+      "location_raw": "Costa Rica",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 2736,
+      "company": "Intact",
+      "title": "Expert.e en sinistre route, responsabilit\u00e9 civile (Rive Nord de Montr\u00e9al)",
+      "location_raw": "Montr\u00e9al, Quebec, CAN",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 12330,
+      "company": "Okta",
+      "title": "Principal Software Engineer - macOS",
+      "location_raw": "Bengaluru, India",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 7345,
+      "company": "Coinbase",
+      "title": "Customer Support Specialist ll",
+      "location_raw": "Manila, Philippines",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 19004,
+      "company": "RBC",
+      "title": "Investment Advisor",
+      "location_raw": "TORONTO, Ontario, Canada",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 476,
+      "company": "Braze",
+      "title": "Senior Software Engineer II, BrazeAI Operator",
+      "location_raw": "S\u00e3o Paulo",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 10243,
+      "company": "Fivetran",
+      "title": "Staff Software Engineer - Developer Productivity",
+      "location_raw": "Bengaluru, Karnataka, India, APAC",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 16475,
+      "company": "Snowflake",
+      "title": "Principal Software Engineer - Agentic Pipelines",
+      "location_raw": "US-WA-Bellevue",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 1683,
+      "company": "Tailscale",
+      "title": "Software Engineer, AI Enablement",
+      "location_raw": "Remote (United States)",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 823,
+      "company": "Cribl",
+      "title": "Regional Sales Manager, SoCal (Enterprise)",
+      "location_raw": "Remote - United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 1388,
+      "company": "Pinterest",
+      "title": "Lead SMB & Channel Sales Program Manager",
+      "location_raw": "Dublin, Ireland",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 10478,
+      "company": "TELUS",
+      "title": "Bilingual Overnight Mental Health Counsellor",
+      "location_raw": "7 Locations",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 9411,
+      "company": "Elastic",
+      "title": "Software Engineering Manager - IAM Team - Control Plane - Platform",
+      "location_raw": "Portugal",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 5678,
+      "company": "Manulife",
+      "title": "Asia Chief Technology Officer and Global Cloud",
+      "location_raw": "2 Locations",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 595,
+      "company": "Celonis",
+      "title": "Associate Account Executive (Top Talent Sales Program - Lunar) DACH",
+      "location_raw": "Munich, Germany",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 4099,
+      "company": "Manulife",
+      "title": "Senior Manager, Business & Process Transformation",
+      "location_raw": "Singapore",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 711,
+      "company": "Celonis",
+      "title": "Senior Digital Transformation & Process Optimisation Consultant - Manufacturing/Production",
+      "location_raw": "Munich, Germany",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 12558,
+      "company": "Okta",
+      "title": "Senior Software Engineer - Fullstack",
+      "location_raw": "Bengaluru, India",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 11182,
+      "company": "Harvey",
+      "title": "Senior Infrastructure Engineer",
+      "location_raw": "Remote",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 7402,
+      "company": "Coinbase",
+      "title": "Data Engineer Intern",
+      "location_raw": "Hybrid - San Francisco, CA",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "seniority_excluded",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 843,
+      "company": "Cribl",
+      "title": "Software Engineer, Core Platform",
+      "location_raw": "Remote - United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 4689,
+      "company": "ClickHouse",
+      "title": "Senior Backend Engineer - ClickPipes Platform",
+      "location_raw": "United States (Remote)",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 11519,
+      "company": "MongoDB",
+      "title": "2027 - Software Engineer Intern, Dublin - 6 Month Internship",
+      "location_raw": "Dublin",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "seniority_excluded",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 1433,
+      "company": "Pinterest",
+      "title": "Software Engineer Intern 2027 (USA)",
+      "location_raw": "San Francisco, CA, US; Remote, US",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 3248,
+      "company": "Airbnb",
+      "title": "Staff Software Engineer - Hosting Services",
+      "location_raw": "London, United Kingdom",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 9108,
+      "company": "Figma",
+      "title": "Software Engineer Intern (London, United Kingdom) (Summer 2027)",
+      "location_raw": "London, England",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "seniority_excluded",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 1537,
+      "company": "Reddit",
+      "title": "Frontend Engineer, Ads Campaign Manager",
+      "location_raw": "Remote - United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 2699,
+      "company": "AlphaSense",
+      "title": "Content Analyst",
+      "location_raw": "Delhi",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 16974,
+      "company": "Shopify",
+      "title": "Staff Applied Machine Learning Engineer, SimGym (Americas)",
+      "location_raw": "NAMER (Remote)",
+      "ats": "rss",
+      "source": "rss",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 8594,
+      "company": "Elastic",
+      "title": "Principal Software Engineer - Vector Search - Elasticsearch",
+      "location_raw": "Norway",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 6318,
+      "company": "Cloudflare",
+      "title": "Vulnerability Defense Software Engineer, Cloudforce One",
+      "location_raw": "Hybrid",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 16701,
+      "company": "Snowflake",
+      "title": "Lead Forward Deployed Engineer - Migration",
+      "location_raw": "NL-Netherlands-Remote",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "geographic_restrictions",
+      "category": "Geographic restrictions",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 3368,
+      "company": "Asana",
+      "title": "Digital & Scaled Customer Success Program Manager",
+      "location_raw": "Chicago",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 4007,
+      "company": "ClickHouse",
+      "title": "Director of Product, ClickHouse Cloud",
+      "location_raw": "United States (Remote)",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 9783,
+      "company": "Databricks",
+      "title": "Staff Forward Deployed Engineer",
+      "location_raw": "Remote - India",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 19720,
+      "company": "Braze",
+      "title": "Account Executive, Enterprise",
+      "location_raw": "Chicago",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 784,
+      "company": "Coursera",
+      "title": "Senior SEO Manager",
+      "location_raw": "United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 20068,
+      "company": "Braze",
+      "title": "Web Marketing Program Coordinator",
+      "location_raw": "Chicago",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 19607,
+      "company": "ZoomInfo",
+      "title": "Principal Data Engineer",
+      "location_raw": "Remote-US",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 6024,
+      "company": "BMO",
+      "title": "Associate Banker",
+      "location_raw": "Waunakee, WI, USA",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 8416,
+      "company": "Elastic",
+      "title": "Principal Software Engineer I - CI/CD - Platform Engineering Productivity",
+      "location_raw": "Ireland",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 8487,
+      "company": "Databricks",
+      "title": "GTM Talent Sourcer (Contract)",
+      "location_raw": "Singapore",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 3336,
+      "company": "Asana",
+      "title": "Corporate Account Executive",
+      "location_raw": "Chicago",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 501,
+      "company": "Braze",
+      "title": "Technical Account Manager",
+      "location_raw": "Chicago",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 1454,
+      "company": "Pinterest",
+      "title": "Sr. Industry Manager, Food",
+      "location_raw": "New York, NY, US; Chicago, IL, US",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 16234,
+      "company": "Sierra",
+      "title": "Software Engineer, Agent - Healthcare",
+      "location_raw": "New York, NY",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 1367,
+      "company": "Pinterest",
+      "title": "Director, Machine Learning Engineering, Ads Quality",
+      "location_raw": "Palo Alto, CA, US; San Francisco, CA, US",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 12769,
+      "company": "Okta",
+      "title": "Staff Software Engineer",
+      "location_raw": "Bengaluru, India",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 17580,
+      "company": "Stripe",
+      "title": "Software Engineer, New Grad",
+      "location_raw": "Toronto",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "seniority_excluded",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 17144,
+      "company": "Stripe",
+      "title": "Design Recruiter",
+      "location_raw": "Chicago, Atlanta, US-Remote, Toro",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 16920,
+      "company": "Shopify",
+      "title": "Senior Infrastructure Engineer - Database Platform (Americas)",
+      "location_raw": "NAMER (Remote)",
+      "ats": "rss",
+      "source": "rss",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 1739,
+      "company": "Tanium",
+      "title": "Senior Solution Engineer- SLED Southeast",
+      "location_raw": "Remote, US",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 4888,
+      "company": "Cloudflare",
+      "title": "Principal Software Engineer, Enterprise Integrations",
+      "location_raw": "Hybrid",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 20712,
+      "company": "Blockstream",
+      "title": "Forward Deployed Engineer",
+      "location_raw": "Menlo Park (Hybrid)",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 531,
+      "company": "Carta",
+      "title": "Inbound KYC - Analyst",
+      "location_raw": "London",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 546,
+      "company": "Carta",
+      "title": "Senior Accountant",
+      "location_raw": "London, United Kingdom",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 2280,
+      "company": "Zscaler",
+      "title": "Sr. Software Development Engineer",
+      "location_raw": "Bangalore, IND; Mohali, IND",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 8564,
+      "company": "Elastic",
+      "title": "Principal Software Engineer - Search Infra - Elasticsearch",
+      "location_raw": "Norway",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "apply_url_not_job_specific",
+      "category": "Other filtering rules",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 13052,
+      "company": "OpenAI",
+      "title": "Researcher, Alignment Interpretability",
+      "location_raw": "San Francisco",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 20034,
+      "company": "Braze",
+      "title": "Solutions Consultant",
+      "location_raw": "Chicago",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 986,
+      "company": "Grafana Labs",
+      "title": "Sales Development Representative | Germany | Remote",
+      "location_raw": "Germany (Remote)",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 5257,
+      "company": "Brex",
+      "title": "Staff Software Engineer, Banking",
+      "location_raw": "San Francisco, California, United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 3922,
+      "company": "Arc'teryx",
+      "title": "Warehouse Automation Processes Co-Op",
+      "location_raw": "New Westminster, British Columbia, Canada",
+      "ats": "lever",
+      "source": "lever",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 17767,
+      "company": "Temporal",
+      "title": "Head of Corporate Development",
+      "location_raw": "San Francisco, California (Remote)",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 10523,
+      "company": "TELUS",
+      "title": "Consultant DB pension administration",
+      "location_raw": "4 Locations",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 11382,
+      "company": "Jobber",
+      "title": "Manager, Software Engineering",
+      "location_raw": "Remote",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 40,
+      "company": "Axon",
+      "title": "Business Systems Architect \u2013 Finance (D365 FO)",
+      "location_raw": "Scottsdale, Arizona, United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 12111,
+      "company": "OpenAI",
+      "title": "Software Engineer, Frontier Systems - Power Management",
+      "location_raw": "San Francisco",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "outside_canada",
+      "category": "Outside Canada",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 793,
+      "company": "Cribl",
+      "title": "Analytics Business Partner",
+      "location_raw": "Remote - United States",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 12392,
+      "company": "OpenAI",
+      "title": "Account Associate - Singapore (ANZ Market)",
+      "location_raw": "Singapore (Remote)",
+      "ats": "ashby",
+      "source": "ashby",
+      "reason": "nontechnical_or_off_track",
+      "category": "Nontechnical role",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 1880,
+      "company": "Verkada",
+      "title": "Mid-Enterprise Corporate Account Executive (Quebec City)",
+      "location_raw": "Quebec, Canada",
+      "ats": "greenhouse",
+      "source": "greenhouse",
+      "reason": "closed_or_removed",
+      "category": "Closed or stale job",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 19380,
+      "company": "Magnet Forensics",
+      "title": "Senior AI/ML Engineer (Magnet-Griffeye)",
+      "location_raw": "Gothenburg, SE",
+      "ats": "lever",
+      "source": "lever",
+      "reason": "canada_eligibility_unknown",
+      "category": "Canada eligibility unknown",
+      "description_complete": true,
+      "enrichment_status": "complete"
+    },
+    {
+      "id": 15087,
+      "company": "TD",
+      "title": "Associate Banker I (30) Sharon Amity - Bilingual Preferred",
+      "location_raw": "Charlotte, North Carolina",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    },
+    {
+      "id": 8366,
+      "company": "Sun Life",
+      "title": "Trainer",
+      "location_raw": "Makati City, National Capital Region (Manila)",
+      "ats": "workday",
+      "source": "workday",
+      "reason": "insufficient_description",
+      "category": "Insufficient description",
+      "description_complete": false,
+      "enrichment_status": "pending"
+    }
+  ],
+  "public_track_breakdown": {
+    "software_engineering": 417,
+    "platform_engineering": 23,
+    "data_engineering": 20,
+    "ml_engineering": 20,
+    "devops_sre": 19,
+    "ai_engineering": 12,
+    "forward_deployed": 5,
+    "analytics_engineering": 5,
+    "cloud_engineering": 3
+  },
+  "public_arrangement_breakdown": {
+    "remote": 262,
+    "unspecified": 142,
+    "hybrid": 93,
+    "onsite": 27
+  }
+}

@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-12T12:31:43Z",
+  "generated_at": "2026-11-12T21:24:30Z",
   "source": "githired-public-shortlist",
   "limit": 10000,
-  "count": 525,
+  "count": 524,
   "usd_to_cad": 1.35,
   "repo_url": "https://github.com/mikegianfelice/GitHired",
   "disclaimer": "Public Canada-eligible engineering listings from employer ATS boards. Not personalized ranks. Salaries shown only when employers advertise them. Province-restricted remote is labeled as such — never implied Canada-wide. Client-side Find My Matches uses deterministic relevance scoring — not an LLM.",
@@ -12727,31 +12727,6 @@
         "LLM"
       ],
       "source": "greenhouse"
-    },
-    {
-      "id": "540ecf64ae26b6a1",
-      "title": "Forward Deployed Engineer - Software Engineer - Mexico",
-      "company": "ElevenLabs",
-      "location": "Mexico (Remote)",
-      "province": null,
-      "work_arrangement": "remote",
-      "remote_scope": "unspecified",
-      "seniority": null,
-      "track": "forward_deployed",
-      "salary_min": null,
-      "salary_max": null,
-      "salary_currency": null,
-      "salary_available": false,
-      "salary_max_cad": null,
-      "apply_url": "https://jobs.ashbyhq.com/ElevenLabs/8a573932-b1fb-4df7-9023-e13a6cecbbbb/application",
-      "verified": true,
-      "first_seen": "2026-11-12",
-      "last_verified": "2026-11-12",
-      "discovered_today": true,
-      "technologies": [
-        "Python"
-      ],
-      "source": "ashby"
     },
     {
       "id": "c362238ba5a63060",
