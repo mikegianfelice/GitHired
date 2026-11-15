@@ -71,6 +71,9 @@ config/companies.local.yaml
 !assets/brand/**/*.png
 !site/assets/brand/**/*.png
 !site/assets/brand/**/*.ico
+!site/assets/brand/**/*.webp
+!assets/brand/**/*.webp
+!assets/banner.webp
 
 # OS files
 .DS_Store

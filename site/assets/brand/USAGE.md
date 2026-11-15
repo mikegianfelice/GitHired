@@ -1,18 +1,21 @@
 # GitHired site brand assets
 
-Source kit: `assets/githired_brand_assets.zip` (raster masters + `tokens.css`).
+Source kit: `assets/githired_brand_assets.zip` (raster masters).
 
-## Site usage
+## Production website files
 
 | Asset | Role |
 | --- | --- |
-| `mark.svg` | Standalone G — favicon companion, compact/mobile nav, app-icon shape |
-| `mark-solid.svg` | Flat single-color G for tiny sizes |
-| `lockup-light.svg` / `lockup-dark.svg` | Mark + wordmark vectors (exports / embeds) |
-| `wordmark-light.svg` / `wordmark-dark.svg` | Lettering-only vectors |
-| `icon-*.png`, `favicon.ico`, `apple-touch-icon.png` | Browser / PWA icons from the kit |
-| `tokens.css` | Upstream light-first tokens (also mirrored in `site/styles.css`) |
+| `githired-logo-light.webp` (+ `.png`) | Combined lockup for light backgrounds (desktop nav) |
+| `githired-logo-dark.webp` (+ `.png`) | Combined lockup for dark backgrounds |
+| `githired-logo-*-nav.webp` | Nav-sized lockups (~80px tall for 2×) |
+| `githired-mark-{128,256,512,1024}.webp` | Standalone G for compact nav / srcset |
+| `favicon.ico`, `favicon-32x32.png` | Browser favicon |
+| `apple-touch-icon.png` | 180×180 |
+| `android-chrome-192x192.png` / `512x512.png` | PWA / Android icons |
 
-The live header composes `mark.svg` + a CSS wordmark (`Git` near-black, `Hired` deep green) so web fonts apply. Mobile hides the wordmark and keeps the G. The footer uses the wordmark alone.
+Kit originals (`mark-transparent.png`, `icon-*.png`, etc.) are retained as masters.
 
-Light SVG wordmarks use near-black “Git” (not white) so lettering stays readable on white.
+## Native resolution limit
+
+The G mark in the kit is only ~166–174px of content (even `icon-512.png` is the same art padded). WebPs larger than that are LANCZOS upscales for convenience, not new detail. Nav at 36px CSS is sharp on 2× with the 128/256 marks. A higher-resolution original or professional vector is still recommended for large hero/marketing use.

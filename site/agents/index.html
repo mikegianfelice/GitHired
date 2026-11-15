@@ -10,12 +10,13 @@
   <meta property="og:url" content="https://githired.ca/agents" />
   <meta property="og:description" content="Connect Cursor, Claude, or ChatGPT to Canada-eligible tech jobs via MCP." />
   <link rel="icon" href="../assets/brand/favicon.ico" sizes="any" />
-  <link rel="icon" type="image/png" sizes="32x32" href="../assets/brand/icon-32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="../assets/brand/icon-16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/brand/favicon-32x32.png" />
   <link rel="apple-touch-icon" href="../assets/brand/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/android-chrome-192x192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="../assets/brand/android-chrome-512x512.png" />
   <meta name="theme-color" content="#FFFFFF" />
-  <meta property="og:image" content="https://githired.ca/assets/brand/icon-512.png" />
-  <link rel="stylesheet" href="../styles.css?v=20261115brand" />
+  <meta property="og:image" content="https://githired.ca/assets/brand/android-chrome-512x512.png" />
+  <link rel="stylesheet" href="../styles.css?v=20261115logo" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script type="application/ld+json">
   {
@@ -40,8 +41,14 @@
   <header class="site-header">
     <div class="wrap header-inner">
       <a class="brand" href="../" aria-label="GitHired home">
-        <img class="brand-mark-img" src="../assets/brand/mark.svg" width="32" height="32" alt="" decoding="async" />
-        <span class="brand-wordmark" aria-hidden="true"><span class="wm-git">Git</span><span class="wm-hired">Hired</span></span>
+        <picture class="brand-lockup">
+          <source type="image/webp" srcset="../assets/brand/githired-logo-light-nav.webp 1x, ../assets/brand/githired-logo-light.webp 2x" />
+          <img src="../assets/brand/githired-logo-light.png" width="142" height="40" alt="GitHired" decoding="async" />
+        </picture>
+        <picture class="brand-mark">
+          <source type="image/webp" srcset="../assets/brand/githired-mark-128.webp 1x, ../assets/brand/githired-mark-256.webp 2x" />
+          <img src="../assets/brand/githired-mark-128.png" width="36" height="36" alt="GitHired" decoding="async" />
+        </picture>
       </a>
       <nav class="header-nav desktop-nav" aria-label="Primary">
         <a class="nav-link" href="../">Browse Jobs</a>
@@ -254,7 +261,7 @@
 
   <footer class="site-footer">
     <div class="wrap footer-inner">
-            <div class="footer-brand">
+                  <div class="footer-brand">
         <span class="footer-wordmark" aria-label="GitHired"><span class="wm-git">Git</span><span class="wm-hired">Hired</span></span>
       </div>
       <p class="footer-note">Open source · Free · <a href="https://github.com/mikegianfelice/GitHired">GitHub</a> · <a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a></p>

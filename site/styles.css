@@ -125,19 +125,29 @@ button {
   min-width: 0;
 }
 
-.brand-mark-img {
+/* Desktop: combined lockup. Mobile: standalone G. */
+.brand-lockup {
   display: block;
-  width: 2rem;
-  height: 2rem;
+  line-height: 0;
+}
+
+.brand-lockup img {
+  display: block;
+  height: 2.25rem; /* ~36px */
+  width: auto;
+  max-width: min(11.5rem, 46vw);
+}
+
+.brand-mark {
+  display: none;
+  line-height: 0;
   flex-shrink: 0;
 }
 
-.brand-wordmark {
-  font-weight: 700;
-  font-size: 1.15rem;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  white-space: nowrap;
+.brand-mark img {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
 }
 
 .wm-git {
@@ -175,6 +185,12 @@ button {
   font-size: 1.05rem;
   letter-spacing: -0.03em;
   line-height: 1;
+}
+
+.footer-logo {
+  display: block;
+  height: 1.75rem;
+  width: auto;
 }
 
 .header-nav {
@@ -1239,8 +1255,12 @@ fieldset.stack {
   }
 
   /* Compact nav: standalone G mark only */
-  .brand-wordmark {
+  .brand-lockup {
     display: none;
+  }
+
+  .brand-mark {
+    display: block;
   }
 
   .filter-toolbar {

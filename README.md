@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="GitHired — Jobs Without the Noise" width="900" />
+  <img src="assets/banner.png" alt="GitHired — Jobs Without the Noise" width="900" />
 </p>
 
 <h1 align="center">GitHired</h1>
