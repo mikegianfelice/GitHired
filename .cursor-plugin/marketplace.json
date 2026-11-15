@@ -1,0 +1,22 @@
+{
+  "name": "githired-marketplace",
+  "owner": {
+    "name": "GitHired"
+  },
+  "metadata": {
+    "description": "GitHired agent integrations for Canadian tech job search"
+  },
+  "plugins": [
+    {
+      "name": "githired",
+      "source": "plugins/githired",
+      "description": "Canada-eligible technology jobs via free remote MCP",
+      "version": "1.0.1",
+      "homepage": "https://githired.ca/agents",
+      "repository": "https://github.com/mikegianfelice/GitHired",
+      "license": "MIT",
+      "logo": "plugins/githired/assets/logo.svg",
+      "keywords": ["jobs", "canada", "mcp"]
+    }
+  ]
+}

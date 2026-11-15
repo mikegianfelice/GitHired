@@ -34,6 +34,14 @@ test("MCP exposes documented tools", () => {
   }
 });
 
+test("MCP tools declare directory-required annotations", () => {
+  assert.match(mcpSrc, /readOnlyHint:\s*true/);
+  assert.match(mcpSrc, /destructiveHint:\s*false/);
+  assert.match(mcpSrc, /openWorldHint:\s*true/);
+  assert.match(mcpSrc, /idempotentHint:\s*true/);
+  assert.match(mcpSrc, /annotations:\s*READ_ONLY_OPEN_WORLD/);
+});
+
 test("MCP notifications return 202 instead of Internal error", () => {
   // Cursor (and other Streamable HTTP clients) send notifications/initialized with no id.
   assert.match(mcpSrc, /acceptedResponse/);

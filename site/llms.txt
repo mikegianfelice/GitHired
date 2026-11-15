@@ -13,6 +13,8 @@ MCP: https://api.githired.ca/mcp
 Developer docs: https://githired.ca/developers
 Agent docs: https://githired.ca/agents
 OpenAPI: https://githired.ca/openapi.json
+Privacy: https://githired.ca/privacy
+Terms: https://githired.ca/terms
 
 ## How AI agents should connect
 
@@ -57,4 +59,5 @@ Read-only. No authentication required for normal use. Rate limited (~120 req/min
 - UNCERTAIN geography is excluded from the public confirmed set (precision over recall).
 - Match scores are deterministic relevance, not hiring decisions or LLM judgments.
 - Publishing an MCP server does not guarantee automatic discovery by ChatGPT/Claude.
+- Directory packages live in-repo under `plugins/` (Cursor + OpenAI); registry metadata is `server.json` / `docs/mcp-registry-prep.md`.
 - Do not auto-apply to jobs via GitHired.

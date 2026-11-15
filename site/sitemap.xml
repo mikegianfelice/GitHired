@@ -25,4 +25,14 @@
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://githired.ca/privacy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://githired.ca/terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
 </urlset>

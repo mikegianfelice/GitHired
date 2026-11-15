@@ -2,6 +2,8 @@ User-agent: *
 Allow: /
 Allow: /developers
 Allow: /agents
+Allow: /privacy
+Allow: /terms
 Allow: /llms.txt
 Allow: /openapi.json
 Allow: /api-dataset.json

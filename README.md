@@ -46,7 +46,7 @@
 
 One-click for **Cursor** (official deeplink) and copyable setup for Claude / ChatGPT:
 
-**https://githired.ca/agents**
+**https://githired.ca/agents** · Registry / directory packaging: [`docs/mcp-distribution-report.md`](docs/mcp-distribution-report.md)
 
 ```json
 {

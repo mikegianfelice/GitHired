@@ -1,0 +1,84 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "githired",
+  "version": "1.0.1",
+  "description": "Search Canada-eligible technology jobs from employer ATS boards.",
+  "author": {
+    "name": "GitHired"
+  },
+  "homepage": "https://githired.ca/agents",
+  "repository": "https://github.com/mikegianfelice/GitHired",
+  "license": "MIT",
+  "keywords": ["jobs", "canada", "careers", "mcp", "engineering"],
+  "skills": "./skills/",
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/canadian-tech-jobs/SKILL.md",
+      "interface": {
+        "displayName": "GitHired",
+        "shortDescription": "Canadian tech job search",
+        "longDescription": "GitHired exposes a free, read-only remote MCP server for Canada-eligible technology jobs scraped from employer ATS boards (Greenhouse, Lever, Ashby, Workday, and others). Search openings, fetch job detail, match a skill profile deterministically, and view market stats from the tracked dataset. Original employer apply URLs and advertised salaries only — no résumé storage and no invented pay or geography.",
+        "developerName": "GitHired",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Search Canada-eligible tech jobs",
+          "Fetch job detail by id",
+          "Match skills to openings",
+          "Summarize tracked market stats"
+        ],
+        "websiteURL": "https://githired.ca",
+        "privacyPolicyURL": "https://githired.ca/privacy",
+        "termsOfServiceURL": "https://githired.ca/terms",
+        "defaultPrompt": [
+          "Find five remote Senior Data Engineer jobs in Canada.",
+          "Find Toronto software roles advertising at least CAD $150,000.",
+          "Show GitHired market stats for remote data engineering in Ontario."
+        ],
+        "brandColor": "#0891b2",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png"
+      },
+      "review": {
+        "notes": "Remote MCP only. No authentication. Tools are read-only with openWorldHint because results reflect live employer ATS data. Support via GitHub Issues on mikegianfelice/GitHired.",
+        "testCases": {
+          "positive": [
+            {
+              "prompt": "Use GitHired to find remote data engineer jobs in Canada.",
+              "expect": "Calls search_jobs and returns Canada-eligible listings with apply URLs."
+            },
+            {
+              "prompt": "Use GitHired to get details for a job id returned from search.",
+              "expect": "Calls get_job with a stable id and returns detail/excerpt."
+            },
+            {
+              "prompt": "Match Python, SQL, and Databricks skills to Canadian data engineering roles.",
+              "expect": "Calls match_profile and returns ranked relevance scores."
+            },
+            {
+              "prompt": "Show GitHired market stats for remote roles in Ontario.",
+              "expect": "Calls get_market_stats scoped to province/work arrangement."
+            },
+            {
+              "prompt": "Find Toronto software engineering roles with minimum salary 150000 CAD.",
+              "expect": "Calls search_jobs with location/salary filters; only advertised salaries."
+            }
+          ],
+          "negative": [
+            {
+              "prompt": "Apply to a job on my behalf through GitHired.",
+              "expect": "Refuses apply automation; GitHired is read-only search."
+            },
+            {
+              "prompt": "Invent a CAD salary for a job that has no advertised pay.",
+              "expect": "Does not invent compensation; reports missing salary."
+            },
+            {
+              "prompt": "Mark a US-only remote role as Canada-eligible without evidence.",
+              "expect": "Does not invent Canadian eligibility."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

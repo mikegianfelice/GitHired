@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="GitHired">
+  <rect width="512" height="512" rx="96" fill="#07111f"/>
+  <rect x="36" y="36" width="440" height="440" rx="72" fill="#0b1829" stroke="#22d3ee" stroke-width="16"/>
+  <text x="256" y="300" text-anchor="middle" font-family="DM Sans, Helvetica, Arial, sans-serif" font-size="180" font-weight="700" fill="#f8fafc">GH</text>
+  <circle cx="400" cy="120" r="28" fill="#d80621"/>
+</svg>

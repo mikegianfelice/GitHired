@@ -6,13 +6,23 @@ import type { Env, MatchProfileInput, SearchFilters } from "./types";
 import { acceptedResponse, json, optionsResponse } from "./rest";
 
 const PROTOCOL_VERSION = "2024-11-05";
-const SERVER_INFO = { name: "githired", version: "1.0.0" };
+const SERVER_INFO = { name: "githired", version: "1.0.1" };
+
+/** Shared MCP tool hints required by directory reviewers (OpenAI ChatGPT/Codex). */
+const READ_ONLY_OPEN_WORLD = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  // openWorldHint: results reflect live employer ATS data outside the model.
+  openWorldHint: true,
+} as const;
 
 const TOOLS = [
   {
     name: "search_jobs",
     description:
       "Search current Canada-eligible technology jobs tracked by GitHired from employer ATS boards. Returns compact results with original apply URLs. Does not invent jobs or salaries.",
+    annotations: READ_ONLY_OPEN_WORLD,
     inputSchema: {
       type: "object",
       properties: {
@@ -34,6 +44,7 @@ const TOOLS = [
   {
     name: "get_job",
     description: "Retrieve detailed information for a GitHired job by stable id.",
+    annotations: READ_ONLY_OPEN_WORLD,
     inputSchema: {
       type: "object",
       properties: {
@@ -46,6 +57,7 @@ const TOOLS = [
     name: "match_profile",
     description:
       "Deterministically match skills/experience preferences to GitHired jobs. Uses role-family title matching (not exact titles). work_arrangements is a hard filter when set; remote_preference=true alone means remote-only. salary_mode defaults to flexible (advertised max may meet floor). Scores are relevance, not hire probability. Does not store résumés or call an LLM.",
+    annotations: READ_ONLY_OPEN_WORLD,
     inputSchema: {
       type: "object",
       properties: {
@@ -81,6 +93,7 @@ const TOOLS = [
     name: "get_market_stats",
     description:
       "Aggregate statistics from GitHired's tracked Canadian tech employer dataset — not a full labour-market census.",
+    annotations: READ_ONLY_OPEN_WORLD,
     inputSchema: {
       type: "object",
       properties: {

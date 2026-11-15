@@ -1,0 +1,13 @@
+{
+  "name": "githired",
+  "version": "1.0.1",
+  "description": "Canada-eligible technology jobs via GitHired's free remote MCP server. No API key.",
+  "author": {
+    "name": "GitHired"
+  },
+  "homepage": "https://githired.ca/agents",
+  "repository": "https://github.com/mikegianfelice/GitHired",
+  "license": "MIT",
+  "keywords": ["jobs", "canada", "mcp", "careers", "engineering"],
+  "logo": "assets/logo.svg"
+}

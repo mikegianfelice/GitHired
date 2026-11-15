@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy — GitHired</title>
+  <meta name="description" content="GitHired privacy practices for the public website, REST API, and remote MCP server." />
+  <link rel="canonical" href="https://githired.ca/privacy" />
+  <link rel="stylesheet" href="../styles.css?v=20261109e" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="../" aria-label="GitHired home">
+        <span class="brand-mark" aria-hidden="true">GH</span>
+        <span class="brand-text">
+          <span class="brand-name">GitHired</span>
+          <span class="brand-tag">Jobs Without the Noise</span>
+        </span>
+      </a>
+      <nav class="header-nav desktop-nav" aria-label="Primary">
+        <a class="nav-link" href="../">Browse Jobs</a>
+        <a class="nav-link" href="../developers/">Developer API</a>
+        <a class="nav-link" href="../agents/">Connect an AI Agent</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap docs-main">
+    <p class="eyebrow">Legal</p>
+    <h1>Privacy</h1>
+    <p class="lede lede-compact">Last updated: 2026-11-15. This page describes how the public GitHired website, REST API, and remote MCP server handle information. It is factual product documentation, not legal advice.</p>
+
+    <section>
+      <h2>Summary</h2>
+      <ul>
+        <li>No account is required to browse jobs, call the public API, or use the MCP server.</li>
+        <li>The browser-side “Find my matches” flow keeps résumé text in your browser; GitHired does not upload or store résumés for that tool.</li>
+        <li>MCP <code>match_profile</code> requests are processed ephemerally and are not used to build a résumé archive.</li>
+        <li>Job data comes from public employer ATS boards. Apply links go to the employer.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>What we collect</h2>
+      <ul>
+        <li><strong>Request logs / rate limits:</strong> standard HTTP metadata (such as IP address, user agent, path, and timestamps) may be processed by our hosting providers to operate the service and enforce per-IP rate limits.</li>
+        <li><strong>Optional analytics:</strong> if enabled on the marketing site by the host, aggregate traffic metrics may be collected. Disable browser tracking as you prefer.</li>
+        <li><strong>Public job dataset:</strong> listings and employer metadata scraped from public career/ATS pages.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>What we do not do</h2>
+      <ul>
+        <li>We do not sell personal data.</li>
+        <li>We do not auto-apply to jobs on your behalf.</li>
+        <li>We do not invent salaries or Canadian work eligibility.</li>
+        <li>We do not require OAuth or API keys for normal public use.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Third parties</h2>
+      <p>Hosting, DNS, and CDN providers process requests necessary to serve https://githired.ca and https://api.githired.ca. Employers receive applications only if you apply on their sites.</p>
+    </section>
+
+    <section>
+      <h2>Contact</h2>
+      <p>Questions or privacy requests: open an issue on the public repository <a href="https://github.com/mikegianfelice/GitHired/issues">github.com/mikegianfelice/GitHired/issues</a>.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p class="footer-note">
+        <a href="../">Home</a> ·
+        <a href="./">Privacy</a> ·
+        <a href="../terms/">Terms</a> ·
+        <a href="https://github.com/mikegianfelice/GitHired">GitHub</a>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
