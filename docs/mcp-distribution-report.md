@@ -69,7 +69,7 @@ No directory listing was published by this automation.
 - **Category:** Developer Tools
 - **MCP URL:** `https://api.githired.ca/mcp`
 - **Privacy / Terms / Support:** `/privacy`, `/terms`, GitHub Issues
-- **Icons:** `plugins/openai-githired/assets/{logo,icon}.png`
+- **Icons:** `plugins/openai-githired/assets/{logo,icon}.svg`
 
 ### Cursor Marketplace
 

@@ -11,8 +11,8 @@ openai-githired/
 ├── plugin.json
 ├── mcp.json
 ├── assets/
-│   ├── logo.png
-│   └── icon.png
+│   ├── logo.svg
+│   └── icon.svg
 └── skills/canadian-tech-jobs/SKILL.md
 ```
 

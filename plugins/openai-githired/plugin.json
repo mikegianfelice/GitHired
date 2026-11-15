@@ -35,8 +35,8 @@
           "Show GitHired market stats for remote data engineering in Ontario."
         ],
         "brandColor": "#0891b2",
-        "composerIcon": "./assets/icon.png",
-        "logo": "./assets/logo.png"
+        "composerIcon": "./assets/icon.svg",
+        "logo": "./assets/logo.svg"
       },
       "review": {
         "notes": "Remote MCP only. No authentication. Tools are read-only with openWorldHint because results reflect live employer ATS data. Support via GitHub Issues on mikegianfelice/GitHired.",
