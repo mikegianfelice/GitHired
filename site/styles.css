@@ -125,29 +125,20 @@ button {
   min-width: 0;
 }
 
-/* Desktop: combined lockup. Mobile: standalone G. */
-.brand-lockup {
-  display: block;
-  line-height: 0;
-}
-
-.brand-lockup img {
-  display: block;
-  height: 2.25rem; /* ~36px */
-  width: auto;
-  max-width: min(11.5rem, 46vw);
-}
-
-.brand-mark {
-  display: none;
-  line-height: 0;
-  flex-shrink: 0;
-}
-
-.brand-mark img {
+/* Desktop: vector G + CSS wordmark. Mobile: vector G only. */
+.brand-mark-img {
   display: block;
   width: 2.25rem;
   height: 2.25rem;
+  flex-shrink: 0;
+}
+
+.brand-wordmark {
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .wm-git {
@@ -155,7 +146,7 @@ button {
 }
 
 .wm-hired {
-  color: var(--green-deep);
+  color: var(--green);
 }
 
 .brand-text {
@@ -1254,13 +1245,9 @@ fieldset.stack {
     display: none;
   }
 
-  /* Compact nav: standalone G mark only */
-  .brand-lockup {
+  /* Compact nav: standalone vector G only */
+  .brand-wordmark {
     display: none;
-  }
-
-  .brand-mark {
-    display: block;
   }
 
   .filter-toolbar {
