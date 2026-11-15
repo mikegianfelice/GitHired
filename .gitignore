@@ -66,6 +66,11 @@ config/companies.local.yaml
 !assets/banner.png
 !assets/banner.jpg
 !assets/showcase/**
+!assets/banner.svg
+!assets/brand/**
+!assets/brand/**/*.png
+!site/assets/brand/**/*.png
+!site/assets/brand/**/*.ico
 
 # OS files
 .DS_Store

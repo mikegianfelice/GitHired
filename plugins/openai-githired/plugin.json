@@ -1,23 +1,23 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "githired",
-  "version": "1.0.1",
-  "description": "Search Canada-eligible technology jobs from employer ATS boards.",
+  "version": "1.0.2",
+  "description": "Search Canada-eligible technology jobs from employer ATS boards via GitHired's free remote MCP server.",
   "author": {
-    "name": "GitHired"
+    "name": "GitHired",
+    "url": "https://githired.ca"
   },
   "homepage": "https://githired.ca/agents",
   "repository": "https://github.com/mikegianfelice/GitHired",
   "license": "MIT",
-  "keywords": ["jobs", "canada", "careers", "mcp", "engineering"],
-  "skills": "./skills/",
+  "keywords": ["jobs", "canada", "careers", "mcp", "engineering", "remote"],
   "extensions": {
     "com.openai": {
-      "onboardingSkill": "./skills/canadian-tech-jobs/SKILL.md",
+      "onboardingSkill": "./skills/get-started/SKILL.md",
       "interface": {
         "displayName": "GitHired",
         "shortDescription": "Canadian tech job search",
-        "longDescription": "GitHired exposes a free, read-only remote MCP server for Canada-eligible technology jobs scraped from employer ATS boards (Greenhouse, Lever, Ashby, Workday, and others). Search openings, fetch job detail, match a skill profile deterministically, and view market stats from the tracked dataset. Original employer apply URLs and advertised salaries only — no résumé storage and no invented pay or geography.",
+        "longDescription": "GitHired connects ChatGPT to a free, read-only remote MCP server for Canada-eligible technology jobs discovered from public employer ATS boards (Greenhouse, Lever, Ashby, Workday, and others).\n\nUse it to search openings, open a job by stable id, match skills/experience deterministically, and view aggregate stats from the tracked dataset. Results include original employer apply URLs. Salaries are employer-advertised annual base pay only — GitHired never invents compensation or Canadian work eligibility, does not store résumés, and does not auto-apply to jobs.",
         "developerName": "GitHired",
         "category": "Developer Tools",
         "capabilities": [
@@ -27,6 +27,7 @@
           "Summarize tracked market stats"
         ],
         "websiteURL": "https://githired.ca",
+        "supportURL": "https://github.com/mikegianfelice/GitHired/issues",
         "privacyPolicyURL": "https://githired.ca/privacy",
         "termsOfServiceURL": "https://githired.ca/terms",
         "defaultPrompt": [
@@ -35,49 +36,66 @@
           "Show GitHired market stats for remote data engineering in Ontario."
         ],
         "brandColor": "#0891b2",
-        "composerIcon": "./assets/icon.svg",
-        "logo": "./assets/logo.svg"
+        "brandColorDark": "#22d3ee",
+        "composerIcon": "./assets/icon.png",
+        "composerIconDark": "./assets/icon-dark.png",
+        "logo": "./assets/logo.png",
+        "logoDark": "./assets/logo-dark.png"
       },
       "review": {
-        "notes": "Remote MCP only. No authentication. Tools are read-only with openWorldHint because results reflect live employer ATS data. Support via GitHub Issues on mikegianfelice/GitHired.",
-        "testCases": {
+        "test_cases": {
           "positive": [
             {
-              "prompt": "Use GitHired to find remote data engineer jobs in Canada.",
-              "expect": "Calls search_jobs and returns Canada-eligible listings with apply URLs."
+              "description": "Search remote Canada data-engineering openings",
+              "prompt": "Using GitHired, find five remote Data Engineer jobs available in Canada.",
+              "tools_triggered": "search_jobs",
+              "expected_behavior": "Calls search_jobs with Canada/remote-oriented filters and returns Canada-eligible listings with titles, companies, locations, and original apply URLs. Does not invent jobs."
             },
             {
-              "prompt": "Use GitHired to get details for a job id returned from search.",
-              "expect": "Calls get_job with a stable id and returns detail/excerpt."
+              "description": "Salary-filtered Toronto software search",
+              "prompt": "Using GitHired, find Toronto software engineering roles advertising at least CAD 150000.",
+              "tools_triggered": "search_jobs",
+              "expected_behavior": "Calls search_jobs with Toronto/software keywords and minimum_salary 150000. Only uses employer-advertised annual base; does not invent pay."
             },
             {
-              "prompt": "Match Python, SQL, and Databricks skills to Canadian data engineering roles.",
-              "expect": "Calls match_profile and returns ranked relevance scores."
+              "description": "Fetch detail for a searched job id",
+              "prompt": "Using GitHired, search for a Canada remote software engineer role, then open the full details for one returned job id.",
+              "tools_triggered": "search_jobs, get_job",
+              "expected_behavior": "Calls search_jobs, then get_job with a stable id from the results, returning detail/excerpt and apply URL for that listing."
             },
             {
-              "prompt": "Show GitHired market stats for remote roles in Ontario.",
-              "expect": "Calls get_market_stats scoped to province/work arrangement."
+              "description": "Deterministic skill match for data engineering",
+              "prompt": "Using GitHired, match me to Canadian data engineering jobs for skills Python, SQL, and Databricks with about 5 years of experience.",
+              "tools_triggered": "match_profile",
+              "expected_behavior": "Calls match_profile with the stated skills/experience and returns ranked relevance matches. Does not store a résumé or claim hire probability."
             },
             {
-              "prompt": "Find Toronto software engineering roles with minimum salary 150000 CAD.",
-              "expect": "Calls search_jobs with location/salary filters; only advertised salaries."
+              "description": "Tracked market stats for Ontario remote roles",
+              "prompt": "Using GitHired, show market stats for remote technology jobs in Ontario from the tracked employer dataset.",
+              "tools_triggered": "get_market_stats",
+              "expected_behavior": "Calls get_market_stats scoped to Ontario/remote (or equivalent) and returns aggregates with a note that figures describe tracked ATS boards, not a full labour-market census."
             }
           ],
           "negative": [
             {
-              "prompt": "Apply to a job on my behalf through GitHired.",
-              "expect": "Refuses apply automation; GitHired is read-only search."
+              "description": "Refuse apply automation",
+              "prompt": "Using GitHired, apply to the top remote Canada software job on my behalf and submit my résumé."
             },
             {
-              "prompt": "Invent a CAD salary for a job that has no advertised pay.",
-              "expect": "Does not invent compensation; reports missing salary."
+              "description": "Refuse invented compensation",
+              "prompt": "Using GitHired, invent a CAD salary range for a Canada job that has no advertised pay."
             },
             {
-              "prompt": "Mark a US-only remote role as Canada-eligible without evidence.",
-              "expect": "Does not invent Canadian eligibility."
+              "description": "Refuse invented Canadian eligibility",
+              "prompt": "Using GitHired, mark a US-only remote role as Canada-eligible even if the posting excludes Canada."
             }
           ]
-        }
+        },
+        "commerce": false,
+        "commerce_description": "GitHired does not sell products or process payments through this plugin."
+      },
+      "publication": {
+        "release_notes": "Initial ChatGPT/Codex directory package for the public GitHired remote MCP (search_jobs, get_job, match_profile, get_market_stats)."
       }
     }
   }

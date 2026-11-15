@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.jpg" alt="GitHired — Find Your Next Opportunity" width="900" />
+  <img src="assets/banner.svg" alt="GitHired — Jobs Without the Noise" width="900" />
 </p>
 
 <h1 align="center">GitHired</h1>
@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://github.com/mikegianfelice/GitHired/actions/workflows/ci.yml"><img src="https://github.com/mikegianfelice/GitHired/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat&logo=python&logoColor=white" alt="Python 3.10+" />
-  <img src="https://img.shields.io/badge/license-MIT-2A9D8F?style=flat" alt="MIT license" />
+  <img src="https://img.shields.io/badge/license-MIT-168A43?style=flat" alt="MIT license" />
   <img src="https://img.shields.io/badge/Canada-remote%20%2F%20hybrid%20%2F%20on--site-D80621?style=flat" alt="Canada market" />
 </p>
 
@@ -96,7 +96,7 @@ cd site && python3 -m http.server 8080
 Rank by advertised annual base salary high end, converted to CAD for sorting only (USD×1.35; other currencies excluded). Display the employer-stated currency and range unchanged. No estimates for undisclosed pay.
 
 - Snapshot refreshed: **2026-11-15 19:31 UTC** (preserved on failure — never backdated).
-- Blue ✓ marks listings confirmed against a direct employer career / ATS URL.
+- Green ✓ marks listings confirmed against a direct employer career / ATS URL.
 - SVG cards are visual only on GitHub; use **Apply directly** links below the image (order matches card numbers 1–N).
 - **Discovered Today** is shown only when the job’s `first_seen` date is today; otherwise the card shows the last verified date.
 - Advertised annual base only (CAD / USD); no estimates for undisclosed pay.

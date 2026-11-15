@@ -1,4 +1,4 @@
-"""Generate a premium dark-theme SVG job dashboard for the README showcase."""
+"""Generate a white-first SVG job dashboard for the README showcase."""
 
 from __future__ import annotations
 
@@ -10,18 +10,18 @@ from jobseek.showcase.top_paying import ShowcaseJob, discovery_date_label, forma
 
 SVG_REL_PATH = "assets/showcase/top-paying-jobs.svg"
 
-# Visual tokens — aligned with assets/banner.jpg (navy + electric cyan + gold)
-BG = "#07111F"
-PANEL = "#0B1829"
-CARD = "#0F2136"
-CARD_BORDER = "#16324A"
-ACCENT = "#22D3EE"  # courier cyan
-ACCENT_SOFT = "#0891B2"
-SALARY = "#34D399"  # salary + apply hint
-MUTED = "#8BA3B8"
-TEXT = "#F8FAFC"
-TAG_BG = "#132A40"
-TAG_TEXT = "#B6CBD9"
+# Visual tokens — aligned with site brand kit (white-first + electric green)
+BG = "#FFFFFF"
+PANEL = "#F8FAF8"
+CARD = "#FFFFFF"
+CARD_BORDER = "#E3EAE2"
+ACCENT = "#65E52B"  # electric green
+ACCENT_SOFT = "#168A43"  # deep green (readable accents)
+SALARY = "#168A43"
+MUTED = "#647067"
+TEXT = "#0B0F14"
+TAG_BG = "#EFFCE8"
+TAG_TEXT = "#168A43"
 WIDTH = 880
 PAD_X = 28
 HEADER_H = 108
@@ -58,11 +58,11 @@ def _tag_pill(x: float, y: float, label: str, *, fill: str = TAG_BG, color: str 
 
 
 def _verified_badge(cx: float, cy: float) -> str:
-    """Blue social-style verification checkmark."""
+    """Verified checkmark on electric green."""
     return (
         f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="8" fill="{ACCENT}"/>'
         f'<path d="M{cx - 3.6:.1f},{cy:.1f} l2.2,2.3 l4.6,-5.2" fill="none" '
-        f'stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+        f'stroke="#0B0F14" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
     )
 
 
@@ -96,15 +96,15 @@ def render_dashboard_svg(
         f"<defs>"
         f'<linearGradient id="ghBg" x1="0" y1="0" x2="1" y2="1">'
         f'<stop offset="0%" stop-color="{BG}"/>'
-        f'<stop offset="100%" stop-color="#0A1A2E"/>'
+        f'<stop offset="100%" stop-color="{PANEL}"/>'
         f"</linearGradient>"
         f'<linearGradient id="ghHeader" x1="0" y1="0" x2="1" y2="0">'
-        f'<stop offset="0%" stop-color="{ACCENT}" stop-opacity="0.28"/>'
-        f'<stop offset="55%" stop-color="{ACCENT_SOFT}" stop-opacity="0.08"/>'
+        f'<stop offset="0%" stop-color="{ACCENT}" stop-opacity="0.18"/>'
+        f'<stop offset="55%" stop-color="{ACCENT_SOFT}" stop-opacity="0.06"/>'
         f'<stop offset="100%" stop-color="{BG}" stop-opacity="0"/>'
         f"</linearGradient>"
         f'<filter id="ghShadow" x="-2%" y="-2%" width="104%" height="110%">'
-        f'<feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.35"/>'
+        f'<feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0B0F14" flood-opacity="0.06"/>'
         f"</filter>"
         f"</defs>"
         f'<rect width="{WIDTH}" height="{height}" rx="24" fill="url(#ghBg)"/>'
@@ -120,7 +120,7 @@ def render_dashboard_svg(
         f"Real opportunities. Direct from company career pages. Powered by GitHired."
         f"</text>"
         f'<text x="{PAD_X + 4}" y="104" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" '
-        f'font-size="11" fill="#6B8499">Advertised annual base · CAD &amp; USD labeled · '
+        f'font-size="11" fill="{MUTED}">Advertised annual base · CAD &amp; USD labeled · '
         f'No estimates · Snapshot {generated_at.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")}</text>',
     ]
 
@@ -160,7 +160,7 @@ def render_dashboard_svg(
                 f'stroke="{ACCENT_SOFT}"/>'
                 f'<text x="46" y="{card_y + 37}" text-anchor="middle" '
                 f'font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" '
-                f'font-weight="700" fill="{ACCENT}">{i}</text>'
+                f'font-weight="700" fill="{ACCENT_SOFT}">{i}</text>'
                 # Title
                 f'<text x="72" y="{card_y + 37}" '
                 f'font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="17" '

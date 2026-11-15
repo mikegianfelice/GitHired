@@ -9,7 +9,13 @@
   <meta property="og:title" content="GitHired for AI Agents" />
   <meta property="og:url" content="https://githired.ca/agents" />
   <meta property="og:description" content="Connect Cursor, Claude, or ChatGPT to Canada-eligible tech jobs via MCP." />
-  <link rel="stylesheet" href="../styles.css?v=20261109e" />
+  <link rel="icon" href="../assets/brand/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/brand/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/brand/icon-16.png" />
+  <link rel="apple-touch-icon" href="../assets/brand/apple-touch-icon.png" />
+  <meta name="theme-color" content="#FFFFFF" />
+  <meta property="og:image" content="https://githired.ca/assets/brand/icon-512.png" />
+  <link rel="stylesheet" href="../styles.css?v=20261115brand" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script type="application/ld+json">
   {
@@ -34,11 +40,8 @@
   <header class="site-header">
     <div class="wrap header-inner">
       <a class="brand" href="../" aria-label="GitHired home">
-        <span class="brand-mark" aria-hidden="true">GH</span>
-        <span class="brand-text">
-          <span class="brand-name">GitHired</span>
-          <span class="brand-tag">Jobs Without the Noise</span>
-        </span>
+        <img class="brand-mark-img" src="../assets/brand/mark.svg" width="32" height="32" alt="" decoding="async" />
+        <span class="brand-wordmark" aria-hidden="true"><span class="wm-git">Git</span><span class="wm-hired">Hired</span></span>
       </a>
       <nav class="header-nav desktop-nav" aria-label="Primary">
         <a class="nav-link" href="../">Browse Jobs</a>
@@ -251,6 +254,9 @@
 
   <footer class="site-footer">
     <div class="wrap footer-inner">
+            <div class="footer-brand">
+        <span class="footer-wordmark" aria-label="GitHired"><span class="wm-git">Git</span><span class="wm-hired">Hired</span></span>
+      </div>
       <p class="footer-note">Open source · Free · <a href="https://github.com/mikegianfelice/GitHired">GitHub</a> · <a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a></p>
     </div>
   </footer>

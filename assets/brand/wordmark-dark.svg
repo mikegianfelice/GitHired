@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" role="img" aria-labelledby="title">
+  <title id="title">GitHired</title>
+  <text x="0" y="36" font-family="DM Sans, system-ui, -apple-system, Segoe UI, sans-serif" font-size="36" font-weight="700" letter-spacing="-0.03em">
+    <tspan fill="#F8FAF8">Git</tspan><tspan fill="#65E52B">Hired</tspan>
+  </text>
+</svg>

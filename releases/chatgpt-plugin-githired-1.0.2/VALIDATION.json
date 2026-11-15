@@ -1,0 +1,191 @@
+{
+  "package_version": "1.0.2",
+  "zip": "/Users/gianf/GitHired/releases/chatgpt-plugin-githired-1.0.2/githired-chatgpt-plugin-1.0.2.zip",
+  "zip_bytes": 27391,
+  "schema_errors": [],
+  "schema_ok": true,
+  "submission_checks": [
+    {
+      "check": "displayName \u226430",
+      "pass": true,
+      "detail": "'GitHired'"
+    },
+    {
+      "check": "shortDescription \u226430",
+      "pass": true,
+      "detail": "24 chars"
+    },
+    {
+      "check": "longDescription \u22644000",
+      "pass": true,
+      "detail": "564 chars"
+    },
+    {
+      "check": "developerName \u226480",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "category set",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "websiteURL https",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "supportURL https",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "privacyPolicyURL https",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "termsOfServiceURL https",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "logo present",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "composerIcon present",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "defaultPrompt \u22643",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "defaultPrompt lengths \u2264128",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "exactly 1 mcp server",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "mcp streamable-http",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "mcp public url",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "5 positive cases",
+      "pass": true,
+      "detail": "5"
+    },
+    {
+      "check": "3 negative cases",
+      "pass": true,
+      "detail": "3"
+    },
+    {
+      "check": "positive fields",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "negative fields",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "onboarding skill exists",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no demo_recording_url in package (owner must supply)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "privacy live",
+      "pass": true,
+      "detail": "{'status': 200, 'final_url': 'https://githired.ca/privacy/', 'bytes': 3982}"
+    },
+    {
+      "check": "terms live",
+      "pass": true,
+      "detail": "{'status': 200, 'final_url': 'https://githired.ca/terms/', 'bytes': 3509}"
+    },
+    {
+      "check": "support live",
+      "pass": true,
+      "detail": "{'status': 200, 'final_url': 'https://github.com/mikegianfelice/GitHired/issues', 'bytes': 191665}"
+    },
+    {
+      "check": "mcp tools/list",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "mcp annotations present",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "submission_checks_failed": [],
+  "live": {
+    "privacy": {
+      "status": 200,
+      "final_url": "https://githired.ca/privacy/",
+      "bytes": 3982
+    },
+    "terms": {
+      "status": 200,
+      "final_url": "https://githired.ca/terms/",
+      "bytes": 3509
+    },
+    "website": {
+      "status": 200,
+      "final_url": "https://githired.ca",
+      "bytes": 20020
+    },
+    "support": {
+      "status": 200,
+      "final_url": "https://github.com/mikegianfelice/GitHired/issues",
+      "bytes": 191665
+    },
+    "mcp": {
+      "status": 200,
+      "tools": [
+        "search_jobs",
+        "get_job",
+        "match_profile",
+        "get_market_stats"
+      ],
+      "annotations": true
+    }
+  },
+  "missing_for_public_submit": [
+    "review.demo_recording_url \u2014 required before Submit for review (host a short walkthrough video and paste the HTTPS URL in the dashboard or a revised ZIP)",
+    "Dedicated support email / business contact \u2014 not provided; package uses GitHub Issues as supportURL (existing public channel). Add a business email later only if you want one.",
+    "OpenAI individual/business identity verification + policy attestations (dashboard only; cannot be packaged)"
+  ],
+  "zip_contents": [
+    "githired/assets/icon-dark.png",
+    "githired/assets/icon.png",
+    "githired/assets/logo-dark.png",
+    "githired/assets/logo.png",
+    "githired/mcp.json",
+    "githired/plugin.json",
+    "githired/skills/get-started/SKILL.md"
+  ]
+}

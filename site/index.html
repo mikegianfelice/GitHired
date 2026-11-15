@@ -9,7 +9,13 @@
   <meta property="og:url" content="https://githired.ca/" />
   <meta property="og:description" content="Canada-first tech jobs from employer ATS boards. Search and match in your browser — no account required." />
   <title>GitHired — Jobs Without the Noise</title>
-  <link rel="stylesheet" href="styles.css?v=20261111a" />
+  <link rel="icon" href="assets/brand/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/icon-16.png" />
+  <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png" />
+  <meta name="theme-color" content="#FFFFFF" />
+  <meta property="og:image" content="https://githired.ca/assets/brand/icon-512.png" />
+  <link rel="stylesheet" href="styles.css?v=20261115brand" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -21,11 +27,8 @@
   <header class="site-header">
     <div class="wrap header-inner">
       <a class="brand" href="./" aria-label="GitHired home" data-nav="browse">
-        <span class="brand-mark" aria-hidden="true">GH</span>
-        <span class="brand-text">
-          <span class="brand-name">GitHired</span>
-          <span class="brand-tag">Jobs Without the Noise</span>
-        </span>
+        <img class="brand-mark-img" src="assets/brand/mark.svg" width="32" height="32" alt="" decoding="async" />
+        <span class="brand-wordmark" aria-hidden="true"><span class="wm-git">Git</span><span class="wm-hired">Hired</span></span>
       </a>
 
       <nav class="header-nav desktop-nav" aria-label="Primary">
@@ -388,6 +391,9 @@
 
   <footer class="site-footer">
     <div class="wrap footer-inner">
+            <div class="footer-brand">
+        <span class="footer-wordmark" aria-label="GitHired"><span class="wm-git">Git</span><span class="wm-hired">Hired</span></span>
+      </div>
       <p>
         Public browsing and matching use the shared Canada-eligible shortlist.
         Matching uses deterministic relevance scoring — not generative AI.
