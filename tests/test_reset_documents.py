@@ -68,7 +68,6 @@ class ResetDocuments(unittest.TestCase):
             for name in FOLDERS:
                 folder = documents / name
                 folder.mkdir()
-                (folder / ".gitkeep").write_text("Keep this scaffold.\n")
                 if populated:
                     (folder / "summary.md").write_text("A document\n")
                     (folder / ".source.md").write_text("A hidden document\n")
@@ -80,21 +79,17 @@ class ResetDocuments(unittest.TestCase):
             self.assertEqual(result.stderr, "")
             self.assertEqual(readme.read_text(), "Keep these framework instructions.\n")
             self.assertEqual(sibling.read_text(), "Keep this external file.\n")
-            self.assertEqual({path.name for path in documents.iterdir()}, {*FOLDERS, "README.md"})
+            self.assertEqual({path.name for path in documents.iterdir()}, {"README.md"})
             for name in FOLDERS:
-                self.assertEqual([path.name for path in (documents / name).iterdir()], [".gitkeep"])
-                self.assertEqual((documents / name / ".gitkeep").read_text(), "Keep this scaffold.\n")
+                self.assertFalse((documents / name).exists(), name)
 
-    def test_all_document_entries_are_removed_without_removing_the_scaffold(self):
+    def test_all_document_entries_are_removed(self):
         self.run_reset(populated=True)
 
-    def test_empty_document_folders_remain_usable(self):
+    def test_empty_document_folders_are_removed(self):
         self.run_reset(populated=False)
 
     def test_a_missing_folder_is_skipped_and_the_rest_are_still_cleared(self):
-        # `find` on a missing folder exits 1, and under `set -e` that stopped
-        # the loop there, leaving every later folder uncleared; master under
-        # bash skipped the folder. The block must skip it too.
         for shell in SHELLS:
             with self.subTest(shell=shell):
                 with TemporaryDirectory() as directory:
@@ -106,14 +101,14 @@ class ResetDocuments(unittest.TestCase):
                     for name in present:
                         folder = documents / name
                         folder.mkdir()
-                        (folder / ".gitkeep").write_text("Keep.\n")
                         (folder / "summary.md").write_text("A document\n")
                     result = subprocess.run([shell, "-c", self.reset_script()], cwd=root, capture_output=True, text=True)
                     self.assertEqual(result.returncode, 0, result.stderr)
                     self.assertEqual(result.stderr, "")
                     for name in present:
-                        self.assertEqual([path.name for path in (documents / name).iterdir()], [".gitkeep"], name)
+                        self.assertFalse((documents / name).exists(), name)
                     self.assertFalse((documents / "diplomas").exists())
+                    self.assertEqual({path.name for path in documents.iterdir()}, {"README.md"})
 
     def test_block_uses_no_bash_only_builtins(self):
         # `shopt`, `declare`, `[[` and brace expansion are what break under
@@ -162,5 +157,6 @@ class ResetDocuments(unittest.TestCase):
             link.symlink_to(outside, target_is_directory=True)
             result = subprocess.run([BASH, "-c", self.reset_script()], cwd=root, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertFalse(link.is_symlink())
+            self.assertFalse(link.exists())
+            self.assertFalse((root / "documents" / "projects").exists())
             self.assertEqual(sentinel.read_text(), "External document.\n")

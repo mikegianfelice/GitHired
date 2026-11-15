@@ -20,7 +20,7 @@ If `$ARGUMENTS` is empty or does not contain a recognized scope keyword, ask:
 >
 > - **`profile`** — Clears candidate data from the skill files (profile, behavioral, STAR examples, profile statements, personalized evaluation criteria, search queries). The framework structure, scoring framework, and writing rules are preserved. Use this to re-run `/setup` from scratch.
 >
-> - **`documents`** — Deletes all files you've placed in the `documents/` folder (CV PDFs, LinkedIn export, diplomas, references, project summaries, pasted job postings, past applications). The folder structure and `README.md` are preserved.
+> - **`documents`** — Deletes document drop folders under `documents/` (CV PDFs, LinkedIn export, diplomas, references, project summaries, pasted job postings, past applications). `documents/README.md` is preserved.
 >
 > - **`all`** — Both of the above.
 >
@@ -88,7 +88,7 @@ cv/main_example.tex. This scope covers skill files only.
 
 Use Glob to list all files present in `documents/cv/`, `documents/linkedin/`, `documents/diplomas/`, `documents/references/`, `documents/projects/`, `documents/postings/`, and `documents/applications/`.
 
-Include nested and hidden user entries in the inventory. Each subfolder's tracked `.gitkeep` is a scaffold placeholder: exclude it from the deletion list and from the empty/non-empty decision, and preserve it.
+Include nested and hidden user entries in the inventory. Skip missing subfolders.
 
 Present as:
 
@@ -255,7 +255,7 @@ Leave the rest of the file intact: the portal-CLI and WebSearch-fallback explana
 
 ### Documents reset
 
-For each non-empty document subfolder, delete all user entries, including nested folders and hidden files. Preserve the seven top-level subfolders, their `.gitkeep` placeholders, and `documents/README.md`. Run the following block only after the confirmation above. It is POSIX shell on purpose: the Bash tool runs whatever shell the user has, which is zsh on macOS, and a bash-only builtin such as `shopt` fails there with `command not found` before anything is deleted. `find` lists hidden entries and nested folders without any glob setting. If `documents/` or any of its seven roots is a symbolic link, stop before deleting anything and ask the user to replace that linked root with a local document folder.
+Remove each document drop folder under `documents/` (including nested and hidden files). Keep `documents/README.md`. Run the following block only after the confirmation above. It is POSIX shell on purpose: the Bash tool runs whatever shell the user has, which is zsh on macOS, and a bash-only builtin such as `shopt` fails there with `command not found` before anything is deleted. If `documents/` or any existing drop root is a symbolic link, stop before deleting anything and ask the user to replace that linked root with a local document folder.
 
 ```bash
 (
@@ -267,8 +267,8 @@ For each non-empty document subfolder, delete all user entries, including nested
     fi
   done
   for directory in documents/cv documents/linkedin documents/diplomas documents/references documents/projects documents/postings documents/applications; do
-    [ -d "$directory" ] || continue
-    find "$directory" -mindepth 1 -maxdepth 1 ! -name .gitkeep -exec rm -rf -- {} +
+    [ -e "$directory" ] || continue
+    rm -rf -- "$directory"
   done
 )
 ```
@@ -297,7 +297,7 @@ Then tell the user what to do next based on what was reset:
 > Note that `CLAUDE.md` and `cv/main_example.tex` are outside the `profile` scope and still hold your personal data. If you are handing this fork over or making it public, clear them by hand.
 
 **If documents were reset:**
-> Your user documents are now cleared. The folder structure, `.gitkeep` placeholders, and `documents/README.md` are preserved. Add your career documents and run `/setup` to populate your profile.
+> Your user documents are now cleared. `documents/README.md` is preserved. Add career documents under `documents/` (see the README for layout) and run `/setup` to populate your profile.
 
 **If both were reset:**
-> Your profile data and user documents are now cleared; the document folders, `.gitkeep` placeholders, and `documents/README.md` are preserved. Add documents to `documents/` (or skip and use the CV import / interview path), then run `/setup`.
+> Your profile data and user documents are now cleared; `documents/README.md` is preserved. Add documents under `documents/` (or skip and use the CV import / interview path), then run `/setup`.

@@ -23,9 +23,10 @@ Both are tracked and unignored, and CI's placeholder-integrity job guards
 "blank" profile left /rank scoring against the old skills and /scrape
 running the old city.
 
-Both file lists are derived - the documents folders from the repository
-tree, the profile files from /setup Step 3's own headings - so a new drop
-folder or a new /setup target fails this test until /reset covers it.
+Both file lists are derived - the documents folders from documents/README.md
+(and reset.md's documented roots), the profile files from /setup Step 3's
+own headings - so a new drop folder or a new /setup target fails this test
+until /reset covers it.
 """
 import re
 import subprocess
@@ -45,35 +46,26 @@ RESET = REPO / ".claude" / "commands" / "reset.md"
 SETUP = REPO / ".claude" / "commands" / "setup.md"
 BASH = find_bash()
 
-
-def tracked_document_subfolders():
-    """Names of documents/ subfolders tracked in git (ignores local noise)."""
-    out = subprocess.run(
-        ["git", "ls-files", "documents/"],
-        cwd=REPO,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
-    folders = set()
-    for line in out.splitlines():
-        parts = line.split("/")
-        if len(parts) >= 3:  # documents/<subfolder>/<file...>
-            folders.add(parts[1])
-    return folders
+# Canonical drop roots from documents/README.md (not git scaffolds).
+DOCUMENT_SUBFOLDERS = (
+    "cv",
+    "linkedin",
+    "diplomas",
+    "references",
+    "projects",
+    "postings",
+    "applications",
+)
 
 
 class TestResetCoversEveryDocumentsSubfolder(unittest.TestCase):
     def setUp(self):
         self.text = RESET.read_text(encoding="utf-8")
-        self.folders = tracked_document_subfolders()
-        # The tree must actually contain the folders this test is about,
-        # or the assertions below would pass vacuously.
-        self.assertGreaterEqual(len(self.folders), 5, self.folders)
+        self.folders = DOCUMENT_SUBFOLDERS
 
     def test_preview_lists_every_subfolder(self):
         missing = [
-            f for f in sorted(self.folders) if f"documents/{f}/" not in self.text
+            f for f in self.folders if f"documents/{f}/" not in self.text
         ]
         self.assertEqual(
             missing,
@@ -84,24 +76,25 @@ class TestResetCoversEveryDocumentsSubfolder(unittest.TestCase):
 
     @unittest.skipUnless(BASH, "requires Bash to replay the documented /reset command")
     def test_delete_block_removes_every_subfolder(self):
-        # Exercise the deletion contract, rather than requiring one particular
-        # spelling of rm. Keep deriving the folder set from git so a newly
-        # tracked document root still has to be handled by the real command.
+        # Exercise the deletion contract: user content under each documented
+        # root is removed; documents/README.md stays; empty scaffolds are not
+        # required.
         section = self.text.split("### Documents reset", 1)[1]
         script = re.search(r"```bash\n(.*?)```", section, re.S).group(1)
         with TemporaryDirectory() as directory:
             root = Path(directory)
+            (root / "documents").mkdir()
+            (root / "documents" / "README.md").write_text("Keep.\n")
             for folder in self.folders:
                 path = root / "documents" / folder
                 path.mkdir(parents=True)
-                (path / ".gitkeep").write_text("Keep scaffold.\n")
                 (path / "user.txt").write_text("Remove document.\n")
             result = subprocess.run([BASH, "-c", script], cwd=root, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue((root / "documents" / "README.md").is_file())
             for folder in self.folders:
                 path = root / "documents" / folder
-                self.assertEqual([entry.name for entry in path.iterdir()], [".gitkeep"])
-                self.assertEqual((path / ".gitkeep").read_text(), "Keep scaffold.\n")
+                self.assertFalse(path.exists(), folder)
 
 
 def section(text: str, start: str, end: str) -> str:

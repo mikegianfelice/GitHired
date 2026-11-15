@@ -649,7 +649,7 @@ class GitignoreNegationTests(GuardRepoFixture):
 
     def test_allowlisted_negations_pass(self):
         # The template's own benign negations (example CV/cover letter, fonts,
-        # .gitkeep placeholders) must keep passing.
+        # public assets) must keep passing.
         self.write_gitignore(
             list(security_guards.REQUIRED_IGNORE_RULES)
             + sorted(security_guards.ALLOWED_IGNORE_NEGATIONS)

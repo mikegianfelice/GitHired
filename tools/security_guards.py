@@ -203,13 +203,20 @@ ALLOWED_IGNORE_NEGATIONS = {
     "!cover_letters/build/",
     "!cv/main_example.tex",
     "!cover_letters/cover_example.tex",
-    "!documents/**/.gitkeep",
     "!.env.example",
     "!config/companies.local.yaml.example",
-    # Public README marketing assets (not personal data); re-include under *.png/*.jpg
+    # Public README / site marketing assets (not personal data); re-include under *.png/*.jpg
     "!assets/banner.png",
     "!assets/banner.jpg",
+    "!assets/banner.svg",
+    "!assets/banner.webp",
     "!assets/showcase/**",
+    "!assets/brand/**",
+    "!assets/brand/**/*.png",
+    "!assets/brand/**/*.webp",
+    "!site/assets/brand/**/*.png",
+    "!site/assets/brand/**/*.ico",
+    "!site/assets/brand/**/*.webp",
 }
 
 # Hook commands the template legitimately ships, as "<Event>:<command>" strings.
