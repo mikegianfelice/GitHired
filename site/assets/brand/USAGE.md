@@ -11,8 +11,9 @@ Nav uses the SVG mark plus a CSS wordmark (see `site/styles.css`), not a raster 
 
 | Asset | Role |
 | --- | --- |
-| `githired-mark.svg` | Header mark |
-| `favicon.ico`, `favicon-32x32.png`, `apple-touch-icon.png` | Browser icons |
+| `githired-mark.svg` | Header mark + primary favicon (`type="image/svg+xml"`) |
+| `favicon.ico`, `favicon-32x32.png` | Raster favicon fallbacks |
+| `apple-touch-icon.png` | iOS home-screen icon |
 | `android-chrome-192x192.png` / `512x512.png` | PWA / Open Graph |
 
 Repo-level copies of the masters also live under `assets/brand/`. Full kit archive: `assets/githired_brand_assets.zip`.
