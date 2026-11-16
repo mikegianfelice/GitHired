@@ -1,0 +1,40 @@
+Alex Morgan
+Senior Data Engineer | Toronto, Ontario, Canada | alex.morgan@example.com | (416) 555-0142
+PROFESSIONAL SUMMARY
+Data engineer with 6 years of professional experience building production ETL pipelines, lakehouse data platforms, and
+analytics datasets. Strong hands-on experience with Python, SQL, Apache Spark, Databricks, Delta Lake and AWS.
+Interested in senior data engineering or data platform engineering roles across Canada. Prefer fully remote positions; open
+to Toronto hybrid roles only if explicitly stated.
+TECHNICAL SKILLS
+Core: Python, SQL, PySpark, Apache Spark, Databricks, Delta Lake, ETL/ELT, data modeling, data quality, orchestration,
+Git, CI/CD.
+Cloud and infrastructure: AWS S3, AWS IAM, Terraform (basic), Docker (basic), Databricks Unity Catalog.
+Analytics: Power BI, dimensional modeling, dashboard data products.
+Not claimed: Kubernetes, Java, React, Azure, GCP. Familiar with AI concepts, but no production LLM or machine-learning
+engineering experience.
+PROFESSIONAL EXPERIENCE
+Senior Data Engineer | Northstar Analytics (fictional) | Toronto, ON | Jan 2023 - Present
+ Built and maintained daily and hourly Python/PySpark pipelines on Databricks, processing structured insurance and
+ customer data into Delta Lake tables.
+ Designed SQL transformation layers and governed datasets using Unity Catalog; introduced data-quality checks and
+ operational alerts for pipeline failures.
+ Optimized Spark partitioning and job scheduling to reduce median batch runtime by approximately 30% in an internal
+ benchmark.
+ Partnered with analytics stakeholders to define reusable data models consumed by Power BI reporting.
+ 
+Data Engineer | Cedar Financial Services (fictional) | Toronto, ON | Jul 2020 - Dec 2022
+ Developed Python and SQL ETL processes that integrated internal transaction datasets and external partner feeds.
+ 
+ Managed AWS S3 data storage, implemented validation checks and supported scheduled pipeline deployments using
+ Git-based reviews.
+ Worked with analysts to troubleshoot source-data discrepancies and improve dataset documentation.
+ 
+EDUCATION
+B.Sc. Computer Science | University of Waterloo | 2020 (fictional candidate)
+JOB SEARCH PREFERENCES
+Preferred titles: Senior Data Engineer, Data Platform Engineer, Analytics Engineer. Location: Canada, remote strongly
+preferred; Toronto hybrid acceptable. Minimum desired base salary: CAD $150,000 annually. Employment: Full-time.
+Exclude: onsite-only jobs, US-only remote jobs, entry-level roles, frontend engineering, and jobs requiring professional
+Kubernetes expertise.
+This is a synthetic résumé created solely for GitHired parser and matching QA. No person or employment history
+represented here is real.

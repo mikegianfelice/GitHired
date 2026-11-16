@@ -201,10 +201,27 @@ function seniorityBandScore(
   jobSeniority: string | null,
   preferredBands: string[],
   jobTitle: string = "",
-): { score: number; distance: number } {
+): { score: number; distance: number; note?: string | null } {
   const jobSen = (jobSeniority || "").toLowerCase();
   const juniorProfile = preferredBands.some((b) => b === "junior" || b === "intern");
+  const candIdx = Math.max(
+    -1,
+    ...preferredBands.map((w) => SENIORITY_ORDER.indexOf(w)).filter((i) => i >= 0),
+  );
+  const seniorPlusProfile = candIdx >= SENIORITY_ORDER.indexOf("senior");
+  const juniorJob =
+    jobSen === "junior" || jobSen === "intern" || titleJuniorSignal(jobTitle);
   if (!preferredBands.length) return { score: 0.5, distance: 0 };
+
+  // Senior+ candidate vs junior/entry role — soft directional mismatch (not a hard exclude).
+  if (seniorPlusProfile && juniorJob) {
+    return {
+      score: 0.12,
+      distance: 3,
+      note: "Job is junior/entry-level; your profile targets more senior roles",
+    };
+  }
+
   // Unknown job seniority: cautious soft score — never invent junior eligibility.
   // For junior profiles, prefer titles that explicitly signal entry-level.
   if (!jobSen) {
@@ -212,6 +229,13 @@ function seniorityBandScore(
       if (titleJuniorSignal(jobTitle)) return { score: 0.95, distance: 0 };
       if (titleSeniorSignal(jobTitle)) return { score: 0.18, distance: 3 };
       return { score: 0.35, distance: 1 };
+    }
+    if (seniorPlusProfile && titleJuniorSignal(jobTitle)) {
+      return {
+        score: 0.12,
+        distance: 3,
+        note: "Job is junior/entry-level; your profile targets more senior roles",
+      };
     }
     return { score: 0.55, distance: 0 };
   }
@@ -223,10 +247,13 @@ function seniorityBandScore(
     return wi < 0 ? 3 : Math.abs(wi - ji);
   });
   const d = Math.min(...dists);
-  if (d === 0) return { score: 1, distance: 0 };
-  if (d === 1) return { score: 0.7, distance: 1 };
-  if (d === 2) return { score: 0.35, distance: 2 };
-  return { score: 0.12, distance: d };
+  let score = 0.12;
+  if (d === 0) score = 1;
+  else if (d === 1) score = 0.7;
+  else if (d === 2) score = 0.35;
+  // Overqualified: candidate band clearly above job band.
+  if (candIdx >= 0 && candIdx - ji >= 2) score = Math.min(score, 0.25);
+  return { score, distance: d };
 }
 
 function yearsGapMultiplier(
@@ -464,20 +491,20 @@ export function matchProfile(
     const senScore = Math.min(1, band.score * years.mult);
 
     let score = 0;
-    // Title / role ~25%
-    if (roles.length) score += Math.round(25 * role.score);
+    // Title / role ~30%
+    if (roles.length) score += Math.round(30 * role.score);
     else score += 12;
-    // Skills ~25%
+    // Skills ~20%
     if (skills.length) {
-      score += Math.round(25 * (matchingSkills.length / skills.length));
+      score += Math.round(20 * (matchingSkills.length / skills.length));
     } else {
-      score += 8;
+      score += 6;
     }
     // Seniority / experience ~30% — material influence
     score += Math.round(30 * senScore);
     // Discipline / track presence ~10%
-    if (job.track) score += 7;
-    if (job.verified) score += 3;
+    if (job.track) score += 8;
+    if (job.verified) score += 2;
     // Arrangement preference ~10% (confirmed allow-list only; unspecified already filtered)
     if (allowedArrangements.length) {
       const arr = (job.work_arrangement || "").toLowerCase();
@@ -487,10 +514,13 @@ export function matchProfile(
     }
     // Large seniority/experience gaps must not look like strong matches on skills alone.
     if (senScore < 0.4) {
-      score = Math.min(score, Math.round(40 + senScore * 25));
+      score = Math.min(score, Math.round(35 + senScore * 25));
     }
     // Junior / 0-YOE profiles: boost confirmed entry titles; demote explicit senior bands.
     const juniorProfile = preferredBands.some((b) => b === "junior" || b === "intern");
+    const seniorPlusProfile = preferredBands.some((b) =>
+      ["senior", "staff", "principal", "lead"].includes(b),
+    );
     if (juniorProfile) {
       if (titleJuniorSignal(job.title) || (job.seniority || "").toLowerCase() === "junior") {
         score = Math.min(99, score + 12);
@@ -499,6 +529,12 @@ export function matchProfile(
         titleSeniorSignal(job.title)
       ) {
         score = Math.max(1, score - 18);
+      }
+    } else if (seniorPlusProfile) {
+      if (titleJuniorSignal(job.title) || (job.seniority || "").toLowerCase() === "junior") {
+        score = Math.max(1, score - 20);
+      } else if (role.score >= 0.7 && senScore >= 0.7) {
+        score = Math.min(99, score + 6);
       }
     }
 
@@ -509,8 +545,10 @@ export function matchProfile(
         `Skills not mentioned in listing (unconfirmed, not necessarily missing): ${unconfirmedSkills.slice(0, 5).join(", ")}`,
       );
     }
+    if (band.note) gaps.push(band.note);
     if (years.note) gaps.push(years.note);
     else if (
+      !band.note &&
       preferredBands.length &&
       job.seniority &&
       !preferredBands.includes((job.seniority || "").toLowerCase()) &&
@@ -538,13 +576,15 @@ export function matchProfile(
         : skills.length
           ? "No profile skills evidenced in listing tags"
           : null,
-      years.note
-        ? years.note
-        : senScore >= 0.9
-          ? "Seniority compatible"
-          : senScore < 0.5
-            ? "Seniority / experience may be a stretch for this listing"
-            : null,
+      band.note
+        ? band.note
+        : years.note
+          ? years.note
+          : senScore >= 0.9
+            ? "Seniority compatible"
+            : senScore < 0.5
+              ? "Seniority / experience may be a stretch for this listing"
+              : null,
       `Canada-eligible listing (${job.work_arrangement}, scope=${job.remote_scope})`,
       job.salary_available
         ? sal.meets_with_max_only

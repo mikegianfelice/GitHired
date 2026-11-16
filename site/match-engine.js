@@ -242,13 +242,117 @@
       .filter((t) => t.length > 2 && !SENIORITY_STOP.has(t));
   }
 
+  /**
+   * True when index sits on a Not claimed / Exclude line or a wrapped continuation of one.
+   */
+  function inDeniedSection(blob, index) {
+    let pos = index;
+    for (let hops = 0; hops < 6 && pos >= 0; hops += 1) {
+      const lineStart = blob.lastIndexOf("\n", pos - 1) + 1;
+      let lineEnd = blob.indexOf("\n", lineStart);
+      if (lineEnd < 0) lineEnd = blob.length;
+      const line = blob.slice(lineStart, lineEnd);
+      if (
+        /^\s*(?:not\s+claimed|do\s+not\s+claim|don'?t\s+claim|exclude[ds]?|excluding)\b/i.test(line)
+      ) {
+        return true;
+      }
+      // Stop at blank lines or new ALL-CAPS / labeled sections.
+      if (!line.trim()) return false;
+      if (
+        hops > 0 &&
+        /^\s*(?:technical skills|professional (?:summary|experience)|education|job search|core:|cloud and|analytics:|[A-Z][A-Z0-9 /&-]{3,})\s*$/i.test(
+          line.trim()
+        )
+      ) {
+        return false;
+      }
+      if (lineStart === 0) return false;
+      pos = lineStart - 1;
+    }
+    return false;
+  }
+
+  /**
+   * Classify a keyword hit as confirmed, denied, or aspirational using local context.
+   * Used for skills, seniority tokens, disciplines, and arrangements.
+   */
+  function mentionStatus(text, index) {
+    const blob = String(text || "");
+    if (index < 0 || index >= blob.length) return "denied";
+    const lineStart = blob.lastIndexOf("\n", index - 1) + 1;
+    let lineEnd = blob.indexOf("\n", index);
+    if (lineEnd < 0) lineEnd = blob.length;
+    const line = blob.slice(lineStart, lineEnd);
+    const before = blob.slice(Math.max(0, index - 160), index).replace(/\s+/g, " ");
+    const sentStart = Math.max(
+      blob.lastIndexOf(".", index - 1) + 1,
+      blob.lastIndexOf(";", index - 1) + 1,
+      lineStart
+    );
+    let sentEnd = blob.length;
+    for (const ch of [".", ";", "\n"]) {
+      const at = blob.indexOf(ch, index);
+      if (at >= 0 && at < sentEnd) sentEnd = at;
+    }
+    const sentence = blob.slice(sentStart, sentEnd);
+
+    if (inDeniedSection(blob, index)) return "denied";
+    if (
+      /^\s*(?:not\s+claimed|do\s+not\s+claim|don'?t\s+claim|exclude[ds]?|excluding)\b/i.test(line)
+    ) {
+      return "denied";
+    }
+    // "no production LLM", "without Kubernetes", "never used Java",
+    // "no professional experience with Kubernetes, Java, or Azure", etc.
+    if (
+      /\b(?:no|not|without|never|lack(?:ing)?|zero)\b(?:\s+(?:professional|production|hands[\s-]?on|prior|direct|real[\s-]?world))?(?:[\s\w,/+&|.-]{0,80})$/i.test(
+        before
+      )
+    ) {
+      return "denied";
+    }
+    if (/\bno\s+professional\s+experience\s+with\b/i.test(before)) {
+      return "denied";
+    }
+    if (/\b(?:exclude[ds]?|excluding|except(?:\s+for)?)\b[\w\s,/+.-]{0,100}$/i.test(before)) {
+      return "denied";
+    }
+    if (
+      /\b(?:interested\s+in\s+learning|want(?:s)?\s+to\s+learn|hoping\s+to\s+learn|plan(?:s|ning)?\s+to\s+learn|currently\s+learning)\b/i.test(
+        sentence
+      ) &&
+      !/\b(?:built|developed|implemented|used|using|hands[\s-]?on|production|professional\s+experience)\b/i.test(
+        sentence
+      )
+    ) {
+      return "aspirational";
+    }
+    return "confirmed";
+  }
+
+  function eachMatch(blob, pattern, fn) {
+    const flags = pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`;
+    const re = new RegExp(pattern.source, flags);
+    let m;
+    while ((m = re.exec(blob)) !== null) {
+      fn(m);
+      if (m.index === re.lastIndex) re.lastIndex += 1;
+    }
+  }
+
   function extractSkills(text) {
     const found = [];
     const blob = String(text || "");
     for (const [label, patterns] of TECH_ALIASES) {
-      if (patterns.some((p) => p.test(blob)) && !found.includes(label)) {
-        found.push(label);
+      let confirmed = false;
+      for (const p of patterns) {
+        eachMatch(blob, p, (m) => {
+          if (!confirmed && mentionStatus(blob, m.index) === "confirmed") confirmed = true;
+        });
+        if (confirmed) break;
       }
+      if (confirmed && !found.includes(label)) found.push(label);
     }
     return found;
   }
@@ -257,27 +361,73 @@
     const found = [];
     const blob = String(text || "");
     for (const d of DISCIPLINES) {
-      if (d.patterns.some((p) => p.test(blob)) && !found.includes(d.id)) {
-        found.push(d.id);
+      let confirmed = false;
+      for (const p of d.patterns) {
+        eachMatch(blob, p, (m) => {
+          if (!confirmed && mentionStatus(blob, m.index) === "confirmed") confirmed = true;
+        });
+        if (confirmed) break;
       }
+      if (confirmed && !found.includes(d.id)) found.push(d.id);
     }
     return found;
   }
 
-  function extractSeniority(text) {
+  function extractSeniorityRaw(text) {
     const found = [];
     const blob = String(text || "");
     for (const [label, pattern] of SENIORITY_PATTERNS) {
-      if (pattern.test(blob) && !found.includes(label)) found.push(label);
+      eachMatch(blob, pattern, (m) => {
+        if (mentionStatus(blob, m.index) === "confirmed" && !found.includes(label)) {
+          found.push(label);
+        }
+      });
     }
     return found;
+  }
+
+  function resolveSeniorityBands(raw, years, title) {
+    const order = ["intern", "junior", "mid", "senior", "staff", "principal", "lead"];
+    const titleBands = extractSeniorityRaw(String(title || ""));
+    let bands = raw.slice();
+    const inferred = inferSeniorityFromYears(years);
+
+    if (years != null && Number.isFinite(years)) {
+      if (years >= 5) bands = bands.filter((b) => b !== "junior" && b !== "intern");
+      if (years < 2) bands = bands.filter((b) => !["senior", "staff", "principal", "lead"].includes(b));
+    }
+    // Prefer title-derived bands when present.
+    if (titleBands.length) {
+      bands = [...new Set([...titleBands, ...bands.filter((b) => titleBands.includes(b))])];
+      if (years != null && years >= 5) {
+        bands = bands.filter((b) => b !== "junior" && b !== "intern");
+      }
+    }
+    if (!bands.length && inferred) bands = [inferred];
+    if (inferred && !bands.includes(inferred)) {
+      const oi = order.indexOf(inferred);
+      const near = bands.some((b) => Math.abs(order.indexOf(b) - oi) <= 1);
+      if (!near || !bands.length) bands = [inferred, ...bands];
+    }
+    // Conflicting junior+senior from noisy text → keep the more senior signal.
+    if (bands.includes("senior") || bands.includes("staff") || bands.includes("principal")) {
+      bands = bands.filter((b) => b !== "junior" && b !== "intern");
+    }
+    return bands;
+  }
+
+  function extractSeniority(text) {
+    return extractSeniorityRaw(text);
   }
 
   function extractYears(text) {
     const blob = String(text || "");
     const m =
-      blob.match(/(\d{1,2})\+?\s*(?:\+)?\s*(?:years?|yrs?)\s+(?:of\s+)?(?:experience|exp)/i) ||
-      blob.match(/(?:experience|exp)[:\s]+(\d{1,2})\+?\s*(?:years?|yrs?)/i);
+      blob.match(
+        /(\d{1,2})\+?\s*(?:\+)?\s*(?:years?|yrs?)\s+(?:of\s+)?(?:(?:professional|relevant|industry|total|combined)\s+)?(?:experience|exp)\b/i
+      ) ||
+      blob.match(/(?:experience|exp)[:\s]+(\d{1,2})\+?\s*(?:years?|yrs?)/i) ||
+      blob.match(/(\d{1,2})\+?\s*(?:years?|yrs?)\s+(?:of\s+)?(?:professional|relevant|industry)\b/i);
     if (!m) return null;
     const n = Number(m[1]);
     return Number.isFinite(n) && n >= 0 && n <= 50 ? n : null;
@@ -288,12 +438,60 @@
       .split(/\r?\n/)
       .map((l) => l.trim())
       .filter(Boolean);
-    for (const line of lines.slice(0, 12)) {
-      if (/engineer|developer|scientist|architect|sre|devops/i.test(line) && line.length < 80) {
+    const roleRe = /engineer|developer|scientist|architect|sre|devops|analyst/i;
+    for (const line of lines.slice(0, 16)) {
+      // "Senior Data Engineer | Toronto | email" — take the role segment.
+      const rolePart = line.split("|")[0].trim().replace(/^[-•*\d.\s]+/, "");
+      if (roleRe.test(rolePart) && rolePart.length < 80) {
+        // Skip lines that are mostly a person name + role jammed without separators when too long overall
+        return rolePart.slice(0, 80);
+      }
+      if (roleRe.test(line) && line.length < 100) {
         return line.replace(/^[-•*\d.\s]+/, "").slice(0, 80);
       }
     }
-    return lines[0] ? lines[0].slice(0, 80) : "";
+    return "";
+  }
+
+  function extractDesiredTitles(text, fallbackTitle) {
+    const blob = String(text || "");
+    // Stop before ". Location" / newline so wrapped preference lines don't leak.
+    const m = blob.match(
+      /preferred titles?\s*:\s*([^\n]+?)(?:\.\s*(?:location|minimum|employment|exclude)\b|\n|$)/i
+    );
+    const out = [];
+    if (m) {
+      for (const part of m[1].split(/,|\/|;|\band\b/i)) {
+        const t = part.replace(/\.\s*$/, "").trim();
+        if (
+          t &&
+          t.length < 80 &&
+          /engineer|developer|scientist|architect|analyst|sre|devops|manager/i.test(t) &&
+          !out.includes(t)
+        ) {
+          out.push(t);
+        }
+      }
+    }
+    if (fallbackTitle && !out.includes(fallbackTitle)) out.unshift(fallbackTitle);
+    return out;
+  }
+
+  function extractMinimumSalaryCad(text) {
+    const blob = String(text || "");
+    const patterns = [
+      /minimum(?:\s+desired)?(?:\s+base)?\s+salary\s*:\s*CAD\s*\$?\s*([\d,]+)/i,
+      /CAD\s*\$\s*([\d,]+)(?:\s*(?:annually|\/\s*year|per\s+year))?/i,
+      /\$\s*([\d,]+)\s*(?:CAD|canadian)/i,
+      /(?:salary|compensation|base)\s*(?:expectation|target|floor|minimum)?\s*(?:of|:)?\s*CAD\s*\$?\s*([\d,]+)/i,
+    ];
+    for (const p of patterns) {
+      const m = blob.match(p);
+      if (!m) continue;
+      const n = Number(String(m[1]).replace(/,/g, ""));
+      if (Number.isFinite(n) && n >= 30000 && n <= 500000) return Math.round(n);
+    }
+    return 0;
   }
 
   function extractLocations(text) {
@@ -313,9 +511,16 @@
   function extractArrangements(text) {
     const blob = String(text || "");
     const found = [];
-    if (/\bremote\b/i.test(blob)) found.push("remote");
-    if (/\bhybrid\b/i.test(blob)) found.push("hybrid");
-    if (/\b(?:on[\s-]?site|in[\s-]?office)\b/i.test(blob)) found.push("onsite");
+    const tryAdd = (label, pattern) => {
+      let ok = false;
+      eachMatch(blob, pattern, (m) => {
+        if (!ok && mentionStatus(blob, m.index) === "confirmed") ok = true;
+      });
+      if (ok && !found.includes(label)) found.push(label);
+    };
+    tryAdd("remote", /\bremote\b/i);
+    tryAdd("hybrid", /\bhybrid\b/i);
+    tryAdd("onsite", /\b(?:on[\s-]?site|in[\s-]?office)\b/i);
     return found;
   }
 
@@ -324,13 +529,18 @@
     const blob = String(text || "");
     if (!blob.trim()) return profile;
     profile.current_title = extractTitle(blob);
-    profile.desired_titles = profile.current_title ? [profile.current_title] : [];
+    profile.desired_titles = extractDesiredTitles(blob, profile.current_title);
     profile.years_experience = extractYears(blob);
     profile.skills = extractSkills(blob);
     profile.disciplines = extractDisciplines(blob);
-    profile.seniority = extractSeniority(blob);
+    profile.seniority = resolveSeniorityBands(
+      extractSeniorityRaw(blob),
+      profile.years_experience,
+      profile.current_title
+    );
     profile.preferred_locations = extractLocations(blob);
     profile.work_arrangements = extractArrangements(blob);
+    profile.minimum_salary_cad = extractMinimumSalaryCad(blob);
     return profile;
   }
 
@@ -499,7 +709,34 @@
     if (!wanted.length && inferred) wanted = [inferred];
     const jobSen = String(job.seniority || "").toLowerCase();
     const juniorProfile = wanted.some((b) => b === "junior" || b === "intern");
+    const order = ["intern", "junior", "mid", "senior", "staff", "principal", "lead"];
+    const candIdx = Math.max(
+      -1,
+      ...wanted.map((w) => order.indexOf(w)).filter((i) => i >= 0)
+    );
+    const seniorPlusProfile = candIdx >= order.indexOf("senior");
+    const juniorJob =
+      jobSen === "junior" ||
+      jobSen === "intern" ||
+      titleJuniorSignal(job.title);
+
     if (!wanted.length) return { score: 0.5, note: null };
+
+    // Senior (or above) candidate vs explicit junior/entry role — directional mismatch.
+    // Soft demotion only: do not hard-exclude unless the user opted out elsewhere.
+    if (seniorPlusProfile && juniorJob) {
+      return {
+        score: 0.12,
+        note: "Job is junior/entry-level; your profile targets more senior roles",
+      };
+    }
+    if (candIdx >= order.indexOf("mid") && juniorJob && candIdx - order.indexOf("junior") >= 2) {
+      return {
+        score: 0.22,
+        note: "Job is junior/entry-level; your profile is more experienced",
+      };
+    }
+
     // Unknown job seniority: cautious — never invent junior eligibility.
     if (!jobSen) {
       if (juniorProfile) {
@@ -517,10 +754,15 @@
           note: "Job seniority unspecified — compatibility uncertain for junior profiles",
         };
       }
+      if (seniorPlusProfile && titleJuniorSignal(job.title)) {
+        return {
+          score: 0.12,
+          note: "Job is junior/entry-level; your profile targets more senior roles",
+        };
+      }
       return { score: 0.55, note: "Job seniority unspecified — compatibility uncertain" };
     }
 
-    const order = ["junior", "mid", "senior", "staff", "principal", "lead", "intern"];
     let band = 0.4;
     if (wanted.includes(jobSen)) band = 1;
     else {
@@ -535,6 +777,10 @@
         else if (d === 1) band = 0.7;
         else if (d === 2) band = 0.35;
         else band = 0.12;
+        // Overqualified: candidate band clearly above job band.
+        if (candIdx >= 0 && ji >= 0 && candIdx - ji >= 2) {
+          band = Math.min(band, 0.25);
+        }
       }
     }
 
@@ -567,6 +813,10 @@
       }
     } else if (!jobYears && candYears == null) {
       note = null;
+    }
+
+    if (!note && candIdx >= 0 && jobSen && order.indexOf(jobSen) >= 0 && candIdx - order.indexOf(jobSen) >= 2) {
+      note = `Job seniority (${jobSen}) is below your profile band (${wanted[0]})`;
     }
 
     return { score: Math.min(1, band * mult), note };
@@ -728,12 +978,16 @@
     const other =
       (arr.score + (loc.reason.includes("match") || loc.reason.includes("canada") ? 1 : 0.5)) / 2;
 
-    // Weight seniority more heavily; large experience gaps must not look like strong matches.
+    // Prefer role-family + seniority; skills matter but cannot dominate career fit.
     let score =
-      title * 0.25 + skills.score * 0.25 + sen.score * 0.3 + disc * 0.1 + other * 0.1;
+      title * 0.3 + skills.score * 0.2 + sen.score * 0.3 + disc * 0.15 + other * 0.05;
     if (sen.score < 0.4) {
       // Cap: staff/principal vs junior cannot land in the 80%+ band on skills alone.
-      score = Math.min(score, 0.4 + sen.score * 0.25);
+      score = Math.min(score, 0.35 + sen.score * 0.25);
+    }
+    if ((profile.skills || []).length && skills.matched.length === 0) {
+      // Title/discipline alone must not look like a strong confirmed skill match.
+      score = Math.min(score, 0.58);
     }
     const wantedSen = (profile.seniority || []).map((s) => String(s).toLowerCase());
     const inferredSen = inferSeniorityFromYears(profile.years_experience);
@@ -741,6 +995,9 @@
       wantedSen.includes("junior") ||
       wantedSen.includes("intern") ||
       inferredSen === "junior";
+    const seniorPlusProfile =
+      wantedSen.some((b) => ["senior", "staff", "principal", "lead"].includes(b)) ||
+      (inferredSen && ["senior", "staff", "principal"].includes(inferredSen));
     if (juniorProfile) {
       if (titleJuniorSignal(job.title) || String(job.seniority || "").toLowerCase() === "junior") {
         score = Math.min(1, score + 0.12);
@@ -752,12 +1009,21 @@
       ) {
         score = Math.max(0, score - 0.18);
       }
+    } else if (seniorPlusProfile) {
+      if (titleJuniorSignal(job.title) || String(job.seniority || "").toLowerCase() === "junior") {
+        score = Math.max(0, score - 0.2);
+      } else if (title >= 0.7 && disc >= 0.9 && sen.score >= 0.7) {
+        score = Math.min(1, score + 0.06);
+      }
     }
     const percent = Math.round(Math.max(0, Math.min(1, score)) * 100);
 
     const reasons = [];
     if (title >= 0.7) reasons.push("Title aligns with your preferred role family");
     else if (title >= 0.5) reasons.push("Partial title / role-family overlap");
+    else if (title < 0.45 && hasTitlePref) {
+      reasons.push("Role family differs from your preferred titles");
+    }
     if (skills.matched.length) {
       reasons.push(`Confirmed matching skills: ${skills.matched.slice(0, 5).join(", ")}`);
     }
@@ -767,6 +1033,9 @@
       );
     }
     if (disc >= 0.9) reasons.push("Discipline matches your preferred tracks");
+    else if (disc <= 0.25 && (profile.disciplines || []).length) {
+      reasons.push("Discipline / track differs from your preferred fields");
+    }
     if (sen.note) reasons.push(sen.note);
     else if (sen.score >= 0.9) reasons.push("Seniority compatible");
     else if (sen.score < 0.5) {
