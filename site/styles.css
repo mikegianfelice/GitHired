@@ -125,7 +125,7 @@ button {
   min-width: 0;
 }
 
-/* Desktop: vector G + CSS wordmark. Mobile: vector G only. */
+/* Vector G + CSS wordmark (GitHired) on all breakpoints. */
 .brand-mark-img {
   display: block;
   width: 2.25rem;
@@ -1245,9 +1245,9 @@ fieldset.stack {
     display: none;
   }
 
-  /* Compact nav: standalone vector G only */
   .brand-wordmark {
-    display: none;
+    display: inline;
+    font-size: 1.05rem;
   }
 
   .filter-toolbar {
