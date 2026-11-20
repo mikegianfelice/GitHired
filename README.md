@@ -84,7 +84,7 @@ cd site && python3 -m http.server 8080
 
 <p align="center"><img src="assets/showcase/top-paying-jobs.svg" alt="Top 5 high-paying Canada-eligible engineering jobs discovered by GitHired" width="880" /></p>
 
-**Apply directly:** [1. Cohere ↗](https://jobs.ashbyhq.com/cohere/4ef5101e-b083-49cd-808a-54c754d159e5/application) · [2. Hopper ↗](https://jobs.ashbyhq.com/hopper/7b406c91-9059-437c-9af7-a720b98ee253/application) · [3. Ashby ↗](https://jobs.ashbyhq.com/Ashby/7f0f3837-3433-4ffe-8842-f3dbc3b621da/application) · [4. Block ↗](http://block.xyz/careers/jobs/5196196008?gh_jid=5196196008) · [5. Tenstorrent ↗](https://job-boards.greenhouse.io/tenstorrent/jobs/5260226007)
+**Apply directly:** [1. Cohere ↗](https://jobs.ashbyhq.com/cohere/4ef5101e-b083-49cd-808a-54c754d159e5/application) · [2. Hopper ↗](https://jobs.ashbyhq.com/hopper/7b406c91-9059-437c-9af7-a720b98ee253/application) · [3. Hopper ↗](https://jobs.ashbyhq.com/hopper/e96c8ea0-4d82-4eb4-a227-a0cb3e051fcc/application) · [4. Hopper ↗](https://jobs.ashbyhq.com/hopper/61a52170-aefe-40d1-abe1-10a1efa5d095/application) · [5. Ashby ↗](https://jobs.ashbyhq.com/Ashby/7f0f3837-3433-4ffe-8842-f3dbc3b621da/application)
 
 <p align="center"><strong>Discovered and verified by GitHired · Open Source</strong></p>
 
@@ -95,7 +95,7 @@ cd site && python3 -m http.server 8080
 
 Rank by advertised annual base salary high end, converted to CAD for sorting only (USD×1.35; other currencies excluded). Display the employer-stated currency and range unchanged. No estimates for undisclosed pay.
 
-- Snapshot refreshed: **2026-11-19 21:56 UTC** (preserved on failure — never backdated).
+- Snapshot refreshed: **2026-11-20 21:39 UTC** (preserved on failure — never backdated).
 - Blue ✓ marks listings confirmed against a direct employer career / ATS URL.
 - SVG cards are visual only on GitHub; use **Apply directly** links below the image (order matches card numbers 1–N).
 - **Discovered Today** is shown only when the job’s `first_seen` date is today; otherwise the card shows the last verified date.
