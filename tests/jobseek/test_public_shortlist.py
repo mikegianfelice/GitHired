@@ -178,7 +178,7 @@ class PublicShortlistSelectTests(unittest.TestCase):
         jobs = select_public_jobs(
             [_job(last_seen="2025-01-01T00:00:00Z", first_seen="2025-01-01T00:00:00Z")],
             limit=10,
-            max_age_days=21,
+            max_age_days=14,
             now=NOW,
         )
         self.assertEqual(jobs, [])

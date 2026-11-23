@@ -37,7 +37,7 @@ SCHEMA_VERSION = 2
 # Soft count ceiling only — publish all unique Canada-eligible jobs unless a
 # payload-size safeguard trims (see api_snapshot.MAX_SNAPSHOT_BYTES).
 DEFAULT_LIMIT = 10_000
-DEFAULT_MAX_AGE_DAYS = 21
+DEFAULT_MAX_AGE_DAYS = 14
 MIN_ANNUAL = 30_000.0
 MAX_ANNUAL = 800_000.0
 DEFAULT_USD_TO_CAD = 1.35
