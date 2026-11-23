@@ -480,7 +480,10 @@ class WorkdayAdapter:
                 if self.list_budget_s is None or self.list_budget_s < 1800:
                     self.list_budget_s = 1800.0
                 # Prefer a single inclusive keyword to avoid AND-narrowing.
-                if not (self.search_text or "").strip():
+                # TD: run without searchText to avoid server-side filtering quirks.
+                if tenant.lower() == "td":
+                    self.search_text = ""
+                elif not (self.search_text or "").strip():
                     self.search_text = "developer"
             log.info(
                 "workday start company=%s host=%s site=%s list_budget_s=%s "
@@ -811,6 +814,15 @@ class WorkdayAdapter:
             "offset": offset,
             "searchText": self.search_text or "",
         }
+        # Extract tenant/site for targeted debug logging (e.g., TD quirk).
+        try:
+            # https://{host}/wday/cxs/{tenant}/{site}/jobs
+            parts = list_url.split("/wday/cxs/", 1)[1].split("/", 2)
+            _tenant = parts[0].lower()
+            _site = parts[1]
+        except Exception:
+            _tenant = ""
+            _site = ""
         try:
             resp = self.client.post(
                 list_url,
@@ -823,6 +835,15 @@ class WorkdayAdapter:
         except Exception as exc:  # noqa: BLE001
             return offset, None, [], None, str(exc)
         if resp.status_code != 200:
+            if _tenant in {"td"}:
+                log.info(
+                    "workday list page tenant=%s site=%s offset=%s status=%s payload=%s",
+                    _tenant,
+                    _site,
+                    offset,
+                    resp.status_code,
+                    {"limit": self.page_size, "offset": offset, "searchText": self.search_text or ""},
+                )
             return offset, resp.status_code, [], None, f"HTTP {resp.status_code}"
         try:
             data = resp.json()
@@ -834,6 +855,16 @@ class WorkdayAdapter:
         total = int(raw_total) if isinstance(raw_total, int) and raw_total >= 0 else None
         batch = data.get("jobPostings") or []
         postings = [item for item in batch if isinstance(item, dict)] if isinstance(batch, list) else []
+        if _tenant in {"td"}:
+            log.info(
+                "workday list page tenant=%s site=%s offset=%s postings=%s total_field=%s payload=%s",
+                _tenant,
+                _site,
+                offset,
+                len(postings),
+                total,
+                {"limit": self.page_size, "offset": offset, "searchText": self.search_text or ""},
+            )
         return offset, resp.status_code, postings, total, None
 
     def _paginate_listings(
@@ -971,7 +1002,6 @@ class WorkdayAdapter:
                             retries += 1
                             continue
                         break
-                    http_requests += 1
                     if err:
                         errors.append(f"workday list at offset {offset}: {err}")
                         complete = False
