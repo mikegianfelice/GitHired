@@ -879,10 +879,22 @@ class WorkdayAdapter:
             }
             return listings, None, errors, meta
 
-        offset0, status0, batch0, total0, err0 = self._fetch_list_page(list_url, 0)
-        http_requests += 1
-        pages += 1
-        last_status = status0
+        # Fetch page 0 with retry/backoff on 429 and an optional fallback when
+        # searchText yields an empty result (some tenants ignore searchText or
+        # apply it server-side too strictly for guest sessions).
+        retries0 = 0
+        while True:
+            offset0, status0, batch0, total0, err0 = self._fetch_list_page(list_url, 0)
+            http_requests += 1
+            pages += 1
+            last_status = status0
+            if status0 == 429 and retries0 < 5:
+                import time as _time
+                delay = min(60, 5 * (2**retries0))
+                _time.sleep(delay)
+                retries0 += 1
+                continue
+            break
         if err0:
             errors.append(f"workday list at offset {offset0}: {err0}")
             meta = {
@@ -894,6 +906,21 @@ class WorkdayAdapter:
             }
             return listings, last_status, errors, meta
         total = total0
+        # Fallback: when searchText is set and first page is empty, retry once without it.
+        if (not batch0) and (total0 in (0, None)) and (self.search_text or "").strip():
+            saved_q = self.search_text
+            self.search_text = ""
+            try:
+                _off2, st2, batch2, tot2, err2 = self._fetch_list_page(list_url, 0)
+                http_requests += 1
+                pages += 1
+                if not err2 and st2 == 200 and batch2:
+                    batch0, total = batch2, tot2
+                    last_status = st2
+                else:
+                    last_status = st2 if st2 is not None else last_status
+            finally:
+                self.search_text = saved_q
         _absorb(batch0)
         if not batch0:
             complete = True
