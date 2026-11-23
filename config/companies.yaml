@@ -383,6 +383,10 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/clickhouse → 209 jobs; ca_eligible=4, ca_location_signals=5,
     eng=129'
+- name: Clio
+  careers_url: https://www.clio.com/careers/
+  enabled: true
+  notes: ATS autodetect pending
 - name: Clouddx
   careers_url: https://jobs.smartrecruiters.com/CloudDXInc
   ats: smartrecruiters
@@ -536,6 +540,10 @@ companies:
   board_token: dropbox
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/dropbox → 21 jobs (https://boards-api.greenhouse.io/v1/boards/dropbox/jobs)'
+- name: ecobee
+  careers_url: https://www.ecobee.com/en-ca/careers/
+  enabled: true
+  notes: ATS autodetect pending
 - name: Elastic
   domain: elastic.co
   careers_url: https://www.elastic.co/careers
@@ -908,6 +916,12 @@ companies:
   board_token: leagueinc
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/leagueinc → 5 jobs'
+- name: League Inc.
+  careers_url: https://boards.greenhouse.io/leagueinc
+  ats: greenhouse
+  board_token: leagueinc
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Lightspeed
   domain: lightspeedhq.com
   careers_url: https://www.lightspeedhq.com/careers/
@@ -1714,6 +1728,10 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/vanta → 81 jobs; ca_eligible=7, ca_location_signals=7,
     eng=29'
+- name: Vendasta
+  careers_url: https://www.vendasta.com/careers/
+  enabled: true
+  notes: ATS autodetect pending
 - name: Venn
   careers_url: https://jobs.ashbyhq.com/venn
   ats: ashby
@@ -1851,6 +1869,12 @@ companies:
   board_token: zoominfo
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/zoominfo → 102 jobs'
+- name: ZoomInfo Technologies LLC
+  careers_url: https://boards.greenhouse.io/zoominfo
+  ats: greenhouse
+  board_token: zoominfo
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Zscaler
   careers_url: https://boards.greenhouse.io/zscaler
   ats: greenhouse
