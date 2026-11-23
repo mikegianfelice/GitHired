@@ -50,6 +50,13 @@ Resume drafting and application submission stay behind explicit approval (`githi
 
 **Coverage note (2026-11):** builtin [`config/companies.yaml`](../config/companies.yaml) holds **171** ATS profiles (**160** enabled). The 2026-11-03 expansion added 50 Greenhouse/Lever/Ashby boards; the 2026-11-15 expansion added **26** live-validated Canada-tech boards (see [`docs/employer-expansion-audit.md`](employer-expansion-audit.md)) after revalidating 73 CSV leads — 47 were skipped (unsupported ATS, empty/404 boards, or zero mid+ Canada tech roles). Boards with no Canadian location evidence remain in the registry **disabled** — description keyword hits alone do not enable a source. Canadian-heavy examples also include Ada (Toronto AI), Arctic Wolf (Waterloo cybersecurity), Jane App, RAVL, ShyftLabs, Desjardins, and Wave (Toronto fintech). Many UNCERTAIN scores are US-primary remotes or unspecified work arrangements — enrichment cannot invent Canadian eligibility for US-only boards.
 
+### API & MCP filter behaviour updates (2026-11-23)
+
+- Province filters now accept two-letter codes (e.g. `ON`) or full names (e.g. `Ontario`), case-insensitive. Unrecognized province values return a clear validation error instead of a silent empty result.
+- Seniority filters accept common aliases (`sr` → `senior`, `jr` → `junior`) and validate against known bands.
+- Keyword search precision improved: title/role-family/company/skills/location matches qualify results; description text contributes only a weak ranking boost and no longer qualifies results on its own. Company (`Cohere`) and skill (`PySpark`) searches are unaffected.
+- MCP `search_jobs` now exposes `cursor`/`next_cursor` and returns `applied_filters` so agent clients can paginate deterministically and reflect normalized filters.
+
 ### Enrichment status values
 
 `pending` → `processing` (leased with worker id + token) → `complete` | `failed` | `stale` (TTL expired; re-queued by enrich). Completion requires matching lease ownership so an expired worker cannot overwrite a newer claim. Failed jobs get `enrich_next_retry_at` (exponential backoff). Incomplete jobs are never shown as confirmed matches.

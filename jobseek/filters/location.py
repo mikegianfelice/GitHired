@@ -84,6 +84,54 @@ _CANADIAN_CITIES = (
     "iqaluit",
 )
 
+# City → Province canonical mapping (used only when province is not explicitly present).
+_CITY_TO_PROVINCE: dict[str, str] = {
+    # Ontario
+    "toronto": "Ontario",
+    "ottawa": "Ontario",
+    "waterloo": "Ontario",
+    "kitchener": "Ontario",
+    "mississauga": "Ontario",
+    "brampton": "Ontario",
+    "hamilton": "Ontario",
+    "london": "Ontario",
+    "markham": "Ontario",
+    "vaughan": "Ontario",
+    "oakville": "Ontario",
+    "burlington": "Ontario",
+    "oshawa": "Ontario",
+    "windsor": "Ontario",
+    # Quebec
+    "montreal": "Quebec",
+    "montréal": "Quebec",
+    "gatineau": "Quebec",
+    "laval": "Quebec",
+    "quebec city": "Quebec",
+    # British Columbia
+    "vancouver": "British Columbia",
+    "victoria": "British Columbia",
+    "surrey": "British Columbia",
+    "burnaby": "British Columbia",
+    "richmond": "British Columbia",
+    # Alberta
+    "calgary": "Alberta",
+    "edmonton": "Alberta",
+    # Manitoba
+    "winnipeg": "Manitoba",
+    # Saskatchewan
+    "saskatoon": "Saskatchewan",
+    "regina": "Saskatchewan",
+    # Atlantic
+    "halifax": "Nova Scotia",
+    "st. john's": "Newfoundland and Labrador",
+    "st johns": "Newfoundland and Labrador",
+    "charlottetown": "Prince Edward Island",
+    # Territories
+    "whitehorse": "Yukon",
+    "yellowknife": "Northwest Territories",
+    "iqaluit": "Nunavut",
+}
+
 # Hiring-eligibility phrases acceptable in description (not office tourism).
 _CANADA_HIRE = re.compile(
     r"""
@@ -442,6 +490,20 @@ def find_any_canadian_province(location: str) -> list[str]:
         if canonical and canonical not in seen:
             found.append(canonical)
             seen.add(canonical)
+    # Fallback: infer from known Canadian cities when no province tokens found.
+    if not found:
+        cities = find_any_canadian_cities(location)
+        for city in cities:
+            key = city.casefold()
+            # Normalize special-cased city labels
+            if key == "montreal":
+                key = "montreal"
+            if key == "london":
+                key = "london"
+            prov = _CITY_TO_PROVINCE.get(key)
+            if prov and prov not in seen:
+                found.append(prov)
+                seen.add(prov)
     return found
 
 

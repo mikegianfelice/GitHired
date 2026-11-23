@@ -52,3 +52,10 @@ swaps without redeploying Worker code.
 ## Salary policy
 
 Filters use **employer-advertised annual base** only. Estimates are never produced or filtered as if real.
+
+## Filters and pagination (2026-11-23)
+
+- Province accepts two-letter codes (e.g. `ON`) or full names (e.g. `Ontario`), case-insensitive. Invalid values return a validation error (`invalid_province`).
+- Seniority accepts common aliases (`sr`/`jr`) and validates against known bands.
+- Keyword search precision: description text no longer qualifies results; it contributes a weak rank boost only. Company/skill searches unaffected.
+- MCP `search_jobs` supports `cursor` and returns `next_cursor`, `total`, and `applied_filters` for deterministic agent pagination.

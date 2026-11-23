@@ -21,6 +21,62 @@ export class SearchFilterValidationError extends Error {
 }
 
 const WORK_MODES = new Set(["remote", "hybrid", "onsite"]);
+const PROVINCE_CODE_TO_NAME: Record<string, string> = {
+  ON: "Ontario",
+  QC: "Quebec",
+  BC: "British Columbia",
+  AB: "Alberta",
+  MB: "Manitoba",
+  SK: "Saskatchewan",
+  NS: "Nova Scotia",
+  NB: "New Brunswick",
+  NL: "Newfoundland and Labrador",
+  PE: "Prince Edward Island",
+  YT: "Yukon",
+  NT: "Northwest Territories",
+  NU: "Nunavut",
+};
+const PROVINCE_NAME_TO_CODE: Record<string, string> = Object.fromEntries(
+  Object.entries(PROVINCE_CODE_TO_NAME).map(([code, name]) => [name.toLowerCase(), code]),
+);
+
+const SENIORITY_ALIASES: Record<string, string> = {
+  sr: "senior",
+  jr: "junior",
+  "s.r.": "senior",
+  "j.r.": "junior",
+};
+const ALLOWED_SENIORITY = new Set([
+  "intern",
+  "junior",
+  "mid",
+  "senior",
+  "staff",
+  "principal",
+  "lead",
+]);
+
+function canonicalProvinceCode(input: string | null | undefined): string | undefined {
+  if (!input) return undefined;
+  const raw = input.trim();
+  if (!raw) return undefined;
+  // Accept case-insensitive two-letter codes
+  const asCode = raw.length <= 3 ? raw.toUpperCase() : raw.toUpperCase();
+  if (PROVINCE_CODE_TO_NAME[asCode]) return asCode;
+  // Accept full names, case-insensitive
+  const code = PROVINCE_NAME_TO_CODE[raw.toLowerCase()];
+  if (code) return code;
+  return undefined;
+}
+
+function canonicalSeniority(input: string | null | undefined): string | undefined {
+  if (!input) return undefined;
+  const raw = input.trim().toLowerCase();
+  if (!raw) return undefined;
+  const aliased = SENIORITY_ALIASES[raw] || raw;
+  if (ALLOWED_SENIORITY.has(aliased)) return aliased;
+  return undefined;
+}
 
 export function parseSearchFilters(params: URLSearchParams): SearchFilters {
   const sortRaw = (params.get("sort") || "relevance").toLowerCase();
@@ -40,10 +96,28 @@ export function parseSearchFilters(params: URLSearchParams): SearchFilters {
       `Unsupported work_mode '${workModeRaw}'. Allowed values: remote, hybrid, onsite.`,
     );
   }
+  const provinceRaw = params.get("province")?.trim() || undefined;
+  let province: string | undefined = undefined;
+  if (provinceRaw) {
+    province = canonicalProvinceCode(provinceRaw);
+    if (!province) {
+      throw new SearchFilterValidationError(
+        "invalid_province",
+        `Unrecognized province '${provinceRaw}'. Accept 2-letter codes (e.g. ON) or full names (e.g. Ontario).`,
+      );
+    }
+  }
+  const seniorityCanon = canonicalSeniority(params.get("seniority")?.trim()?.toLowerCase() || undefined);
+  if (params.get("seniority") && !seniorityCanon) {
+    throw new SearchFilterValidationError(
+      "invalid_seniority",
+      `Unrecognized seniority '${params.get("seniority")}'. Allowed: intern, junior, mid, senior, staff, principal, lead (case-insensitive; sr/jr accepted).`,
+    );
+  }
   return {
     q: params.get("q")?.trim() || undefined,
     location: params.get("location")?.trim() || undefined,
-    province: params.get("province")?.trim()?.toUpperCase() || undefined,
+    province,
     remote: parseBool(params.get("remote")),
     work_mode: workModeRaw,
     // Non-positive / NaN salary bounds are ignored (never invent floors/ceilings).
@@ -56,7 +130,7 @@ export function parseSearchFilters(params: URLSearchParams): SearchFilters {
         ? salaryMaxRaw
         : undefined,
     salary_disclosed: parseBool(params.get("salary_disclosed")),
-    seniority: params.get("seniority")?.trim()?.toLowerCase() || undefined,
+    seniority: seniorityCanon,
     company: params.get("company")?.trim() || undefined,
     sort,
     limit: Number.isFinite(limitRaw) ? Math.min(MAX_LIMIT, Math.max(1, Math.floor(limitRaw))) : DEFAULT_LIMIT,
@@ -91,15 +165,29 @@ function hasToken(hay: string, token: string): boolean {
   return tokens(hay).includes(token.toLowerCase());
 }
 
+function keywordHitFields(job: ApiJob): string[] {
+  // Fields allowed to qualify a keyword filter; description is intentionally excluded (weak signal).
+  return [
+    job.title || "",
+    job.company || "",
+    job.location || "",
+    job.province || "",
+    job.track || "",
+    job.seniority || "",
+    job.technologies.join(" "),
+  ].map((s) => s.toLowerCase());
+}
+
 function relevanceScore(job: ApiJob, q: string | undefined): number {
   if (!q) return 0;
   const h = haystack(job);
   let score = 0;
   for (const t of tokens(q)) {
-    if (hasToken(job.title, t)) score += 8;
+    if (hasToken(job.title, t)) score += 10;
+    else if (hasToken(job.track || "", t)) score += 7;
     else if (hasToken(job.company, t)) score += 5;
     else if (job.technologies.some((x) => hasToken(x, t))) score += 4;
-    else if (hasToken(h, t)) score += 2;
+    else if (hasToken(h, t)) score += 1; // description/other weak boost only
   }
   if (job.salary_available) score += 1;
   if (job.verified) score += 1;
@@ -118,12 +206,12 @@ function salaryCad(job: ApiJob, fx: number): number | null {
 /** Salary filters apply to advertised annual base only (never estimates). */
 export function jobMatchesFilters(job: ApiJob, filters: SearchFilters, fx: number): boolean {
   if (filters.q) {
-    const h = haystack(job);
     const all = tokens(filters.q);
     if (all.length) {
-      const hits = all.filter((t) => hasToken(h, t) || hasToken(job.title, t)).length;
-      // Single token: must match. Multi-token: require all tokens (precision over recall).
-      if (hits < all.length) return false;
+      const fields = keywordHitFields(job);
+      // Require every token to appear in at least one non-description field.
+      const allHit = all.every((t) => fields.some((f) => hasToken(f, t)));
+      if (!allHit) return false;
     }
   }
   if (filters.location) {
