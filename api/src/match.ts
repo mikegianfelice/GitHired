@@ -1,5 +1,5 @@
 import type { ApiJob, ApiSnapshot, MatchProfileInput, SearchFilters } from "./types";
-import { jobMatchesFilters } from "./search";
+import { jobMatchesFilters, remoteScopeRank } from "./search";
 
 /**
  * Deterministic profile matching — port of site/match-engine.js intent.
@@ -421,6 +421,8 @@ export interface MatchResult {
   last_verified: string;
   salary_max_cad: number | null;
   work_arrangement: string;
+  remote_scope: string;
+  province: string | null;
 }
 
 export function matchProfile(
@@ -593,7 +595,9 @@ export function matchProfile(
             : senScore < 0.5
               ? "Seniority / experience may be a stretch for this listing"
               : null,
-      `Canada-eligible listing (${job.work_arrangement}, scope=${job.remote_scope})`,
+      job.remote_scope === "global"
+        ? `Worldwide-remote listing (${job.work_arrangement}, scope=global; ranked below Canada-specific roles)`
+        : `Canada-eligible listing (${job.work_arrangement}, scope=${job.remote_scope})`,
       job.salary_available
         ? sal.meets_with_max_only
           ? `Advertised range ${job.salary_currency} ${Math.round(job.salary_min || 0).toLocaleString()}–${Math.round(job.salary_max || 0).toLocaleString()} overlaps your floor at the high end only`
@@ -614,18 +618,26 @@ export function matchProfile(
       last_verified: job.last_verified,
       salary_max_cad: job.salary_max_cad,
       work_arrangement: job.work_arrangement,
+      remote_scope: job.remote_scope,
+      province: job.province,
     });
   }
 
-  scored.sort((a, b) => b.match_score - a.match_score || a.title.localeCompare(b.title));
+  scored.sort((a, b) => {
+    // Prefer Canada/province scope above worldwide-remote even when scores tie or global scores higher.
+    const scopeDiff = remoteScopeRank(a as unknown as ApiJob) - remoteScopeRank(b as unknown as ApiJob);
+    if (scopeDiff !== 0) return scopeDiff;
+    return b.match_score - a.match_score || a.title.localeCompare(b.title);
+  });
 
   return {
     matches: scored.slice(0, limit),
     dataset_id: snapshot.dataset_id,
     generated_at: snapshot.generated_at,
     note:
-      "Deterministic relevance against GitHired's tracked Canada-eligible jobs — not an LLM assessment, " +
+      "Deterministic relevance against GitHired's tracked Canada-eligible and optional worldwide-remote jobs — not an LLM assessment, " +
       "not a probability of being hired, and not a full Canadian labour-market census. " +
+      "Worldwide-remote (remote_scope=global) ranks below Canada/province matches. " +
       `Arrangement filter: ${allowedArrangements.length ? allowedArrangements.join("+") : "none (all arrangements)"}; ` +
       `salary mode: ${salaryMode} (${salaryMode === "flexible" ? "max may meet floor" : "min must meet floor"}).`,
     filter_semantics: {

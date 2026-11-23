@@ -90,3 +90,14 @@ test("seniority normalizes aliases and validates values", () => {
     (err) => err instanceof SearchFilterValidationError && err.code === "invalid_seniority",
   );
 });
+
+test("remote_scope and exclude_global_remote parse and validate", () => {
+  let f = parseSearchFilters(new URLSearchParams("remote_scope=global"));
+  assert.equal(f.remote_scope, "global");
+  f = parseSearchFilters(new URLSearchParams("exclude_global_remote=true"));
+  assert.equal(f.exclude_global_remote, true);
+  assert.throws(
+    () => parseSearchFilters(new URLSearchParams("remote_scope=mars")),
+    (err) => err instanceof SearchFilterValidationError && err.code === "invalid_remote_scope",
+  );
+});

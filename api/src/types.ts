@@ -63,6 +63,10 @@ export interface SearchFilters {
   province?: string;
   remote?: boolean;
   work_mode?: string;
+  /** Exact remote_scope match: canada | province | americas | global | local | unspecified */
+  remote_scope?: string;
+  /** When true, drop remote_scope=global jobs from results. */
+  exclude_global_remote?: boolean;
   salary_min?: number;
   salary_max?: number;
   salary_disclosed?: boolean;

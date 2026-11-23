@@ -21,7 +21,7 @@ const TOOLS = [
   {
     name: "search_jobs",
     description:
-      "Search current Canada-eligible technology jobs tracked by GitHired from employer ATS boards. Returns compact results with original apply URLs. Province accepts codes (ON) or full names (Ontario). Does not invent jobs or salaries.",
+      "Search Canada-eligible technology jobs (plus optional worldwide-remote roles labeled remote_scope=global) tracked by GitHired from employer ATS boards. Canada/province matches rank above global. Returns compact results with original apply URLs and remote_scope. Province accepts codes (ON) or full names (Ontario). Use exclude_global_remote=true or remote_scope to filter. Does not invent jobs or salaries.",
     annotations: READ_ONLY_OPEN_WORLD,
     inputSchema: {
       type: "object",
@@ -31,6 +31,16 @@ const TOOLS = [
         province: { type: "string", description: "Canadian province (code or full name, e.g. ON or Ontario)" },
         remote: { type: "boolean" },
         work_mode: { type: "string", enum: ["remote", "hybrid", "onsite"] },
+        remote_scope: {
+          type: "string",
+          enum: ["canada", "province", "americas", "global", "local", "unspecified"],
+          description:
+            "Exact remote_scope match. global = explicit worldwide/anywhere remote (no invented Canadian province).",
+        },
+        exclude_global_remote: {
+          type: "boolean",
+          description: "When true, drop remote_scope=global jobs from results.",
+        },
         salary_disclosed: { type: "boolean", description: "true: only jobs with advertised salary; false: only jobs without; omit for either" },
         minimum_salary: {
           type: "number",
@@ -107,7 +117,7 @@ const TOOLS = [
   {
     name: "get_market_stats",
     description:
-      "Aggregate statistics from GitHired's tracked Canadian tech employer dataset — not a full labour-market census.",
+      "Aggregate statistics from GitHired's tracked Canadian tech employer dataset — not a full labour-market census. Includes by_remote_scope so worldwide-remote (global) jobs are counted under remote_scope=global, not as Canadian provinces.",
     annotations: READ_ONLY_OPEN_WORLD,
     inputSchema: {
       type: "object",
@@ -116,6 +126,15 @@ const TOOLS = [
         province: { type: "string" },
         seniority: { type: "string" },
         work_arrangement: { type: "string", enum: ["remote", "hybrid", "onsite"] },
+        remote_scope: {
+          type: "string",
+          enum: ["canada", "province", "americas", "global", "local", "unspecified"],
+          description: "Optional exact remote_scope filter before aggregating.",
+        },
+        exclude_global_remote: {
+          type: "boolean",
+          description: "When true, exclude remote_scope=global jobs from aggregates.",
+        },
       },
     },
   },
@@ -150,6 +169,12 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       if (typeof args.province === "string" && args.province.trim()) params.set("province", args.province.trim());
       if (typeof args.remote === "boolean") params.set("remote", String(args.remote));
       if (typeof args.work_mode === "string" && args.work_mode.trim()) params.set("work_mode", args.work_mode.trim());
+      if (typeof args.remote_scope === "string" && args.remote_scope.trim()) {
+        params.set("remote_scope", args.remote_scope.trim());
+      }
+      if (typeof args.exclude_global_remote === "boolean") {
+        params.set("exclude_global_remote", String(args.exclude_global_remote));
+      }
       if (typeof args.salary_disclosed === "boolean") params.set("salary_disclosed", String(args.salary_disclosed));
       if (typeof args.minimum_salary === "number" && Number.isFinite(args.minimum_salary) && args.minimum_salary > 0) {
         params.set("salary_min", String(args.minimum_salary));
@@ -243,12 +268,30 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       const w = args.work_arrangement.toLowerCase();
       jobs = jobs.filter((j) => j.work_arrangement === w);
     }
+    if (typeof args.remote_scope === "string" && args.remote_scope.trim()) {
+      const rs = args.remote_scope.toLowerCase();
+      jobs = jobs.filter((j) => (j.remote_scope || "").toLowerCase() === rs);
+    }
+    if (args.exclude_global_remote === true) {
+      jobs = jobs.filter((j) => (j.remote_scope || "").toLowerCase() !== "global");
+    }
+    // Always report remote_scope buckets so global is never mistaken for a province.
+    const by_remote_scope: Record<string, number> = {};
+    for (const j of jobs) {
+      const key = (j.remote_scope || "unspecified").toLowerCase();
+      by_remote_scope[key] = (by_remote_scope[key] || 0) + 1;
+    }
     // Optional breakdowns to make agent reporting easier
     const groupBy = typeof (args as any).group_by === "string" ? String((args as any).group_by).toLowerCase() : "";
     let breakdown: Record<string, number> | undefined;
     if (groupBy === "province") {
       breakdown = {};
       for (const j of jobs) {
+        // Worldwide-remote jobs have null province — count under remote_scope global, not as a province.
+        if ((j.remote_scope || "").toLowerCase() === "global") {
+          breakdown["global"] = (breakdown["global"] || 0) + 1;
+          continue;
+        }
         const key = (j.province || "UNKNOWN") as string;
         breakdown[key] = (breakdown[key] || 0) + 1;
       }
@@ -273,13 +316,15 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
     const companies = new Set(jobs.map((j) => j.company));
     return textContent({
       scope_note:
-        "These figures describe GitHired's tracked employer ATS boards, not the entire Canadian labour market.",
+        "These figures describe GitHired's tracked employer ATS boards, not the entire Canadian labour market. " +
+        "remote_scope=global means explicit worldwide/anywhere remote — not a Canadian province.",
       filtered_jobs: jobs.length,
       companies: companies.size,
       remote_jobs: jobs.filter((j) => j.work_arrangement === "remote").length,
       hybrid_jobs: jobs.filter((j) => j.work_arrangement === "hybrid").length,
       onsite_jobs: jobs.filter((j) => j.work_arrangement === "onsite").length,
       jobs_with_advertised_salary: withSalary.length,
+      by_remote_scope,
       breakdown,
       salary_cad_percentiles: {
         p25: pct(25),

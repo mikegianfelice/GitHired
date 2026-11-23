@@ -156,10 +156,17 @@ def _snapshot_payload(
             ),
         },
         "eligibility": {
-            "geography": "Canada-eligible only (hard-filter ELIGIBLE)",
+            "geography": (
+                "Canada-eligible (hard-filter ELIGIBLE) plus optional worldwide-remote "
+                "(UNCERTAIN) when include_global_remote is enabled"
+            ),
             "ineligible_excluded": True,
-            "uncertain_excluded": True,
-            "remote_scope": "canada | province | local | unspecified — never overclaim nationwide",
+            "uncertain_excluded": False,
+            "include_global_remote": True,
+            "remote_scope": (
+                "canada | province | americas | global | local | unspecified — "
+                "global requires explicit worldwide/anywhere wording; bare Remote stays out"
+            ),
         },
         "stats": {
             "total_jobs": len(api_jobs),

@@ -82,8 +82,9 @@ PUBLIC_SEARCH: dict[str, Any] = {
         "floors": {},
     },
     # Policy toggle: publish worldwide-remote roles without explicit Canada evidence.
-    # Default false — Michael may enable later.
-    "include_global_remote": False,
+    # Default true (approved 2026-11-23): label remote_scope='global', null province,
+    # ranked below canada/province in search and match.
+    "include_global_remote": True,
 }
 
 
@@ -227,14 +228,94 @@ def public_location_label(location: str, description: str = "") -> str:
     return f"Remote — {evidence} (ATS location: {loc})"[:120]
 
 
-def _remote_scope(location: str, arrangement: str, provinces: list[str]) -> str:
-    """canada | province | local | unspecified — never overclaim nationwide remote."""
+# Location-field tokens that mean worldwide remote (not "Ukraine Anywhere").
+_GLOBAL_REMOTE_LOCATION = re.compile(
+    r"""
+    ^\s*(?:remote\s*[-–—,/]?\s*)?(?:global|worldwide|anywhere)(?:\s*[-–—,/]?\s*remote)?\s*$ |
+    \bremote\s*[-–—,/]?\s*(?:global|worldwide|anywhere)\b |
+    \b(?:global|worldwide|anywhere)\s*[-–—,/]?\s*remote\b |
+    \bwork\s+from\s+anywhere\b |
+    \bhire\s+from\s+anywhere\b |
+    \banywhere\s+in\s+the\s+world\b |
+    \bremote\s*\(\s*anywhere\s*\) |
+    ,\s*(?:global|worldwide)\s*$
+    """,
+    re.I | re.X,
+)
+# Description: require remote/WFA context — bare "global team" / "customers worldwide" do not count.
+_GLOBAL_REMOTE_DESCRIPTION = re.compile(
+    r"""
+    \bwork\s+from\s+anywhere\b |
+    \bhire\s+from\s+anywhere\b |
+    \banywhere\s+in\s+the\s+world\b |
+    \bremote\s*\(\s*anywhere\s*\) |
+    \bremote\s*[-–—/]?\s*anywhere\b |
+    \banywhere\s*[-–—/]?\s*remote\b |
+    \b(?:worldwide|global)\s+remote\b |
+    \bremote\s+(?:worldwide|global(?:ly)?)\b |
+    \bremotely\s+(?:from\s+)?(?:anywhere|worldwide|globally)\b |
+    \b(?:based|located|live)\s+anywhere\b |
+    \bexecuted\s+from\s+anywhere\b |
+    \bemployees?\s+(?:can\s+)?(?:work|be)\s+(?:from\s+)?anywhere\b |
+    \bopen\s+to\s+(?:candidates?\s+)?(?:from\s+)?anywhere\b |
+    \bglobal\s+team\b.{0,120}\bnot\s+your\s+location\b |
+    \bprioritize\s+(?:your\s+)?talent,?\s+not\s+(?:your\s+)?location\b
+    """,
+    re.I | re.X,
+)
+_CANADA_SCOPED_ANYWHERE = re.compile(
+    r"\banywhere\s+in\s+canada\b|\bacross\s+canada\b|\bcanada[-\s]?wide\b",
+    re.I,
+)
+_OFFICES_WORLDWIDE_SCOPE = re.compile(
+    r"\b(?:offices?|locations?|headquarters|hq|presence)\b.{0,40}\bworldwide\b|"
+    r"\bworldwide\b.{0,40}\b(?:offices?|locations?|presence)\b",
+    re.I,
+)
+_US_ONLY_REMOTE_LOCATION = re.compile(
+    r"""
+    \bremote\s*[-–—,]?\s*(?:united\s+states|\bu\.?s\.?a\.?\b|\bus\b)\b |
+    \b(?:united\s+states|\bu\.?s\.?a\.?\b|\bus\b)\s*[-–—,]?\s*remote\b |
+    \b(?:us|u\.s\.|usa)\s+only\b |
+    \bunited\s+states\s+only\b
+    """,
+    re.I | re.X,
+)
+
+
+def _has_explicit_global_remote_signal(location: str, description: str = "") -> bool:
+    """True when location/description explicitly claims global/worldwide/anywhere remote.
+
+    Bare 'Remote' is not enough. Incidental 'global team' / 'offices worldwide' /
+    'ideas from anywhere' is not enough. 'Anywhere in Canada' is Canada-scoped.
+    """
+    loc = location or ""
+    desc = description or ""
+    if _US_ONLY_REMOTE_LOCATION.search(loc):
+        return False
+    loc_check = loc
+    desc_check = desc
+    if _CANADA_SCOPED_ANYWHERE.search(loc_check):
+        loc_check = _CANADA_SCOPED_ANYWHERE.sub(" ", loc_check)
+    if _CANADA_SCOPED_ANYWHERE.search(desc_check):
+        desc_check = _CANADA_SCOPED_ANYWHERE.sub(" ", desc_check)
+    if _GLOBAL_REMOTE_LOCATION.search(loc_check):
+        return True
+    if _GLOBAL_REMOTE_DESCRIPTION.search(desc_check):
+        return True
+    return False
+
+
+def _remote_scope(
+    location: str,
+    arrangement: str,
+    provinces: list[str],
+    description: str = "",
+) -> str:
+    """canada | province | americas | global | local | unspecified — never overclaim."""
     loc = (location or "").casefold()
-    americas = bool(re.search(r"\b(?:americas|namer|north\s+america)\b", loc) and re.search(r"\bremote\b", loc))
-    worldwide = bool(
-        re.search(r"\bglobal(?:ly)?\b", loc)
-        or re.search(r"\bworldwide\b", loc)
-        or re.search(r"\banywhere\b", loc)
+    americas = bool(
+        re.search(r"\b(?:americas|namer|north\s+america)\b", loc) and re.search(r"\bremote\b", loc)
     )
     nationwide = bool(
         re.search(
@@ -243,26 +324,21 @@ def _remote_scope(location: str, arrangement: str, provinces: list[str]) -> str:
             r"\bremote\s+in\s+canada\b|\bcanada remote\b",
             loc,
         )
+        or re.search(r"\bcanada\b", loc)
     )
-    province_remote = bool(
-        provinces
-        and re.search(r"\bremote\b", loc)
-        and re.search(
-            r"\b(?:ontario|british columbia|quebec|alberta|manitoba|saskatchewan|"
-            r"nova scotia|new brunswick|\bon\b|\bbc\b|\bqc\b|\bab\b|\bns\b)\b",
-            loc,
-        )
-        and not nationwide
-    )
+    # Any structured Canadian province/city evidence beats worldwide marketing copy.
+    province_remote = bool(provinces and re.search(r"\bremote\b", loc) and not nationwide)
+    worldwide = _has_explicit_global_remote_signal(location, description)
     if arrangement == "remote":
         if americas:
             return "americas"
+        # Canada-scoped remote must win over incidental global/anywhere tokens.
+        if nationwide:
+            return "canada"
+        if province_remote or provinces:
+            return "province"
         if worldwide:
             return "global"
-        if province_remote:
-            return "province"
-        if nationwide or re.search(r"\bcanada\b", loc):
-            return "canada"
         return "unspecified"
     if arrangement in ("hybrid", "onsite"):
         return "local" if (provinces or re.search(r"\bcanada\b", loc)) else "unspecified"
@@ -331,9 +407,11 @@ def select_public_jobs(
             continue
 
         hard = apply_hard_filters(job, cfg)
-        if hard.verdict != "PASS":
-            continue
         if hard.relevance == "NO_MATCH" or not hard.title_match:
+            continue
+        # Hard FAIL (INELIGIBLE / salary floor / etc.) never publishes.
+        # FLAG is allowed only for the optional global-remote include path below.
+        if hard.verdict == "FAIL":
             continue
 
         raw_location = str(job.get("location_raw") or "").strip() or "Canada"
@@ -347,7 +425,12 @@ def select_public_jobs(
         # unspecified unless remote/hybrid/onsite is evidenced.
         work = arrangement if arrangement in ("remote", "hybrid", "onsite") else "unspecified"
         provinces = find_any_canadian_province(location) or find_any_canadian_province(raw_location)
-        scope = _remote_scope(location, work if work != "unspecified" else arrangement, provinces)
+        scope = _remote_scope(
+            location,
+            work if work != "unspecified" else arrangement,
+            provinces,
+            description,
+        )
         # Description-backed Canada remote when ATS location was US-only.
         if (
             scope == "unspecified"
@@ -360,16 +443,19 @@ def select_public_jobs(
         if scope == "province" and work == "remote":
             pass  # explicit province scope kept
 
-        # Eligibility gate: confirmed ELIGIBLE, or optional global-remote include.
-        if not (
-            hard.eligibility == "ELIGIBLE"
-            or (
-                bool(cfg.get("include_global_remote"))
-                and work == "remote"
-                and scope == "global"
-                and hard.eligibility == "UNCERTAIN"
-            )
-        ):
+        include_global = (
+            bool(cfg.get("include_global_remote"))
+            and work == "remote"
+            and scope == "global"
+            and hard.eligibility == "UNCERTAIN"
+            and hard.verdict in ("PASS", "FLAG")
+        )
+        # Eligibility gate: confirmed ELIGIBLE (PASS), or optional global-remote include.
+        if hard.eligibility == "ELIGIBLE" and hard.verdict == "PASS":
+            pass
+        elif include_global:
+            pass
+        else:
             continue
 
         lo, hi, currency, salary_ok = _salary_fields(job)
@@ -381,6 +467,10 @@ def select_public_jobs(
         clean_url = apply_url.split("?")[0] if "utm_" in apply_url.casefold() else apply_url
         # Analyze full description for skill tags, but export labels only (never description text).
         tech = _extract_technologies(title, location, description)
+        # Global remote: never invent a province.
+        province = None if scope == "global" else (
+            _province_code(location) or _province_code(raw_location)
+        )
 
         out.append(
             PublicJob(
@@ -388,7 +478,7 @@ def select_public_jobs(
                 title=title,
                 company=company,
                 location=location[:120],
-                province=_province_code(location) or _province_code(raw_location),
+                province=province,
                 work_arrangement=work,
                 remote_scope=scope,
                 seniority=detect_seniority(title),
@@ -408,8 +498,19 @@ def select_public_jobs(
             )
         )
 
+    def _scope_rank(j: PublicJob) -> int:
+        s = (j.remote_scope or "").casefold()
+        if s == "canada":
+            return 0
+        if s == "province" or (j.province and s != "global"):
+            return 1
+        if s == "global":
+            return 3
+        return 2
+
     out.sort(
         key=lambda j: (
+            _scope_rank(j),
             0 if j.salary_available else 1,
             -(j.salary_max or 0),
             j.company.casefold(),

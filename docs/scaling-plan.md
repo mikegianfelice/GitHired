@@ -4,9 +4,10 @@ This document captures code-only levers and deferred decisions for Michael. No d
 
 Decisions for Michael
 
-- include_global_remote (default: false)
-  - When true, publish worldwide-remote jobs that have no explicit Canada evidence, labeled remote_scope='global' and ranked below province matches and remote_scope='canada'.
-  - Current impact if enabled: +33 jobs (Supabase 21, Camunda 8, ElevenLabs 4). With it off (default), these remain excluded.
+- include_global_remote (default: true, approved 2026-11-23)
+  - Publishes worldwide-remote jobs that have no explicit Canada evidence, labeled remote_scope='global' (null province) and ranked below province matches and remote_scope='canada'.
+  - A job is global only with explicit global / worldwide / anywhere / work-from-anywhere wording (location or description). Bare Remote stays out; US-only stays out.
+  - Callers can exclude them via `exclude_global_remote=true` or `remote_scope` filters on search_jobs / get_market_stats.
 - Americas/NAMER remote at Canadian-HQ companies
   - Shopify and some others advertise “Americas/NAMER (Remote)”. Policy remains strict for now: eligibility unchanged (not Canada-eligible). We tag remote_scope='americas' for analysis. Count of jobs affected is tracked in the funnel reports; enablement would be a separate toggle if adopted.
 

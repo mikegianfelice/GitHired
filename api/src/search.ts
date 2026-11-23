@@ -114,12 +114,29 @@ export function parseSearchFilters(params: URLSearchParams): SearchFilters {
       `Unrecognized seniority '${params.get("seniority")}'. Allowed: intern, junior, mid, senior, staff, principal, lead (case-insensitive; sr/jr accepted).`,
     );
   }
+  const REMOTE_SCOPES = new Set([
+    "canada",
+    "province",
+    "americas",
+    "global",
+    "local",
+    "unspecified",
+  ]);
+  const remoteScopeRaw = params.get("remote_scope")?.trim()?.toLowerCase() || undefined;
+  if (remoteScopeRaw && !REMOTE_SCOPES.has(remoteScopeRaw)) {
+    throw new SearchFilterValidationError(
+      "invalid_remote_scope",
+      `Unrecognized remote_scope '${remoteScopeRaw}'. Allowed: canada, province, americas, global, local, unspecified.`,
+    );
+  }
   return {
     q: params.get("q")?.trim() || undefined,
     location: params.get("location")?.trim() || undefined,
     province,
     remote: parseBool(params.get("remote")),
     work_mode: workModeRaw,
+    remote_scope: remoteScopeRaw,
+    exclude_global_remote: parseBool(params.get("exclude_global_remote")),
     // Non-positive / NaN salary bounds are ignored (never invent floors/ceilings).
     salary_min:
       salaryMinRaw != null && Number.isFinite(salaryMinRaw) && salaryMinRaw > 0
@@ -136,6 +153,15 @@ export function parseSearchFilters(params: URLSearchParams): SearchFilters {
     limit: Number.isFinite(limitRaw) ? Math.min(MAX_LIMIT, Math.max(1, Math.floor(limitRaw))) : DEFAULT_LIMIT,
     cursor: params.get("cursor")?.trim() || undefined,
   };
+}
+
+/** Lower rank sorts first. canada/province above global. */
+export function remoteScopeRank(job: ApiJob): number {
+  const s = (job.remote_scope || "").toLowerCase();
+  if (s === "canada") return 0;
+  if (s === "province" || (job.province && s !== "global")) return 1;
+  if (s === "global") return 3;
+  return 2;
 }
 
 function tokens(text: string): string[] {
@@ -251,6 +277,12 @@ export function jobMatchesFilters(job: ApiJob, filters: SearchFilters, fx: numbe
   if (filters.company) {
     if (!job.company.toLowerCase().includes(filters.company.toLowerCase())) return false;
   }
+  if (filters.remote_scope) {
+    if ((job.remote_scope || "").toLowerCase() !== filters.remote_scope.toLowerCase()) return false;
+  }
+  if (filters.exclude_global_remote === true) {
+    if ((job.remote_scope || "").toLowerCase() === "global") return false;
+  }
   return true;
 }
 
@@ -285,6 +317,9 @@ export function searchJobs(snapshot: ApiSnapshot, filters: SearchFilters): Searc
 
   const sort = filters.sort || "relevance";
   matched.sort((a, b) => {
+    // Always prefer Canada/province scope above worldwide-remote (global).
+    const scopeDiff = remoteScopeRank(a) - remoteScopeRank(b);
+    if (scopeDiff !== 0) return scopeDiff;
     if (sort === "salary") {
       return (salaryCad(b, fx) || 0) - (salaryCad(a, fx) || 0);
     }
