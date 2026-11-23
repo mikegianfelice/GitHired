@@ -1,3 +1,38 @@
+GitHired scaling and policy toggles
+
+This document captures code-only levers and deferred decisions for Michael. No deployment config or secrets changes are applied here.
+
+Decisions for Michael
+
+- include_global_remote (default: false)
+  - When true, publish worldwide-remote jobs that have no explicit Canada evidence, labeled remote_scope='global' and ranked below province matches and remote_scope='canada'.
+  - Current impact if enabled: +33 jobs (Supabase 21, Camunda 8, ElevenLabs 4). With it off (default), these remain excluded.
+- Americas/NAMER remote at Canadian-HQ companies
+  - Shopify and some others advertise “Americas/NAMER (Remote)”. Policy remains strict for now: eligibility unchanged (not Canada-eligible). We tag remote_scope='americas' for analysis. Count of jobs affected is tracked in the funnel reports; enablement would be a separate toggle if adopted.
+
+Snapshot size and field slimming
+
+- Current bundle cap: ~950 KB. Measured effective size per job after slimming: ~0.43–0.73 KB, so roughly 1,300–2,200 jobs fit without moving descriptions to object storage.
+- Space contributors:
+  - description_excerpt dominated prior size; it is excluded from the public mirror and trimmed in the Worker snapshot.
+  - Remaining dominant fields: company, title, location/province/remote_scope, seniority/track, salary_max_cad, apply_url, technologies.
+- Code-only savings already landed:
+  - Strip description excerpts from the public mirror (site/api-dataset.json) and prefer short codes for provinces in export.
+  - Deduplicate company+title pairs in the final shortlist.
+- If more headroom is needed pre-R2:
+  - Consider trimming optional fields in the Worker bundle (e.g., drop technologies or salary_max_cad when salary_available is false). This is a code-path change only; keep the public mirror stable.
+
+R2 plan (deferred)
+
+If supply grows beyond ~2,000 publishable jobs, move full descriptions to R2 and fetch them on-demand in get_job. Steps:
+
+1) Create an R2 bucket jobs-descriptions with 7-day TTL for hot objects.
+2) In the enrichment pipeline, persist description blobs under a stable key (e.g., sha256 of company|title|apply_url).
+3) Store only the key in the Worker bundle; fetch and cache on API get_job when needed.
+4) Add backoff + integrity checks; keep fallbacks to ATS detail endpoints when a blob is missing.
+
+Do not apply this plan yet — it requires infra/secrets. This file is a design note for later.
+
 # API dataset scaling plan (to 5,000+ jobs)
 
 This doc outlines a safe path to scale the API/MCP dataset beyond Cloudflare Worker bundle limits without changing secrets at code-review time. Apply these steps in infra as needed.

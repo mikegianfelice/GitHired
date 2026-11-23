@@ -20,6 +20,11 @@ companies:
   board_token: abcellera
   enabled: true
   notes: 'Validated 2026-11-12: greenhouse/abcellera → 36 jobs, ~30 Canada-location'
+- name: Absolute Software
+  careers_url: https://www.absolute.com/company/careers/
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Absorb
   careers_url: https://jobs.ashbyhq.com/absorblms
   ats: ashby
@@ -246,6 +251,16 @@ companies:
   board_token: bhvr
   enabled: true
   notes: Verified via probe 2026-11-22 snapshot
+- name: Bell
+  careers_url: https://jobs.bell.ca/
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending (Workday)
+- name: Bench
+  careers_url: https://bench.co/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: BenchSci
   domain: benchsci.com
   careers_url: https://boards.greenhouse.io/benchsci
@@ -260,6 +275,11 @@ companies:
   board_token: benevity
   enabled: true
   notes: 'Validated 2026-10-29: ashby/benevity → 23 jobs (https://api.ashbyhq.com/posting-api/job-board/benevity)'
+- name: BlackBerry
+  careers_url: https://www.blackberry.com/us/en/company/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending (Workday)
 - name: Blackbird Interactive
   careers_url: https://jobs.lever.co/blackbirdinteractive
   ats: lever
@@ -353,6 +373,16 @@ companies:
   board_token: capintel
   enabled: true
   notes: Verified via probe 2026-11-22 snapshot
+- name: Certn
+  careers_url: https://certn.co/careers/
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
+- name: CGI
+  careers_url: https://www.cgi.com/canada/en-ca/careers/job-opportunities
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending (Workday)
 - name: CIBC
   domain: cibc.com
   careers_url: https://cibc.wd3.myworkdayjobs.com/campus
@@ -432,6 +462,11 @@ companies:
   board_token: colabsoftware
   enabled: true
   notes: Verified via probe 2026-11-22 snapshot
+- name: Copperleaf
+  careers_url: https://www.copperleaf.com/company/careers/
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Coveo
   careers_url: https://boards.greenhouse.io/coveoen
   ats: greenhouse
@@ -464,6 +499,11 @@ companies:
   board_token: d2l
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/d2l → 15 jobs (https://boards-api.greenhouse.io/v1/boards/d2l/jobs)'
+- name: Dapper Labs
+  careers_url: https://www.dapperlabs.com/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Databricks
   domain: databricks.com
   careers_url: https://www.databricks.com/company/careers
@@ -502,6 +542,11 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-15: Workday CXS → 415 jobs; tech_ca=3 (Montreal/Lévis
     Data Engineering hybrid)'
+- name: Dialogue
+  careers_url: https://www.dialogue.co/en/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Digital Extremes
   careers_url: https://boards.greenhouse.io/digitalextremes
   ats: greenhouse
@@ -660,6 +705,11 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/float → 19 jobs; ca_eligible=18, ca_location_signals=19,
     eng=2'
+- name: FreshBooks
+  careers_url: https://www.freshbooks.com/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Frima Studio
   careers_url: https://jobs.smartrecruiters.com/FrimaStudio
   ats: smartrecruiters
@@ -748,6 +798,11 @@ companies:
   board_token: hatchcareers
   enabled: true
   notes: Verified via probe 2026-11-22 snapshot
+- name: Helcim
+  careers_url: https://www.helcim.com/careers/
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Hive.co
   domain: hive.co
   careers_url: https://jobs.ashbyhq.com/hive.co
@@ -813,6 +868,11 @@ companies:
   board_token: integrate
   enabled: true
   notes: 'Validated 2026-10-29: ashby/integrate → 9 jobs'
+- name: Interac
+  careers_url: https://www.interac.ca/en/careers/
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Jane App
   domain: jane.app
   careers_url: https://jobs.ashbyhq.com/jane
@@ -847,6 +907,16 @@ companies:
   board_token: kin
   enabled: true
   notes: 'Validated 2026-10-29: ashby/kin → 21 jobs (https://api.ashbyhq.com/posting-api/job-board/kin)'
+- name: Kinaxis
+  careers_url: https://www.kinaxis.com/en/company/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending (Workday)
+- name: Kira Systems
+  careers_url: https://kirasystems.com/careers/
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Klue
   careers_url: https://jobs.ashbyhq.com/klue
   ats: ashby
@@ -916,12 +986,6 @@ companies:
   board_token: leagueinc
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/leagueinc → 5 jobs'
-- name: League Inc.
-  careers_url: https://boards.greenhouse.io/leagueinc
-  ats: greenhouse
-  board_token: leagueinc
-  enabled: true
-  notes: Verified via probe 2026-11-22 snapshot
 - name: Lightspeed
   domain: lightspeedhq.com
   careers_url: https://www.lightspeedhq.com/careers/
@@ -1029,6 +1093,11 @@ companies:
   enabled: false
   notes: 'Validated 2026-11-03: ashby/modal → 42 jobs; DISABLED — No Canadian location
     evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=42)'
+- name: Mogo
+  careers_url: https://www.mogo.ca/company/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: MongoDB
   domain: mongodb.com
   careers_url: https://www.mongodb.com/careers
@@ -1131,6 +1200,11 @@ companies:
   board_token: openai
   enabled: true
   notes: 'Validated 2026-10-29: ashby/openai → 812 jobs (https://api.ashbyhq.com/posting-api/job-board/openai)'
+- name: OpenText
+  careers_url: https://careers.opentext.com/
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending (Workday)
 - name: Opslevel
   careers_url: https://jobs.ashbyhq.com/opslevel
   ats: ashby
@@ -1210,6 +1284,11 @@ companies:
   board_token: planetscale
   enabled: true
   notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals'
+- name: Plooto
+  careers_url: https://www.plooto.com/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Plotly
   careers_url: https://jobs.ashbyhq.com/plotly
   ats: ashby
@@ -1223,6 +1302,11 @@ companies:
   board_token: pointclickcare
   enabled: true
   notes: 'Validated 2026-10-29: lever/pointclickcare → 72 jobs (https://api.lever.co/v0/postings/pointclickcare?mode=json)'
+- name: Points
+  careers_url: https://www.points.com/corporate/careers.html
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Poka
   careers_url: https://boards.greenhouse.io/poka
   ats: greenhouse
@@ -1243,12 +1327,22 @@ companies:
   enabled: true
   notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals; city/description
     eligibility improved'
+- name: Procurify
+  careers_url: https://www.procurify.com/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Promise Robotics
   careers_url: https://jobs.lever.co/promiserobotics
   ats: lever
   board_token: promiserobotics
   enabled: true
   notes: Verified via probe 2026-11-22 snapshot
+- name: Properly
+  careers_url: https://www.properly.ca/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: PurposeMed
   careers_url: https://boards.greenhouse.io/purposemed
   ats: greenhouse
@@ -1385,6 +1479,11 @@ companies:
   board_token: rocketlab
   enabled: true
   notes: Verified via probe 2026-11-22 snapshot
+- name: Rogers
+  careers_url: https://jobs.rogers.com/
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending (Workday)
 - name: Safe Software
   careers_url: https://jobs.ashbyhq.com/safe
   ats: ashby
@@ -1451,6 +1550,11 @@ companies:
   enabled: true
   notes: 'Validated 2026-10-29: RSS feed URL responds HTTP 200 but currently 0 items;
     retained for when feed repopulates'
+- name: Showpass
+  careers_url: https://www.showpass.com/careers/
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: ShyftLabs
   domain: shyftlabs.io
   careers_url: https://jobs.lever.co/shyftlabs
@@ -1593,6 +1697,11 @@ companies:
   workday_site: TD_Bank_Careers
   enabled: true
   notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Tealbook
+  careers_url: https://tealbook.com/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Telesat
   careers_url: https://jobs.lever.co/telesat
   ats: lever
@@ -1702,6 +1811,11 @@ companies:
   board_token: twilio
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/twilio → 130 jobs (https://boards-api.greenhouse.io/v1/boards/twilio/jobs)'
+- name: Uberflip
+  careers_url: https://www.uberflip.com/company/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Ubisoft
   careers_url: https://jobs.smartrecruiters.com/ubisoft2
   ats: smartrecruiters
@@ -1732,43 +1846,17 @@ companies:
   careers_url: https://www.vendasta.com/careers/
   enabled: true
   notes: ATS autodetect pending
-# High-yield Canadian Workday targets (ATS autodetect/validate)
-- name: OpenText
-  careers_url: https://careers.opentext.com/
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending (Workday)
-- name: Kinaxis
-  careers_url: https://www.kinaxis.com/en/company/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending (Workday)
-- name: BlackBerry
-  careers_url: https://www.blackberry.com/us/en/company/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending (Workday)
-- name: Rogers
-  careers_url: https://jobs.rogers.com/
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending (Workday)
-- name: Bell
-  careers_url: https://jobs.bell.ca/
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending (Workday)
-- name: CGI
-  careers_url: https://www.cgi.com/canada/en-ca/careers/job-opportunities
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending (Workday)
 - name: Venn
   careers_url: https://jobs.ashbyhq.com/venn
   ats: ashby
   board_token: venn
   enabled: true
   notes: Verified via probe 2026-11-22 snapshot
+- name: Vention
+  careers_url: https://www.vention.io/careers
+  ats: unknown
+  enabled: true
+  notes: ATS autodetect pending
 - name: Vercel
   careers_url: https://boards.greenhouse.io/vercel
   ats: greenhouse
@@ -1900,112 +1988,9 @@ companies:
   board_token: zoominfo
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/zoominfo → 102 jobs'
-- name: ZoomInfo Technologies LLC
-  careers_url: https://boards.greenhouse.io/zoominfo
-  ats: greenhouse
-  board_token: zoominfo
-  enabled: true
-  notes: Verified via probe 2026-11-22 snapshot
 - name: Zscaler
   careers_url: https://boards.greenhouse.io/zscaler
   ats: greenhouse
   board_token: zscaler
   enabled: true
   notes: Verified via probe 2026-11-22 snapshot
-
-# Coverage batch (Canadian tech; autodetect if unknown)
-- name: Dapper Labs
-  careers_url: https://www.dapperlabs.com/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Properly
-  careers_url: https://www.properly.ca/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Dialogue
-  careers_url: https://www.dialogue.co/en/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Tealbook
-  careers_url: https://tealbook.com/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Uberflip
-  careers_url: https://www.uberflip.com/company/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: FreshBooks
-  careers_url: https://www.freshbooks.com/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Points
-  careers_url: https://www.points.com/corporate/careers.html
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Showpass
-  careers_url: https://www.showpass.com/careers/
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Helcim
-  careers_url: https://www.helcim.com/careers/
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Procurify
-  careers_url: https://www.procurify.com/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Certn
-  careers_url: https://certn.co/careers/
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Bench
-  careers_url: https://bench.co/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Copperleaf
-  careers_url: https://www.copperleaf.com/company/careers/
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Absolute Software
-  careers_url: https://www.absolute.com/company/careers/
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Mogo
-  careers_url: https://www.mogo.ca/company/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Vention
-  careers_url: https://www.vention.io/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Interac
-  careers_url: https://www.interac.ca/en/careers/
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Plooto
-  careers_url: https://www.plooto.com/careers
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending
-- name: Kira Systems
-  careers_url: https://kirasystems.com/careers/
-  ats: unknown
-  enabled: true
-  notes: ATS autodetect pending

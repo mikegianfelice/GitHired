@@ -169,9 +169,12 @@ def parse_workday_board(company: dict[str, Any]) -> tuple[str, str, str] | None:
 def workday_apply_url(host: str, site: str, external_path: str) -> str | None:
     """Build the official guest apply URL from a verified list ``externalPath``."""
     path = (external_path or "").strip()
+    # Only accept canonical Workday externalPath values that start with '/job/'.
+    # Some payloads may omit the leading slash — normalize first, then validate.
     if not path.startswith("/"):
-        # Some CXS payloads omit the leading slash; normalize conservatively.
         path = "/" + path
+    if not path.startswith("/job/"):
+        return None
     host = host.strip().lower().removeprefix("https://").removeprefix("http://")
     site = site.strip().strip("/")
     if not host or not site or "myworkdayjobs.com" not in host:
