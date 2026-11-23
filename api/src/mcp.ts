@@ -234,6 +234,23 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       const w = args.work_arrangement.toLowerCase();
       jobs = jobs.filter((j) => j.work_arrangement === w);
     }
+    // Optional breakdowns to make agent reporting easier
+    const groupBy = typeof (args as any).group_by === "string" ? String((args as any).group_by).toLowerCase() : "";
+    let breakdown: Record<string, number> | undefined;
+    if (groupBy === "province") {
+      breakdown = {};
+      for (const j of jobs) {
+        const key = (j.province || "UNKNOWN") as string;
+        breakdown[key] = (breakdown[key] || 0) + 1;
+      }
+    } else if (groupBy === "city") {
+      breakdown = {};
+      for (const j of jobs) {
+        const loc = String(j.location || "");
+        const city = loc.split(",")[0].trim() || "UNKNOWN";
+        breakdown[city] = (breakdown[city] || 0) + 1;
+      }
+    }
     const withSalary = jobs.filter((j) => j.salary_available);
     const companies = new Set(jobs.map((j) => j.company));
     return textContent({
@@ -245,6 +262,7 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       hybrid_jobs: jobs.filter((j) => j.work_arrangement === "hybrid").length,
       onsite_jobs: jobs.filter((j) => j.work_arrangement === "onsite").length,
       jobs_with_advertised_salary: withSalary.length,
+      breakdown,
       dataset_id: snapshot.dataset_id,
       generated_at: snapshot.generated_at,
       dataset_fresh: freshness.fresh,
