@@ -214,6 +214,15 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
 
   if (name === "get_market_stats") {
     let jobs = snapshot.jobs;
+    const fx = Number(snapshot.usd_to_cad) || 1.35;
+    const salaryCad = (j: { salary_max_cad?: number | null; salary_max?: number | null; salary_currency?: string | null }): number | null => {
+      if (j.salary_max_cad != null) return j.salary_max_cad as number;
+      if (j.salary_max == null || !j.salary_currency) return null;
+      const cur = String(j.salary_currency).toUpperCase();
+      if (cur === "CAD") return j.salary_max as number;
+      if (cur === "USD") return (j.salary_max as number) * fx;
+      return null;
+    };
     if (typeof args.role === "string" && args.role.trim()) {
       const r = args.role.toLowerCase();
       jobs = jobs.filter(
@@ -252,6 +261,15 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       }
     }
     const withSalary = jobs.filter((j) => j.salary_available);
+    const cadMaxes = withSalary
+      .map((j) => salaryCad(j as any))
+      .filter((v): v is number => typeof v === "number" && Number.isFinite(v))
+      .sort((a, b) => a - b);
+    const pct = (p: number) => {
+      if (!cadMaxes.length) return null;
+      const idx = Math.min(cadMaxes.length - 1, Math.max(0, Math.floor((p / 100) * (cadMaxes.length - 1))));
+      return Math.round(cadMaxes[idx]);
+    };
     const companies = new Set(jobs.map((j) => j.company));
     return textContent({
       scope_note:
@@ -263,6 +281,11 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       onsite_jobs: jobs.filter((j) => j.work_arrangement === "onsite").length,
       jobs_with_advertised_salary: withSalary.length,
       breakdown,
+      salary_cad_percentiles: {
+        p25: pct(25),
+        p50: pct(50),
+        p75: pct(75),
+      },
       dataset_id: snapshot.dataset_id,
       generated_at: snapshot.generated_at,
       dataset_fresh: freshness.fresh,
