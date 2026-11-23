@@ -31,6 +31,7 @@ const TOOLS = [
         province: { type: "string", description: "Canadian province (code or full name, e.g. ON or Ontario)" },
         remote: { type: "boolean" },
         work_mode: { type: "string", enum: ["remote", "hybrid", "onsite"] },
+        salary_disclosed: { type: "boolean", description: "true: only jobs with advertised salary; false: only jobs without; omit for either" },
         minimum_salary: {
           type: "number",
           description: "Minimum advertised annual base in CAD (employer-advertised only)",
@@ -149,6 +150,7 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       if (typeof args.province === "string" && args.province.trim()) params.set("province", args.province.trim());
       if (typeof args.remote === "boolean") params.set("remote", String(args.remote));
       if (typeof args.work_mode === "string" && args.work_mode.trim()) params.set("work_mode", args.work_mode.trim());
+      if (typeof args.salary_disclosed === "boolean") params.set("salary_disclosed", String(args.salary_disclosed));
       if (typeof args.minimum_salary === "number" && Number.isFinite(args.minimum_salary) && args.minimum_salary > 0) {
         params.set("salary_min", String(args.minimum_salary));
       }
