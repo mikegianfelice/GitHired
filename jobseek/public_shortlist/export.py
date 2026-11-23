@@ -220,6 +220,7 @@ def public_location_label(location: str, description: str = "") -> str:
 def _remote_scope(location: str, arrangement: str, provinces: list[str]) -> str:
     """canada | province | local | unspecified — never overclaim nationwide remote."""
     loc = (location or "").casefold()
+    americas = bool(re.search(r"\b(?:americas|namer|north\s+america)\b", loc) and re.search(r"\bremote\b", loc))
     nationwide = bool(
         re.search(
             r"\banywhere in canada\b|\bacross canada\b|\bcanada[-\s]?wide\b|"
@@ -239,6 +240,8 @@ def _remote_scope(location: str, arrangement: str, provinces: list[str]) -> str:
         and not nationwide
     )
     if arrangement == "remote":
+        if americas:
+            return "americas"
         if province_remote:
             return "province"
         if nationwide or re.search(r"\bcanada\b", loc):

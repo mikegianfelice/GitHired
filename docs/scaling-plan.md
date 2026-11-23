@@ -52,3 +52,14 @@ Use R2 for dataset delivery; the Worker already supports it.
 - Splitting the dataset across multiple static assets and fetching segments on demand: higher complexity and cache consistency issues compared to R2 pointer.
 - Removing key fields (province, salary flags) to shrink per-row size: harms filtering and UX; not recommended for public APIs.
 
+## Decisions for Michael
+
+- Policy: whether “Americas/NAMER (Remote)” at a Canadian‑HQ employer should be treated as Canada‑eligible. Current policy requires explicit Canada evidence; these rows are excluded.
+- Impact estimate (current DB snapshot):
+  - Considered (Shopify + any posting with Americas/NAMER remote): 170
+  - Would publish if treated as Canada‑eligible: 32
+- If you choose to allow this, we will:
+  - Keep remote_scope tagged as 'americas'.
+  - Mark eligibility ELIGIBLE for Americas/NAMER remote only when the employer is verifiably Canadian‑HQ (registry), and all other gates (engineering track, apply URL, freshness) pass.
+  - Add tests for NAMER/Americas remote eligibility and keep strict “no province inference”.
+

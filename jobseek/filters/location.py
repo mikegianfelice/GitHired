@@ -1090,6 +1090,14 @@ def _classify_canada_level(
 
     # --- Structured location decisions ---
 
+    # All listed parts are Canadian cities/provinces (multi-city within Canada)
+    # Treat as Canada-eligible regardless of candidate city list; arrangement refined later.
+    if parts and canadian_parts and not foreign_parts:
+        first = canadian_parts[0]
+        evidence.append(first)
+        reasons.append("structured multi-city Canadian location")
+        return "ELIGIBLE", "PASS", reasons, evidence
+
     # Clear non-Canadian location (overseas city/country OR US city/state/country)
     # with no Canadian option → INELIGIBLE. Unknown/unfamiliar cities stay UNCERTAIN
     # unless foreign evidence is sufficient (_part_is_clearly_foreign).
