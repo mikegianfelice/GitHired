@@ -479,8 +479,9 @@ class WorkdayAdapter:
                 self.list_page_concurrency = 1
                 if self.list_budget_s is None or self.list_budget_s < 1800:
                     self.list_budget_s = 1800.0
-                if not self.search_text:
-                    self.search_text = "engineer developer data ml sre devops architect security"
+                # Prefer a single inclusive keyword to avoid AND-narrowing.
+                if not (self.search_text or "").strip():
+                    self.search_text = "developer"
             log.info(
                 "workday start company=%s host=%s site=%s list_budget_s=%s "
                 "detail_budget_s=%s ttl_s=%.0f force_refresh=%s cache_entries=%s",
