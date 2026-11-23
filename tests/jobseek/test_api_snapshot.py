@@ -13,6 +13,7 @@ from jobseek.api_snapshot import (
     description_excerpt,
     write_api_snapshot,
 )
+from jobseek.api_snapshot import dedupe_api_jobs
 
 
 def _job(**kwargs):
@@ -104,6 +105,42 @@ class ApiSnapshotTests(unittest.TestCase):
             loaded = json.loads(path.read_text(encoding="utf-8"))
             self.assertEqual(loaded["count"], snap["count"])
             self.assertEqual(loaded["dataset_id"], snap["dataset_id"])
+
+    def test_dedupe_same_apply_url_prefers_with_salary(self):
+        now = "2026-11-22"
+        a = {
+            "id": "a",
+            "title": "Software Engineer",
+            "company": "ExampleCo",
+            "location": "Toronto, ON",
+            "province": "ON",
+            "work_arrangement": "remote",
+            "remote_scope": "canada",
+            "seniority": "senior",
+            "track": "software_engineering",
+            "salary_min": None,
+            "salary_max": None,
+            "salary_currency": None,
+            "salary_available": False,
+            "salary_max_cad": None,
+            "salary_period": None,
+            "salary_kind": "undisclosed",
+            "apply_url": "https://boards.greenhouse.io/example/jobs/1234?utm_source=abc",
+            "verified": True,
+            "first_seen": now,
+            "last_verified": now,
+            "discovered_today": False,
+            "technologies": [],
+            "source": "greenhouse",
+        }
+        b = dict(a)
+        b["id"] = "b"
+        b["salary_available"] = True
+        b["salary_max_cad"] = 150000
+        b["apply_url"] = "https://boards.greenhouse.io/example/jobs/1234?utm_medium=xyz&utm_source=abc"
+        out = dedupe_api_jobs([a, b])
+        self.assertEqual(len(out), 1)
+        self.assertTrue(out[0]["salary_available"])
 
 
 if __name__ == "__main__":

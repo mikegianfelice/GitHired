@@ -225,6 +225,7 @@ def build_api_snapshot(
     )
     by_id = _index_raw_jobs(raw_jobs)
     api_jobs = [build_api_job(j, by_id.get(j.id)) for j in selected]
+    api_jobs = dedupe_api_jobs(api_jobs)
     _, payload = _trim_jobs_to_byte_budget(
         api_jobs,
         limit=limit,
@@ -233,6 +234,57 @@ def build_api_snapshot(
         max_bytes=max_bytes,
     )
     return payload
+
+
+def _apply_url_key(job: dict[str, Any]) -> str:
+    url = str(job.get("apply_url") or "").strip()
+    if not url:
+        return ""
+    # Normalize by dropping common tracking params
+    try:
+        from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
+        parts = list(urlsplit(url))
+        qs = [(k, v) for k, v in parse_qsl(parts[3], keep_blank_values=True) if not k.lower().startswith("utm_")]
+        parts[3] = urlencode(qs)
+        clean = urlunsplit(parts)
+        return clean.casefold()
+    except Exception:
+        return url.casefold()
+
+
+def dedupe_api_jobs(api_jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Remove duplicate postings by apply_url, preferring with-salary and higher max CAD.
+
+    This is a final safety net after shortlist selection to avoid cross-board duplicates
+    where the same employer URL appears more than once.
+    """
+    best: dict[str, dict[str, Any]] = {}
+    for j in api_jobs:
+        key = _apply_url_key(j)
+        if not key:
+            key = f"{j.get('company','').casefold()}|{j.get('title','').casefold()}|{j.get('apply_url','').casefold()}"
+        cur = best.get(key)
+        if cur is None:
+            best[key] = j
+            continue
+        # Prefer rows with an advertised salary
+        cur_with = bool(cur.get("salary_available"))
+        new_with = bool(j.get("salary_available"))
+        if new_with and not cur_with:
+            best[key] = j
+            continue
+        if new_with == cur_with:
+            # Prefer higher salary_max_cad when comparable
+            a = float(j.get("salary_max_cad") or 0)
+            b = float(cur.get("salary_max_cad") or 0)
+            if a > b:
+                best[key] = j
+                continue
+            # Tie-breaker: more recent verification
+            if str(j.get("last_verified") or "") > str(cur.get("last_verified") or ""):
+                best[key] = j
+                continue
+    return list(best.values())
 
 
 def write_api_snapshot(payload: dict[str, Any], path: Path) -> dict[str, Any]:
