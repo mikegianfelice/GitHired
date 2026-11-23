@@ -14,6 +14,7 @@ from typing import Any
 _PROVINCE_NAMES: dict[str, str] = {
     "ontario": "Ontario",
     "quebec": "Quebec",
+    "québec": "Quebec",
     "british columbia": "British Columbia",
     "alberta": "Alberta",
     "manitoba": "Manitoba",
@@ -47,16 +48,23 @@ _PROVINCE_CODES: dict[str, str] = {
 
 _CANADIAN_CITIES = (
     "toronto",
+    "greater toronto area",
+    "gta",
     "vancouver",
+    "lower mainland",
     "montreal",
     "montréal",
+    "québec city",
     "ottawa",
+    "kanata",
     "calgary",
     "edmonton",
     "winnipeg",
     "halifax",
     "victoria",
     "waterloo",
+    "waterloo region",
+    "kitchener-waterloo",
     "kitchener",
     "mississauga",
     "brampton",
@@ -67,9 +75,14 @@ _CANADIAN_CITIES = (
     "regina",
     "gatineau",
     "laval",
+    "brossard",
+    "longueuil",
     "surrey",
     "burnaby",
     "richmond",
+    "richmond hill",
+    "north york",
+    "etobicoke",
     "markham",
     "vaughan",
     "oakville",
@@ -89,7 +102,10 @@ _CITY_TO_PROVINCE: dict[str, str] = {
     # Ontario
     "toronto": "Ontario",
     "ottawa": "Ontario",
+    "kanata": "Ontario",
     "waterloo": "Ontario",
+    "waterloo region": "Ontario",
+    "kitchener-waterloo": "Ontario",
     "kitchener": "Ontario",
     "mississauga": "Ontario",
     "brampton": "Ontario",
@@ -101,14 +117,23 @@ _CITY_TO_PROVINCE: dict[str, str] = {
     "burlington": "Ontario",
     "oshawa": "Ontario",
     "windsor": "Ontario",
+    "richmond hill": "Ontario",
+    "north york": "Ontario",
+    "etobicoke": "Ontario",
+    "greater toronto area": "Ontario",
+    "gta": "Ontario",
     # Quebec
     "montreal": "Quebec",
     "montréal": "Quebec",
+    "québec city": "Quebec",
     "gatineau": "Quebec",
     "laval": "Quebec",
+    "brossard": "Quebec",
+    "longueuil": "Quebec",
     "quebec city": "Quebec",
     # British Columbia
     "vancouver": "British Columbia",
+    "lower mainland": "British Columbia",
     "victoria": "British Columbia",
     "surrey": "British Columbia",
     "burnaby": "British Columbia",
@@ -494,7 +519,9 @@ def find_any_canadian_province(location: str) -> list[str]:
     if not found:
         loc_cf = loc_cf  # already computed above
         # Simple city token presence without province recursion to avoid cycles.
-        for city_key, prov in _CITY_TO_PROVINCE.items():
+        # Prefer longer city names first (e.g., "Richmond Hill" over "Richmond").
+        matched_tokens: list[str] = []
+        for city_key, prov in sorted(_CITY_TO_PROVINCE.items(), key=lambda kv: -len(kv[0])):
             ck = city_key.casefold()
             # Skip ambiguous bare "london" without ON context
             if ck == "london":
@@ -502,9 +529,13 @@ def find_any_canadian_province(location: str) -> list[str]:
             # Word-boundary city token (correctly use \b, not a literal backslash+b)
             pattern = rf"\b{re.escape(ck)}\b"
             if re.search(pattern, loc_cf):
+                # Avoid adding a shorter homonym (e.g., "Richmond") after a longer match ("Richmond Hill")
+                if any(tok.startswith(ck) or ck.startswith(tok) for tok in matched_tokens):
+                    continue
                 if prov not in seen:
                     found.append(prov)
                     seen.add(prov)
+                matched_tokens.append(ck)
     return found
 
 

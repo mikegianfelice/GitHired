@@ -21,6 +21,16 @@ class TestProvinceDerivation(unittest.TestCase):
     def test_multiple_parts(self):
         self.assertEqual(find_any_canadian_province("Toronto / New York"), ["Ontario"])
 
+    def test_greater_toronto_area(self):
+        self.assertEqual(find_any_canadian_province("Greater Toronto Area"), ["Ontario"])
+        self.assertEqual(find_any_canadian_province("GTA"), ["Ontario"])
+
+    def test_bc_lower_mainland(self):
+        self.assertEqual(find_any_canadian_province("Lower Mainland"), ["British Columbia"])
+
+    def test_quebec_city_accents(self):
+        self.assertEqual(find_any_canadian_province("Québec City"), ["Quebec"])
+
 
 if __name__ == "__main__":
     unittest.main()

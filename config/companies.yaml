@@ -20,6 +20,24 @@ companies:
   board_token: abcellera
   enabled: true
   notes: 'Validated 2026-11-12: greenhouse/abcellera → 36 jobs, ~30 Canada-location'
+- name: Absorb
+  careers_url: https://jobs.ashbyhq.com/absorblms
+  ats: ashby
+  board_token: absorblms
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Accenture
+  careers_url: https://jobs.smartrecruiters.com/Accenture1
+  ats: smartrecruiters
+  board_token: Accenture1
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Achievers
+  careers_url: https://jobs.lever.co/achievers
+  ats: lever
+  board_token: achievers
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Acquird
   careers_url: https://jobs.ashbyhq.com/acquird
   ats: ashby
@@ -83,6 +101,12 @@ companies:
   board_token: airtable
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/airtable → 5 jobs (https://boards-api.greenhouse.io/v1/boards/airtable/jobs)'
+- name: AlayaCare
+  careers_url: https://boards.greenhouse.io/alayacare
+  ats: greenhouse
+  board_token: alayacare
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: AlphaSense
   careers_url: https://boards.greenhouse.io/alphasense
   ats: greenhouse
@@ -98,6 +122,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-15: lever/altaml → 5 jobs; ca_eligible=4, tech_ca=3 (AI/SWE
     Calgary+Toronto)'
+- name: Alveole
+  careers_url: https://boards.greenhouse.io/alveole
+  ats: greenhouse
+  board_token: alveole
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Anthropic
   domain: anthropic.com
   careers_url: https://www.anthropic.com/careers
@@ -112,6 +142,12 @@ companies:
   board_token: anyscale
   enabled: true
   notes: 'Validated 2026-11-12: ashby/anyscale → 24 jobs; Ray/AI platform'
+- name: Apera AI Inc
+  careers_url: https://boards.greenhouse.io/aperaaiinc
+  ats: greenhouse
+  board_token: aperaaiinc
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Apply Digital
   careers_url: https://jobs.lever.co/applydigital
   ats: lever
@@ -158,6 +194,18 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/ashby → 70 jobs; ca_eligible=5, ca_location_signals=5,
     eng=23'
+- name: Aspect Biosystems
+  careers_url: https://boards.greenhouse.io/aspectbiosystems
+  ats: greenhouse
+  board_token: aspectbiosystems
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Assent
+  careers_url: https://jobs.smartrecruiters.com/assent
+  ats: smartrecruiters
+  board_token: assent
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Astronomer
   careers_url: https://jobs.ashbyhq.com/astronomer
   ats: ashby
@@ -166,6 +214,18 @@ companies:
   notes: 'Validated 2026-11-03: ashby/astronomer → 19 jobs; DISABLED — No Canadian
     location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0
     jobs=19)'
+- name: AutoLeap
+  careers_url: https://apply.workable.com/autoleap
+  ats: workable
+  board_token: autoleap
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Auvik Networks
+  careers_url: https://boards.greenhouse.io/auviknetworks
+  ats: greenhouse
+  board_token: auviknetworks
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Badge
   careers_url: https://jobs.lever.co/badge-group
   ats: lever
@@ -180,6 +240,12 @@ companies:
   enabled: false
   notes: 'Validated 2026-11-03: ashby/baseten → 103 jobs; DISABLED — No Canadian location
     evidence in structured location fields (eligible=0 loc_signals=0 uncertain=2 jobs=103)'
+- name: Behaviour Interactive
+  careers_url: https://jobs.lever.co/bhvr
+  ats: lever
+  board_token: bhvr
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: BenchSci
   domain: benchsci.com
   careers_url: https://boards.greenhouse.io/benchsci
@@ -194,6 +260,18 @@ companies:
   board_token: benevity
   enabled: true
   notes: 'Validated 2026-10-29: ashby/benevity → 23 jobs (https://api.ashbyhq.com/posting-api/job-board/benevity)'
+- name: Blackbird Interactive
+  careers_url: https://jobs.lever.co/blackbirdinteractive
+  ats: lever
+  board_token: blackbirdinteractive
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Blackline Safety
+  careers_url: https://apply.workable.com/blacklinesafety
+  ats: workable
+  board_token: blacklinesafety
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Blackpoint Cyber
   careers_url: https://jobs.ashbyhq.com/blackpoint%20cyber
   ats: ashby
@@ -269,6 +347,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-15: ashby/canals → 20 jobs; ca_eligible=1, tech_ca=1 (Toronto
     Remote Senior SWE)'
+- name: CapIntel
+  careers_url: https://boards.greenhouse.io/capintel
+  ats: greenhouse
+  board_token: capintel
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: CIBC
   domain: cibc.com
   careers_url: https://cibc.wd3.myworkdayjobs.com/campus
@@ -279,6 +363,12 @@ companies:
   workday_site: campus
   enabled: true
   notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Clearbanc
+  careers_url: https://jobs.smartrecruiters.com/clearbanc
+  ats: smartrecruiters
+  board_token: clearbanc
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Clearco
   domain: clear.co
   careers_url: https://clear.co/careers
@@ -293,6 +383,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/clickhouse → 209 jobs; ca_eligible=4, ca_location_signals=5,
     eng=129'
+- name: Clouddx
+  careers_url: https://jobs.smartrecruiters.com/CloudDXInc
+  ats: smartrecruiters
+  board_token: CloudDXInc
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Cloudflare
   domain: cloudflare.com
   careers_url: https://www.cloudflare.com/careers
@@ -300,6 +396,12 @@ companies:
   board_token: cloudflare
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/cloudflare → 460 jobs (https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs)'
+- name: Clutch Technologies Inc.
+  careers_url: https://boards.greenhouse.io/clutch
+  ats: greenhouse
+  board_token: clutch
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Cockroach Labs
   careers_url: https://boards.greenhouse.io/cockroachlabs
   ats: greenhouse
@@ -320,6 +422,24 @@ companies:
   board_token: coinbase
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/coinbase → 228 jobs (https://boards-api.greenhouse.io/v1/boards/coinbase/jobs)'
+- name: CoLab Software
+  careers_url: https://boards.greenhouse.io/colabsoftware
+  ats: greenhouse
+  board_token: colabsoftware
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Coveo
+  careers_url: https://boards.greenhouse.io/coveoen
+  ats: greenhouse
+  board_token: coveoen
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Crowdriff
+  careers_url: https://jobs.lever.co/crowdriff
+  ats: lever
+  board_token: crowdriff
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Crunchyroll
   domain: crunchyroll.com
   careers_url: https://www.crunchyroll.com/jobs
@@ -327,6 +447,12 @@ companies:
   board_token: crunchyroll
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/crunchyroll → 100 jobs (https://boards-api.greenhouse.io/v1/boards/crunchyroll/jobs)'
+- name: Cruxocm
+  careers_url: https://jobs.lever.co/cruxocm
+  ats: lever
+  board_token: cruxocm
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: D2L
   domain: d2l.com
   careers_url: https://www.d2l.com/careers/
@@ -355,6 +481,12 @@ companies:
   board_token: deepgenomics
   enabled: true
   notes: 'Validated 2026-10-29: lever/deepgenomics → 2 jobs (https://api.lever.co/v0/postings/deepgenomics?mode=json)'
+- name: Deep Sky
+  careers_url: https://jobs.lever.co/deepsky
+  ats: lever
+  board_token: deepsky
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Desjardins
   domain: desjardins.com
   careers_url: https://desjardins.wd10.myworkdayjobs.com/Desjardins2
@@ -366,6 +498,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-15: Workday CXS → 415 jobs; tech_ca=3 (Montreal/Lévis
     Data Engineering hybrid)'
+- name: Digital Extremes
+  careers_url: https://boards.greenhouse.io/digitalextremes
+  ats: greenhouse
+  board_token: digitalextremes
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Docker
   careers_url: https://jobs.ashbyhq.com/docker
   ats: ashby
@@ -373,6 +511,24 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/docker → 52 jobs; ca_eligible=13, ca_location_signals=13,
     eng=27'
+- name: Dominion Dynamics
+  careers_url: https://jobs.ashbyhq.com/dominion dynamics
+  ats: ashby
+  board_token: dominion dynamics
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: DoorDash Canada
+  careers_url: https://boards.greenhouse.io/doordashcanada
+  ats: greenhouse
+  board_token: doordashcanada
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Doxim
+  careers_url: https://boards.greenhouse.io/doxim
+  ats: greenhouse
+  board_token: doxim
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Dropbox
   domain: dropbox.com
   careers_url: https://jobs.dropbox.com/
@@ -395,6 +551,18 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-12: ashby/elevenlabs → 128 jobs; remote AI (Canada via
     description when evidenced)'
+- name: Epic Games
+  careers_url: https://boards.greenhouse.io/epicgames
+  ats: greenhouse
+  board_token: epicgames
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: EQ Bank
+  careers_url: https://jobs.lever.co/eqbank
+  ats: lever
+  board_token: eqbank
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Faire
   domain: faire.com
   careers_url: https://www.faire.com/careers
@@ -425,6 +593,18 @@ companies:
   board_token: figma
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/figma → 141 jobs (https://boards-api.greenhouse.io/v1/boards/figma/jobs)'
+- name: Financeit
+  careers_url: https://apply.workable.com/financeit
+  ats: workable
+  board_token: financeit
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Finni Health
+  careers_url: https://jobs.ashbyhq.com/finni-health
+  ats: ashby
+  board_token: finni-health
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Fireworks AI
   domain: fireworks.ai
   careers_url: https://fireworks.ai/careers
@@ -439,6 +619,18 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: greenhouse/fivetran → 158 jobs; ca_eligible=0, ca_location_signals=9,
     eng=54'
+- name: Flare
+  careers_url: https://jobs.smartrecruiters.com/FlareSystems
+  ats: smartrecruiters
+  board_token: FlareSystems
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Flexiti
+  careers_url: https://boards.greenhouse.io/flexiti
+  ats: greenhouse
+  board_token: flexiti
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Flexport
   domain: flexport.com
   careers_url: https://www.flexport.com/careers
@@ -460,6 +652,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/float → 19 jobs; ca_eligible=18, ca_location_signals=19,
     eng=2'
+- name: Frima Studio
+  careers_url: https://jobs.smartrecruiters.com/FrimaStudio
+  ats: smartrecruiters
+  board_token: FrimaStudio
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Fullscript
   careers_url: https://jobs.lever.co/fullscript
   ats: lever
@@ -473,6 +671,12 @@ companies:
   board_token: futurefitai
   enabled: true
   notes: 'Re-enabled 2026-11-12: Canadian AI; prior uncertain signals'
+- name: Genetec
+  careers_url: https://jobs.smartrecruiters.com/genetec
+  ats: smartrecruiters
+  board_token: genetec
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: GeoComply
   domain: geocomply.com
   careers_url: https://boards.greenhouse.io/geocomply
@@ -530,6 +734,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/harvey → 374 jobs; ca_eligible=12, ca_location_signals=13,
     eng=120'
+- name: Hatch
+  careers_url: https://boards.greenhouse.io/hatchcareers
+  ats: greenhouse
+  board_token: hatchcareers
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Hive.co
   domain: hive.co
   careers_url: https://jobs.ashbyhq.com/hive.co
@@ -552,6 +762,12 @@ companies:
   board_token: hopper
   enabled: true
   notes: 'Validated 2026-10-29: ashby/hopper → 18 jobs (https://api.ashbyhq.com/posting-api/job-board/hopper)'
+- name: HubSpot
+  careers_url: https://boards.greenhouse.io/hubspotjobs
+  ats: greenhouse
+  board_token: hubspotjobs
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Hugging Face
   domain: huggingface.co
   careers_url: https://apply.workable.com/huggingface/
@@ -559,6 +775,12 @@ companies:
   board_token: huggingface
   enabled: true
   notes: 'Validated 2026-10-29: workable/huggingface → 6 jobs (https://apply.workable.com/api/v1/widget/accounts/huggingface)'
+- name: Ideogram
+  careers_url: https://jobs.ashbyhq.com/ideogram
+  ats: ashby
+  board_token: ideogram
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Instacart
   domain: instacart.com
   careers_url: https://instacart.careers/
@@ -591,6 +813,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-15: ashby/jane → 27 jobs; ca_eligible=25, tech_ca=3 (Canada
     Remote Data/Analytics Engineers)'
+- name: Jetson Home
+  careers_url: https://boards.greenhouse.io/jetsonhome
+  ats: greenhouse
+  board_token: jetsonhome
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Jobber
   domain: getjobber.com
   careers_url: https://getjobber.com/about/careers/
@@ -598,6 +826,12 @@ companies:
   board_token: jobber
   enabled: true
   notes: 'Validated 2026-10-29: ashby/jobber → 39 jobs (https://api.ashbyhq.com/posting-api/job-board/jobber)'
+- name: Kepler
+  careers_url: https://jobs.lever.co/kepler
+  ats: lever
+  board_token: kepler
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Kin
   domain: kin.com
   careers_url: https://www.kin.com/careers
@@ -605,6 +839,12 @@ companies:
   board_token: kin
   enabled: true
   notes: 'Validated 2026-10-29: ashby/kin → 21 jobs (https://api.ashbyhq.com/posting-api/job-board/kin)'
+- name: Klue
+  careers_url: https://jobs.ashbyhq.com/klue
+  ats: ashby
+  board_token: klue
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: KOHO
   domain: koho.ca
   careers_url: https://www.koho.ca/careers
@@ -641,6 +881,12 @@ companies:
   board_token: later
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/later → 38 jobs (https://boards-api.greenhouse.io/v1/boards/later/jobs)'
+- name: LawDepot
+  careers_url: https://jobs.ashbyhq.com/lawdepot
+  ats: ashby
+  board_token: lawdepot
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Lazer
   careers_url: https://jobs.ashbyhq.com/lazer
   ats: ashby
@@ -683,6 +929,18 @@ companies:
   board_token: loopio
   enabled: true
   notes: 'Validated 2026-10-29: ashby/loopio → 16 jobs'
+- name: Lwolf
+  careers_url: https://jobs.lever.co/lwolf
+  ats: lever
+  board_token: lwolf
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Lyft
+  careers_url: https://boards.greenhouse.io/lyft
+  ats: greenhouse
+  board_token: lyft
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: MagicSchool
   domain: magicschool.ai
   careers_url: https://www.magicschool.ai/careers
@@ -720,6 +978,36 @@ companies:
   board_token: merge
   enabled: true
   notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals'
+- name: Micromart
+  careers_url: https://jobs.ashbyhq.com/micromart
+  ats: ashby
+  board_token: micromart
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: MineSense
+  careers_url: https://jobs.lever.co/minesense
+  ats: lever
+  board_token: minesense
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Miovision
+  careers_url: https://jobs.ashbyhq.com/miovision
+  ats: ashby
+  board_token: miovision
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Mirego
+  careers_url: https://jobs.lever.co/mirego
+  ats: lever
+  board_token: mirego
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: MobSquad
+  careers_url: https://boards.greenhouse.io/mobsquad
+  ats: greenhouse
+  board_token: mobsquad
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Modal
   careers_url: https://jobs.ashbyhq.com/modal
   ats: ashby
@@ -763,6 +1051,24 @@ companies:
   board_token: nesto
   enabled: true
   notes: 'Validated 2026-10-29: rippling/nesto → 20 jobs (https://ats.rippling.com/api/v2/board/nesto/jobs)'
+- name: New Flyer
+  careers_url: https://apply.workable.com/new-flyer
+  ats: workable
+  board_token: new-flyer
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Newton
+  careers_url: https://jobs.lever.co/newton
+  ats: lever
+  board_token: newton
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: North Vector Dynamics
+  careers_url: https://jobs.ashbyhq.com/northvectordynamics
+  ats: ashby
+  board_token: northvectordynamics
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Northbeam
   careers_url: https://boards.greenhouse.io/northbeam
   ats: greenhouse
@@ -784,6 +1090,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-15: lever/novara → 6 jobs; ca_eligible=1, tech_ca=1 (Toronto
     SWE-AI Platforms)'
+- name: Novisto
+  careers_url: https://boards.greenhouse.io/novisto78
+  ats: greenhouse
+  board_token: novisto78
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Nuvei
   domain: nuvei.com
   careers_url: https://www.nuvei.com/careers
@@ -805,6 +1117,18 @@ companies:
   board_token: openai
   enabled: true
   notes: 'Validated 2026-10-29: ashby/openai → 812 jobs (https://api.ashbyhq.com/posting-api/job-board/openai)'
+- name: Opslevel
+  careers_url: https://jobs.ashbyhq.com/opslevel
+  ats: ashby
+  board_token: opslevel
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Osedea
+  careers_url: https://jobs.lever.co/osedea
+  ats: lever
+  board_token: osedea
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Owner.com
   careers_url: https://jobs.ashbyhq.com/owner
   ats: ashby
@@ -812,6 +1136,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/owner → 50 jobs; ca_eligible=11, ca_location_signals=14,
     eng=11'
+- name: Oxygen8 Solutions Inc
+  careers_url: https://boards.greenhouse.io/oxygen8
+  ats: greenhouse
+  board_token: oxygen8
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Oyster
   careers_url: https://jobs.ashbyhq.com/oyster
   ats: ashby
@@ -825,6 +1155,12 @@ companies:
   board_token: pagerduty
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/pagerduty → 49 jobs (https://boards-api.greenhouse.io/v1/boards/pagerduty/jobs)'
+- name: Paidiem
+  careers_url: https://jobs.smartrecruiters.com/PAIDIEM
+  ats: smartrecruiters
+  board_token: PAIDIEM
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Parallel Domain
   domain: paralleldomain.com
   careers_url: https://jobs.lever.co/paralleldomain
@@ -841,6 +1177,12 @@ companies:
   notes: 'Validated 2026-11-03: ashby/perplexity → 136 jobs; DISABLED — No Canadian
     location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=12
     jobs=136)'
+- name: Phoenix
+  careers_url: https://jobs.ashbyhq.com/phoenix
+  ats: ashby
+  board_token: phoenix
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Plaid
   domain: plaid.com
   careers_url: https://plaid.com/careers/
@@ -854,6 +1196,12 @@ companies:
   board_token: planetscale
   enabled: true
   notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals'
+- name: Plotly
+  careers_url: https://jobs.ashbyhq.com/plotly
+  ats: ashby
+  board_token: plotly
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: PointClickCare
   domain: pointclickcare.com
   careers_url: https://pointclickcare.com/company/careers/
@@ -861,6 +1209,12 @@ companies:
   board_token: pointclickcare
   enabled: true
   notes: 'Validated 2026-10-29: lever/pointclickcare → 72 jobs (https://api.lever.co/v0/postings/pointclickcare?mode=json)'
+- name: Poka
+  careers_url: https://boards.greenhouse.io/poka
+  ats: greenhouse
+  board_token: poka
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: PolicyMe
   domain: policyme.com
   careers_url: https://www.policyme.com/careers
@@ -875,6 +1229,30 @@ companies:
   enabled: true
   notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals; city/description
     eligibility improved'
+- name: Promise Robotics
+  careers_url: https://jobs.lever.co/promiserobotics
+  ats: lever
+  board_token: promiserobotics
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: PurposeMed
+  careers_url: https://boards.greenhouse.io/purposemed
+  ats: greenhouse
+  board_token: purposemed
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Quandri
+  careers_url: https://jobs.lever.co/quandri
+  ats: lever
+  board_token: quandri
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Questrade
+  careers_url: https://boards.greenhouse.io/questrade
+  ats: greenhouse
+  board_token: questrade
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Ramp
   domain: ramp.com
   careers_url: https://ramp.com/careers
@@ -900,6 +1278,12 @@ companies:
   workday_site: RBCGLOBAL1
   enabled: true
   notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Reaction Dynamics
+  careers_url: https://jobs.smartrecruiters.com/reactiondynamics
+  ats: smartrecruiters
+  board_token: reactiondynamics
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Redis
   careers_url: https://jobs.ashbyhq.com/Redis
   ats: ashby
@@ -955,6 +1339,12 @@ companies:
   board_token: rippling
   enabled: true
   notes: 'Validated 2026-10-29: rippling/rippling → 20 jobs (https://ats.rippling.com/api/v2/board/rippling/jobs)'
+- name: Riskfuel
+  careers_url: https://jobs.smartrecruiters.com/Riskfuel
+  ats: smartrecruiters
+  board_token: Riskfuel
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Ritual
   domain: ritual.co
   careers_url: https://ritual.co/careers
@@ -969,6 +1359,24 @@ companies:
   board_token: robinhood
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/robinhood → 162 jobs (https://boards-api.greenhouse.io/v1/boards/robinhood/jobs)'
+- name: Roblox
+  careers_url: https://boards.greenhouse.io/roblox
+  ats: greenhouse
+  board_token: roblox
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Rocket Lab Corporation
+  careers_url: https://boards.greenhouse.io/rocketlab
+  ats: greenhouse
+  board_token: rocketlab
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Safe Software
+  careers_url: https://jobs.ashbyhq.com/safe
+  ats: ashby
+  board_token: safe
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Samsara
   domain: samsara.com
   careers_url: https://www.samsara.com/company/careers
@@ -997,6 +1405,30 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/sentry → 40 jobs; ca_eligible=8, ca_location_signals=8,
     eng=30'
+- name: ServiceNow
+  careers_url: https://jobs.smartrecruiters.com/servicenow
+  ats: smartrecruiters
+  board_token: servicenow
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Shakepay
+  careers_url: https://boards.greenhouse.io/shakepay
+  ats: greenhouse
+  board_token: shakepay
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: ShareGate
+  careers_url: https://boards.greenhouse.io/sharegate
+  ats: greenhouse
+  board_token: sharegate
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Shearwater
+  careers_url: https://boards.greenhouse.io/shearwater
+  ats: greenhouse
+  board_token: shearwater
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Shopify
   domain: shopify.com
   careers_url: https://www.shopify.com/careers
@@ -1020,6 +1452,30 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/sierra → 218 jobs; ca_eligible=9, ca_location_signals=23,
     eng=89'
+- name: SkyBox Labs
+  careers_url: https://jobs.lever.co/skyboxlabs
+  ats: lever
+  board_token: skyboxlabs
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Skywatch
+  careers_url: https://jobs.ashbyhq.com/skywatch
+  ats: ashby
+  board_token: skywatch
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Smile Digital Health
+  careers_url: https://jobs.lever.co/smiledigitalhealth
+  ats: lever
+  board_token: smiledigitalhealth
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Smile.io
+  careers_url: https://jobs.lever.co/Smile.io
+  ats: lever
+  board_token: Smile.io
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Snowflake
   domain: snowflake.com
   careers_url: https://careers.snowflake.com/
@@ -1027,6 +1483,12 @@ companies:
   board_token: snowflake
   enabled: true
   notes: 'Validated 2026-10-29: ashby/snowflake → 361 jobs (https://api.ashbyhq.com/posting-api/job-board/snowflake)'
+- name: Solink
+  careers_url: https://jobs.ashbyhq.com/solink
+  ats: ashby
+  board_token: solink
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: SOVRA
   domain: sovra.io
   careers_url: https://jobs.ashbyhq.com/sovra
@@ -1035,6 +1497,18 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-15: ashby/sovra → 12 jobs; ca_eligible=8, tech_ca=3 (Calgary/Montreal
     DevOps + Data)'
+- name: Spellbook
+  careers_url: https://jobs.ashbyhq.com/spellbook.com
+  ats: ashby
+  board_token: spellbook.com
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Spotify
+  careers_url: https://jobs.lever.co/spotify
+  ats: lever
+  board_token: spotify
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: StackAdapt
   domain: stackadapt.com
   careers_url: https://www.stackadapt.com/careers
@@ -1042,6 +1516,12 @@ companies:
   board_token: stackadapt
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/stackadapt → 75 jobs (https://boards-api.greenhouse.io/v1/boards/stackadapt/jobs)'
+- name: Stay22
+  careers_url: https://boards.greenhouse.io/stay22
+  ats: greenhouse
+  board_token: stay22
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Stripe
   domain: stripe.com
   careers_url: https://stripe.com/jobs
@@ -1099,6 +1579,12 @@ companies:
   workday_site: TD_Bank_Careers
   enabled: true
   notes: 'Phase 5: verified CXS guest board 2026-10-29'
+- name: Telesat
+  careers_url: https://jobs.lever.co/telesat
+  ats: lever
+  board_token: telesat
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: TELUS
   domain: telus.com
   careers_url: https://careers.telus.com/
@@ -1109,6 +1595,12 @@ companies:
   workday_site: External
   enabled: true
   notes: 'Phase 5: TELUS/LifeWorks verified CXS guest board 2026-10-29'
+- name: Tempo
+  careers_url: https://jobs.ashbyhq.com/tempo-io
+  ats: ashby
+  board_token: tempo-io
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Temporal
   careers_url: https://jobs.ashbyhq.com/temporal
   ats: ashby
@@ -1131,6 +1623,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-15: ashby/terminal → 7 jobs; ca_eligible=7, tech_ca=2
     (Toronto Data Platform + Backend SWE)'
+- name: The Semios Group
+  careers_url: https://apply.workable.com/semios
+  ats: workable
+  board_token: semios
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Thinkific
   domain: thinkific.com
   careers_url: https://www.thinkific.com/careers/
@@ -1152,6 +1650,24 @@ companies:
   board_token: toast
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/toast → 340 jobs'
+- name: Top Hat
+  careers_url: https://jobs.ashbyhq.com/top-hat
+  ats: ashby
+  board_token: top-hat
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Trexorobotics
+  careers_url: https://jobs.ashbyhq.com/trexo robotics
+  ats: ashby
+  board_token: trexo robotics
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: TribalScale
+  careers_url: https://boards.greenhouse.io/tribalscale
+  ats: greenhouse
+  board_token: tribalscale
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Trulioo
   domain: trulioo.com
   careers_url: https://www.trulioo.com/about/careers
@@ -1159,6 +1675,12 @@ companies:
   board_token: trulioo
   enabled: true
   notes: 'Validated 2026-10-29: ashby/trulioo → 25 jobs (https://api.ashbyhq.com/posting-api/job-board/trulioo)'
+- name: turbopuffer
+  careers_url: https://jobs.ashbyhq.com/turbopuffer
+  ats: ashby
+  board_token: turbopuffer
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Twilio
   domain: twilio.com
   careers_url: https://www.twilio.com/company/jobs
@@ -1166,6 +1688,12 @@ companies:
   board_token: twilio
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/twilio → 130 jobs (https://boards-api.greenhouse.io/v1/boards/twilio/jobs)'
+- name: Ubisoft
+  careers_url: https://jobs.smartrecruiters.com/ubisoft2
+  ats: smartrecruiters
+  board_token: ubisoft2
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Unbounce
   domain: unbounce.com
   careers_url: https://unbounce.com/careers/
@@ -1173,6 +1701,12 @@ companies:
   board_token: unbounce
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/unbounce → 1 jobs (https://boards-api.greenhouse.io/v1/boards/unbounce/jobs)'
+- name: Uride
+  careers_url: https://jobs.smartrecruiters.com/uride
+  ats: smartrecruiters
+  board_token: uride
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Vanta
   careers_url: https://jobs.ashbyhq.com/vanta
   ats: ashby
@@ -1180,6 +1714,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-03: ashby/vanta → 81 jobs; ca_eligible=7, ca_location_signals=7,
     eng=29'
+- name: Venn
+  careers_url: https://jobs.ashbyhq.com/venn
+  ats: ashby
+  board_token: venn
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Vercel
   careers_url: https://boards.greenhouse.io/vercel
   ats: greenhouse
@@ -1188,6 +1728,24 @@ companies:
   notes: 'Validated 2026-11-03: greenhouse/vercel → 89 jobs; DISABLED — No Canadian
     location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0
     jobs=89)'
+- name: Versapay
+  careers_url: https://jobs.lever.co/versapay
+  ats: lever
+  board_token: versapay
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Versaterm
+  careers_url: https://boards.greenhouse.io/versaterm
+  ats: greenhouse
+  board_token: versaterm
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
+- name: Videotron
+  careers_url: https://jobs.smartrecruiters.com/Videotron
+  ats: smartrecruiters
+  board_token: Videotron
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Vidyard
   domain: vidyard.com
   careers_url: https://boards.greenhouse.io/vidyard
@@ -1246,6 +1804,12 @@ companies:
   board_token: wealthsimple
   enabled: true
   notes: 'Validated 2026-10-29: ashby/wealthsimple → 38 jobs (https://api.ashbyhq.com/posting-api/job-board/wealthsimple)'
+- name: Workleap
+  careers_url: https://boards.greenhouse.io/workleap
+  ats: greenhouse
+  board_token: workleap
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Wrapbook
   careers_url: https://jobs.ashbyhq.com/wrapbook
   ats: ashby
@@ -1260,6 +1824,12 @@ companies:
   enabled: false
   notes: 'Validated 2026-11-03: ashby/writer → 46 jobs; DISABLED — No Canadian location
     evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=46)'
+- name: Xenon Pharmaceuticals
+  careers_url: https://jobs.ashbyhq.com/xenon
+  ats: ashby
+  board_token: xenon
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: Xsolla
   domain: xsolla.com
   careers_url: https://jobs.lever.co/xsolla
@@ -1268,6 +1838,12 @@ companies:
   enabled: true
   notes: 'Validated 2026-11-15: lever/xsolla → 186 jobs; ca_eligible=20, tech_ca=8
     (Montreal Backend/Full-Stack/Platform/AI)'
+- name: ZayZoon
+  careers_url: https://jobs.ashbyhq.com/zayzoon
+  ats: ashby
+  board_token: zayzoon
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
 - name: ZoomInfo
   domain: zoominfo.com
   careers_url: https://www.zoominfo.com/careers
@@ -1275,3 +1851,9 @@ companies:
   board_token: zoominfo
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/zoominfo → 102 jobs'
+- name: Zscaler
+  careers_url: https://boards.greenhouse.io/zscaler
+  ats: greenhouse
+  board_token: zscaler
+  enabled: true
+  notes: Verified via probe 2026-11-22 snapshot
