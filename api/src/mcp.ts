@@ -28,7 +28,7 @@ const TOOLS = [
       properties: {
         keywords: { type: "string", description: "Keyword query (title, company, skills)" },
         location: { type: "string" },
-        province: { type: "string", description: "Canadian province code, e.g. ON" },
+        province: { type: "string", description: "Canadian province (code like ON, or full name like Ontario)" },
         remote: { type: "boolean" },
         work_mode: { type: "string", enum: ["remote", "hybrid", "onsite"] },
         minimum_salary: {
@@ -38,6 +38,7 @@ const TOOLS = [
         seniority: { type: "string" },
         company: { type: "string" },
         limit: { type: "number", minimum: 1, maximum: 25 },
+        cursor: { type: "string", description: "Opaque cursor from a prior page of search_jobs results" },
       },
     },
   },
@@ -130,7 +131,20 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
     const filters: SearchFilters = {
       q: typeof args.keywords === "string" ? args.keywords : undefined,
       location: typeof args.location === "string" ? args.location : undefined,
-      province: typeof args.province === "string" ? args.province.toUpperCase() : undefined,
+      province: (() => {
+        if (typeof args.province !== "string") return undefined;
+        const raw = String(args.province || "");
+        try {
+          // Reuse REST normalization by constructing a URLSearchParams shim.
+          const { parseSearchFilters } = await import("./search");
+          const f = parseSearchFilters(new URLSearchParams({ province: raw }));
+          return f.province;
+        } catch {
+          // Best-effort: accept two-letter codes case-insensitively; names rejected by REST will surface there.
+          const up = raw.trim().toUpperCase();
+          return up.length === 2 ? up : raw.trim();
+        }
+      })(),
       remote: typeof args.remote === "boolean" ? args.remote : undefined,
       work_mode: (() => {
         if (typeof args.work_mode !== "string") return undefined;
@@ -151,6 +165,7 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       company: typeof args.company === "string" ? args.company : undefined,
       sort: "relevance",
       limit: typeof args.limit === "number" ? Math.min(25, Math.max(1, args.limit)) : 10,
+      cursor: typeof args.cursor === "string" ? args.cursor : undefined,
     };
     const result = searchJobs(snapshot, filters);
     return textContent({
@@ -159,6 +174,8 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       generated_at: result.generated_at,
       dataset_fresh: freshness.fresh,
       jobs: result.jobs.map(compactJob),
+      next_cursor: result.next_cursor,
+      applied_filters: result.applied_filters,
       salary_note: "Filters use employer-advertised annual base only.",
     });
   }

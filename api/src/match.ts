@@ -473,9 +473,17 @@ export function matchProfile(
 
     if (locations.length) {
       const locBlob = `${job.location} ${job.province || ""}`.toLowerCase();
-      const locOk =
-        locations.some((l) => locBlob.includes(l)) ||
-        (allowedArrangements.includes("remote") && job.work_arrangement === "remote");
+      const locOk = locations.some((lraw) => {
+        const l = String(lraw || "").trim().toLowerCase();
+        if (!l) return false;
+        // Province code (e.g., on, qc): require exact code match
+        if (l.length <= 2) {
+          return (job.province || "").toUpperCase() === l.toUpperCase();
+        }
+        // Full-name province or city substring with word boundary
+        const re = new RegExp(`\\b${l.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}\\b`, "i");
+        return re.test(locBlob);
+      }) || (allowedArrangements.includes("remote") && job.work_arrangement === "remote");
       if (!locOk) continue;
     }
 

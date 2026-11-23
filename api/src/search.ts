@@ -22,6 +22,49 @@ export class SearchFilterValidationError extends Error {
 
 const WORK_MODES = new Set(["remote", "hybrid", "onsite"]);
 
+const PROVINCE_NAME_TO_CODE: Record<string, string> = {
+  "ontario": "ON",
+  "quebec": "QC",
+  "british columbia": "BC",
+  "alberta": "AB",
+  "manitoba": "MB",
+  "saskatchewan": "SK",
+  "nova scotia": "NS",
+  "new brunswick": "NB",
+  "newfoundland": "NL",
+  "newfoundland and labrador": "NL",
+  "prince edward island": "PE",
+  "yukon": "YT",
+  "northwest territories": "NT",
+  "nunavut": "NU",
+};
+
+function normalizeProvinceInput(raw: string | null | undefined): string | undefined {
+  if (!raw) return undefined;
+  const txt = raw.trim();
+  if (!txt) return undefined;
+  const up = txt.toUpperCase();
+  // Accept valid two-letter codes in any case
+  if (Object.values(PROVINCE_NAME_TO_CODE).includes(up)) return up;
+  // Accept full names case-insensitively
+  const code = PROVINCE_NAME_TO_CODE[txt.trim().toLowerCase()];
+  if (code) return code;
+  throw new SearchFilterValidationError(
+    "invalid_province",
+    `Unrecognized province '${raw}'. Use a two-letter code (e.g. ON) or full name (e.g. Ontario).`,
+  );
+}
+
+function normalizeSeniority(raw: string | null | undefined): string | undefined {
+  if (raw == null) return undefined;
+  const s = raw.trim().toLowerCase();
+  if (!s) return undefined;
+  if (s === "sr") return "senior";
+  if (s === "jr") return "junior";
+  if (s === "intermediate") return "mid";
+  return s;
+}
+
 export function parseSearchFilters(params: URLSearchParams): SearchFilters {
   const sortRaw = (params.get("sort") || "relevance").toLowerCase();
   const sort =
@@ -43,7 +86,7 @@ export function parseSearchFilters(params: URLSearchParams): SearchFilters {
   return {
     q: params.get("q")?.trim() || undefined,
     location: params.get("location")?.trim() || undefined,
-    province: params.get("province")?.trim()?.toUpperCase() || undefined,
+    province: normalizeProvinceInput(params.get("province") || undefined),
     remote: parseBool(params.get("remote")),
     work_mode: workModeRaw,
     // Non-positive / NaN salary bounds are ignored (never invent floors/ceilings).
@@ -56,7 +99,7 @@ export function parseSearchFilters(params: URLSearchParams): SearchFilters {
         ? salaryMaxRaw
         : undefined,
     salary_disclosed: parseBool(params.get("salary_disclosed")),
-    seniority: params.get("seniority")?.trim()?.toLowerCase() || undefined,
+    seniority: normalizeSeniority(params.get("seniority")),
     company: params.get("company")?.trim() || undefined,
     sort,
     limit: Number.isFinite(limitRaw) ? Math.min(MAX_LIMIT, Math.max(1, Math.floor(limitRaw))) : DEFAULT_LIMIT,
@@ -91,6 +134,30 @@ function hasToken(hay: string, token: string): boolean {
   return tokens(hay).includes(token.toLowerCase());
 }
 
+function titleOrRoleFields(job: ApiJob): string {
+  return [job.title, job.track || "", job.seniority || ""].join(" ").toLowerCase();
+}
+
+const SENIORITY_TOKENS = new Set([
+  "senior",
+  "sr",
+  "junior",
+  "jr",
+  "staff",
+  "principal",
+  "lead",
+  "intern",
+  "entry",
+  "mid",
+  "intermediate",
+  "i",
+  "ii",
+  "iii",
+  "iv",
+]);
+
+const GENERIC_ROLE_TOKENS = new Set(["engineer", "engineering", "developer", "software"]);
+
 function relevanceScore(job: ApiJob, q: string | undefined): number {
   if (!q) return 0;
   const h = haystack(job);
@@ -118,12 +185,28 @@ function salaryCad(job: ApiJob, fx: number): number | null {
 /** Salary filters apply to advertised annual base only (never estimates). */
 export function jobMatchesFilters(job: ApiJob, filters: SearchFilters, fx: number): boolean {
   if (filters.q) {
-    const h = haystack(job);
     const all = tokens(filters.q);
     if (all.length) {
-      const hits = all.filter((t) => hasToken(h, t) || hasToken(job.title, t)).length;
-      // Single token: must match. Multi-token: require all tokens (precision over recall).
-      if (hits < all.length) return false;
+      // Token presence across any field
+      const inAny = all.filter(
+        (t) =>
+          hasToken(job.title, t) ||
+          hasToken(job.company, t) ||
+          job.technologies.some((x) => hasToken(x, t)) ||
+          hasToken(haystack(job), t),
+      ).length;
+      if (inAny < all.length) return false;
+      // Guardrail: exclude description-only matches for role-family queries.
+      const roleHits = all.filter(
+        (t) =>
+          !SENIORITY_TOKENS.has(t) &&
+          !GENERIC_ROLE_TOKENS.has(t) &&
+          hasToken(titleOrRoleFields(job), t),
+      ).length;
+      const companyHits = all.filter((t) => hasToken(job.company, t)).length;
+      const techHits = all.filter((t) => job.technologies.some((x) => hasToken(x, t))).length;
+      // If none of the tokens hit title/track/seniority/company/tech, it's a weak description-only match → exclude.
+      if (roleHits === 0 && companyHits === 0 && techHits === 0) return false;
     }
   }
   if (filters.location) {

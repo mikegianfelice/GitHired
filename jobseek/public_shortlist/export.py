@@ -22,6 +22,7 @@ from jobseek.filters.location import (
     _CANADA_WORD,
     _US_GEO,
     find_any_canadian_province,
+    find_any_canadian_cities,
     infer_work_arrangement,
 )
 from jobseek.filters.tracks import detect_seniority, match_track
@@ -133,10 +134,13 @@ def _salary_max_cad(
 
 def _province_code(location: str) -> str | None:
     provinces = find_any_canadian_province(location)
+    city = None
     if not provinces:
-        return None
+        # Fall back to city→province mapping for Canadian cities without explicit province
+        cities = find_any_canadian_cities(location)
+        city = cities[0] if cities else None
     # Prefer short codes when we can map
-    name = provinces[0]
+    name = provinces[0] if provinces else None
     mapping = {
         "Ontario": "ON",
         "British Columbia": "BC",
@@ -152,7 +156,51 @@ def _province_code(location: str) -> str | None:
         "Northwest Territories": "NT",
         "Nunavut": "NU",
     }
-    return mapping.get(name, name)
+    if name:
+        return mapping.get(name, name)
+    # City→province codes (subset of _CANADIAN_CITIES)
+    _map = {
+        "toronto": "ON",
+        "montreal": "QC",
+        "montréal": "QC",
+        "vancouver": "BC",
+        "ottawa": "ON",
+        "calgary": "AB",
+        "edmonton": "AB",
+        "winnipeg": "MB",
+        "halifax": "NS",
+        "victoria": "BC",
+        "waterloo": "ON",
+        "kitchener": "ON",
+        "mississauga": "ON",
+        "brampton": "ON",
+        "hamilton": "ON",
+        "saskatoon": "SK",
+        "regina": "SK",
+        "gatineau": "QC",
+        "laval": "QC",
+        "surrey": "BC",
+        "burnaby": "BC",
+        "richmond": "BC",
+        "markham": "ON",
+        "vaughan": "ON",
+        "oakville": "ON",
+        "burlington": "ON",
+        "oshawa": "ON",
+        "windsor": "ON",
+        "st. john's": "NL",
+        "st johns": "NL",
+        "charlottetown": "PE",
+        "whitehorse": "YT",
+        "yellowknife": "NT",
+        "iqaluit": "NU",
+        "london": "ON",
+    }
+    if city:
+        code = _map.get(city.casefold())
+        if code:
+            return code
+    return None
 
 
 _US_ONLY_LOCATION = re.compile(
