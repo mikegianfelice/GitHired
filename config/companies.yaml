@@ -11,7 +11,8 @@ companies:
   ats: ashby
   board_token: 7shifts
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/7shifts → 11 jobs; ca_eligible=9, ca_location_signals=9, eng=4'
+  notes: 'Validated 2026-11-03: ashby/7shifts → 11 jobs; ca_eligible=9, ca_location_signals=9,
+    eng=4'
 - name: AbCellera
   domain: abcellera.com
   careers_url: https://www.abcellera.com/careers
@@ -24,26 +25,29 @@ companies:
   ats: ashby
   board_token: acquird
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/acquird → 10 jobs; ca_eligible=5, ca_location_signals=10, eng=5'
+  notes: 'Validated 2026-11-03: ashby/acquird → 10 jobs; ca_eligible=5, ca_location_signals=10,
+    eng=5'
 - name: Ada
   domain: ada.cx
   careers_url: https://www.ada.cx/careers/
   ats: greenhouse
   board_token: ada18
   enabled: true
-  notes: 'Validated 2026-11-02: greenhouse/ada18 → 7 jobs (5 Remote-Canada); Toronto AI customer-automation'
+  notes: 'Validated 2026-11-02: greenhouse/ada18 → 7 jobs (5 Remote-Canada); Toronto
+    AI customer-automation'
 - name: Adept
   careers_url: https://www.adept.ai/careers
   ats: ashby
   board_token: adept
   enabled: false
-  notes: 'Example disabled entry'
+  notes: Example disabled entry
 - name: Aduna Global
   careers_url: https://jobs.lever.co/adunaglobal
   ats: lever
   board_token: adunaglobal
   enabled: true
-  notes: 'Validated 2026-11-15: lever/adunaglobal → 24 jobs; ca_eligible≈9, tech_ca=3 (Montreal Data/SWE/SRE)'
+  notes: 'Validated 2026-11-15: lever/adunaglobal → 24 jobs; ca_eligible≈9, tech_ca=3
+    (Montreal Data/SWE/SRE)'
 - name: Affirm
   domain: affirm.com
   careers_url: https://www.affirm.com/careers
@@ -56,7 +60,8 @@ companies:
   ats: lever
   board_token: air-tek
   enabled: true
-  notes: 'Validated 2026-11-03: lever/air-tek → 13 jobs; ca_eligible=0, ca_location_signals=13, eng=5'
+  notes: 'Validated 2026-11-03: lever/air-tek → 13 jobs; ca_eligible=0, ca_location_signals=13,
+    eng=5'
 - name: Airbnb
   domain: airbnb.com
   careers_url: https://careers.airbnb.com/
@@ -83,14 +88,16 @@ companies:
   ats: greenhouse
   board_token: alphasense
   enabled: true
-  notes: 'Validated 2026-11-03: greenhouse/alphasense → 206 jobs; ca_eligible=13, ca_location_signals=13, eng=49'
+  notes: 'Validated 2026-11-03: greenhouse/alphasense → 206 jobs; ca_eligible=13,
+    ca_location_signals=13, eng=49'
 - name: AltaML
   domain: altaml.com
   careers_url: https://jobs.lever.co/altaml
   ats: lever
   board_token: altaml
   enabled: true
-  notes: 'Validated 2026-11-15: lever/altaml → 5 jobs; ca_eligible=4, tech_ca=3 (AI/SWE Calgary+Toronto)'
+  notes: 'Validated 2026-11-15: lever/altaml → 5 jobs; ca_eligible=4, tech_ca=3 (AI/SWE
+    Calgary+Toronto)'
 - name: Anthropic
   domain: anthropic.com
   careers_url: https://www.anthropic.com/careers
@@ -110,13 +117,22 @@ companies:
   ats: lever
   board_token: applydigital
   enabled: true
-  notes: 'Validated 2026-11-03: lever/applydigital → 9 jobs; ca_eligible=0, ca_location_signals=5, eng=3'
+  notes: 'Validated 2026-11-03: lever/applydigital → 9 jobs; ca_eligible=0, ca_location_signals=5,
+    eng=3'
+- name: ApplyBoard
+  domain: applyboard.com
+  careers_url: https://jobs.lever.co/applyboard
+  ats: lever
+  board_token: applyboard
+  enabled: true
+  notes: 'Candidate: Lever/applyboard (ON)'
 - name: Arc'teryx
   careers_url: https://jobs.lever.co/arcteryx.com
   ats: lever
   board_token: arcteryx.com
   enabled: true
-  notes: 'Validated 2026-11-03: lever/arcteryx.com → 251 jobs; ca_eligible=0, ca_location_signals=105, eng=11'
+  notes: 'Validated 2026-11-03: lever/arcteryx.com → 251 jobs; ca_eligible=0, ca_location_signals=105,
+    eng=11'
 - name: Arctic Wolf
   domain: arcticwolf.com
   careers_url: https://arcticwolf.com/company/careers/
@@ -126,7 +142,8 @@ companies:
   workday_tenant: arcticwolf
   workday_site: External
   enabled: true
-  notes: 'Validated 2026-11-02: Workday CXS → 102 jobs incl. Remote Canada Staff AI / Waterloo cybersecurity (DevOps/SRE adjacent)'
+  notes: 'Validated 2026-11-02: Workday CXS → 102 jobs incl. Remote Canada Staff AI
+    / Waterloo cybersecurity (DevOps/SRE adjacent)'
 - name: Asana
   domain: asana.com
   careers_url: https://asana.com/jobs
@@ -139,25 +156,37 @@ companies:
   ats: ashby
   board_token: ashby
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/ashby → 70 jobs; ca_eligible=5, ca_location_signals=5, eng=23'
+  notes: 'Validated 2026-11-03: ashby/ashby → 70 jobs; ca_eligible=5, ca_location_signals=5,
+    eng=23'
 - name: Astronomer
   careers_url: https://jobs.ashbyhq.com/astronomer
   ats: ashby
   board_token: astronomer
   enabled: false
-  notes: 'Validated 2026-11-03: ashby/astronomer → 19 jobs; DISABLED — No Canadian location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=19)'
+  notes: 'Validated 2026-11-03: ashby/astronomer → 19 jobs; DISABLED — No Canadian
+    location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0
+    jobs=19)'
 - name: Badge
   careers_url: https://jobs.lever.co/badge-group
   ats: lever
   board_token: badge-group
   enabled: true
-  notes: 'Validated 2026-11-15: lever/badge-group → 3 jobs; ca_eligible=1, tech_ca=1 (Vancouver Fullstack SWE)'
+  notes: 'Validated 2026-11-15: lever/badge-group → 3 jobs; ca_eligible=1, tech_ca=1
+    (Vancouver Fullstack SWE)'
 - name: Baseten
   careers_url: https://jobs.ashbyhq.com/baseten
   ats: ashby
   board_token: baseten
   enabled: false
-  notes: 'Validated 2026-11-03: ashby/baseten → 103 jobs; DISABLED — No Canadian location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=2 jobs=103)'
+  notes: 'Validated 2026-11-03: ashby/baseten → 103 jobs; DISABLED — No Canadian location
+    evidence in structured location fields (eligible=0 loc_signals=0 uncertain=2 jobs=103)'
+- name: BenchSci
+  domain: benchsci.com
+  careers_url: https://boards.greenhouse.io/benchsci
+  ats: greenhouse
+  board_token: benchsci
+  enabled: true
+  notes: 'Candidate: Greenhouse/benchsci (ON)'
 - name: Benevity
   domain: benevity.com
   careers_url: https://www.benevity.com/careers
@@ -168,9 +197,10 @@ companies:
 - name: Blackpoint Cyber
   careers_url: https://jobs.ashbyhq.com/blackpoint%20cyber
   ats: ashby
-  board_token: "blackpoint cyber"
+  board_token: blackpoint cyber
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/blackpoint cyber → 20 jobs; ca_eligible=10, ca_location_signals=10, eng=12'
+  notes: 'Validated 2026-11-03: ashby/blackpoint cyber → 20 jobs; ca_eligible=10,
+    ca_location_signals=10, eng=12'
 - name: Block
   domain: block.xyz
   careers_url: https://block.xyz/careers
@@ -206,7 +236,8 @@ companies:
   ats: lever
   board_token: bosonai
   enabled: true
-  notes: 'Validated 2026-11-15: lever/bosonai → 11 jobs; ca_eligible=5, tech_ca=2 (Toronto ML Engineer + SRE)'
+  notes: 'Validated 2026-11-15: lever/bosonai → 11 jobs; ca_eligible=5, tech_ca=2
+    (Toronto ML Engineer + SRE)'
 - name: Brex
   domain: brex.com
   careers_url: https://www.brex.com/careers
@@ -219,7 +250,8 @@ companies:
   ats: ashby
   board_token: camunda
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/camunda → 49 jobs; ca_eligible=1, ca_location_signals=1, eng=19'
+  notes: 'Validated 2026-11-03: ashby/camunda → 49 jobs; ca_eligible=1, ca_location_signals=1,
+    eng=19'
 - name: Canadian Tire
   domain: canadiantire.ca
   careers_url: https://canadiantirecorporation.wd3.myworkdayjobs.com/Enterprise_External_Careers_Site
@@ -235,7 +267,8 @@ companies:
   ats: ashby
   board_token: canals
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/canals → 20 jobs; ca_eligible=1, tech_ca=1 (Toronto Remote Senior SWE)'
+  notes: 'Validated 2026-11-15: ashby/canals → 20 jobs; ca_eligible=1, tech_ca=1 (Toronto
+    Remote Senior SWE)'
 - name: CIBC
   domain: cibc.com
   careers_url: https://cibc.wd3.myworkdayjobs.com/campus
@@ -258,7 +291,8 @@ companies:
   ats: ashby
   board_token: clickhouse
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/clickhouse → 209 jobs; ca_eligible=4, ca_location_signals=5, eng=129'
+  notes: 'Validated 2026-11-03: ashby/clickhouse → 209 jobs; ca_eligible=4, ca_location_signals=5,
+    eng=129'
 - name: Cloudflare
   domain: cloudflare.com
   careers_url: https://www.cloudflare.com/careers
@@ -330,13 +364,15 @@ companies:
   workday_tenant: desjardins
   workday_site: Desjardins2
   enabled: true
-  notes: 'Validated 2026-11-15: Workday CXS → 415 jobs; tech_ca=3 (Montreal/Lévis Data Engineering hybrid)'
+  notes: 'Validated 2026-11-15: Workday CXS → 415 jobs; tech_ca=3 (Montreal/Lévis
+    Data Engineering hybrid)'
 - name: Docker
   careers_url: https://jobs.ashbyhq.com/docker
   ats: ashby
   board_token: docker
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/docker → 52 jobs; ca_eligible=13, ca_location_signals=13, eng=27'
+  notes: 'Validated 2026-11-03: ashby/docker → 52 jobs; ca_eligible=13, ca_location_signals=13,
+    eng=27'
 - name: Dropbox
   domain: dropbox.com
   careers_url: https://jobs.dropbox.com/
@@ -357,7 +393,8 @@ companies:
   ats: ashby
   board_token: elevenlabs
   enabled: true
-  notes: 'Validated 2026-11-12: ashby/elevenlabs → 128 jobs; remote AI (Canada via description when evidenced)'
+  notes: 'Validated 2026-11-12: ashby/elevenlabs → 128 jobs; remote AI (Canada via
+    description when evidenced)'
 - name: Faire
   domain: faire.com
   careers_url: https://www.faire.com/careers
@@ -371,14 +408,16 @@ companies:
   ats: ashby
   board_token: fellowai
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/fellowai → 5 jobs; ca_eligible=5, tech_ca≥1 mid+ (Canada Remote SWE; new-grad excluded by seniority)'
+  notes: 'Validated 2026-11-15: ashby/fellowai → 5 jobs; ca_eligible=5, tech_ca≥1
+    mid+ (Canada Remote SWE; new-grad excluded by seniority)'
 - name: Fig Financial
   domain: fig.ca
   careers_url: https://jobs.lever.co/figfinancial
   ats: lever
   board_token: figfinancial
   enabled: true
-  notes: 'Validated 2026-11-15: lever/figfinancial → 4 jobs; ca_eligible=4, tech_ca=2 (Toronto Backend + DevOps)'
+  notes: 'Validated 2026-11-15: lever/figfinancial → 4 jobs; ca_eligible=4, tech_ca=2
+    (Toronto Backend + DevOps)'
 - name: Figma
   domain: figma.com
   careers_url: https://www.figma.com/careers
@@ -398,7 +437,8 @@ companies:
   ats: greenhouse
   board_token: fivetran
   enabled: true
-  notes: 'Validated 2026-11-03: greenhouse/fivetran → 158 jobs; ca_eligible=0, ca_location_signals=9, eng=54'
+  notes: 'Validated 2026-11-03: greenhouse/fivetran → 158 jobs; ca_eligible=0, ca_location_signals=9,
+    eng=54'
 - name: Flexport
   domain: flexport.com
   careers_url: https://www.flexport.com/careers
@@ -418,19 +458,28 @@ companies:
   ats: ashby
   board_token: float
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/float → 19 jobs; ca_eligible=18, ca_location_signals=19, eng=2'
+  notes: 'Validated 2026-11-03: ashby/float → 19 jobs; ca_eligible=18, ca_location_signals=19,
+    eng=2'
 - name: Fullscript
   careers_url: https://jobs.lever.co/fullscript
   ats: lever
   board_token: fullscript
   enabled: true
-  notes: 'Validated 2026-11-03: lever/fullscript → 15 jobs; ca_eligible=2, ca_location_signals=11, eng=6'
+  notes: 'Validated 2026-11-03: lever/fullscript → 15 jobs; ca_eligible=2, ca_location_signals=11,
+    eng=6'
 - name: FutureFit AI
   careers_url: https://jobs.ashbyhq.com/futurefitai
   ats: ashby
   board_token: futurefitai
   enabled: true
   notes: 'Re-enabled 2026-11-12: Canadian AI; prior uncertain signals'
+- name: GeoComply
+  domain: geocomply.com
+  careers_url: https://boards.greenhouse.io/geocomply
+  ats: greenhouse
+  board_token: geocomply
+  enabled: true
+  notes: 'Candidate: Greenhouse/geocomply (BC)'
 - name: Geotab
   domain: geotab.com
   careers_url: https://www.geotab.com/careers/
@@ -450,7 +499,8 @@ companies:
   ats: greenhouse
   board_token: grafanalabs
   enabled: true
-  notes: 'Validated 2026-11-03: greenhouse/grafanalabs → 128 jobs; ca_eligible=19, ca_location_signals=19, eng=72'
+  notes: 'Validated 2026-11-03: greenhouse/grafanalabs → 128 jobs; ca_eligible=19,
+    ca_location_signals=19, eng=72'
 - name: Gusto
   domain: gusto.com
   careers_url: https://gusto.com/about/careers
@@ -463,26 +513,31 @@ companies:
   ats: ashby
   board_token: h2analytics
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/h2analytics → 2 jobs; ca_eligible=2, tech_ca=1 (Canada Remote Senior SWE)'
+  notes: 'Validated 2026-11-15: ashby/h2analytics → 2 jobs; ca_eligible=2, tech_ca=1
+    (Canada Remote Senior SWE)'
 - name: HackerOne
   careers_url: https://jobs.ashbyhq.com/hackerone
   ats: ashby
   board_token: hackerone
   enabled: false
-  notes: 'Validated 2026-11-03: ashby/hackerone → 14 jobs; DISABLED — No Canadian location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=14)'
+  notes: 'Validated 2026-11-03: ashby/hackerone → 14 jobs; DISABLED — No Canadian
+    location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0
+    jobs=14)'
 - name: Harvey
   careers_url: https://jobs.ashbyhq.com/harvey
   ats: ashby
   board_token: harvey
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/harvey → 374 jobs; ca_eligible=12, ca_location_signals=13, eng=120'
+  notes: 'Validated 2026-11-03: ashby/harvey → 374 jobs; ca_eligible=12, ca_location_signals=13,
+    eng=120'
 - name: Hive.co
   domain: hive.co
   careers_url: https://jobs.ashbyhq.com/hive.co
   ats: ashby
   board_token: hive.co
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/hive.co → 1 job; ca_eligible=1, tech_ca=1 (Canada Remote Senior SWE/ML)'
+  notes: 'Validated 2026-11-15: ashby/hive.co → 1 job; ca_eligible=1, tech_ca=1 (Canada
+    Remote Senior SWE/ML)'
 - name: Hootsuite
   domain: hootsuite.com
   careers_url: https://careers.hootsuite.com/
@@ -534,7 +589,8 @@ companies:
   ats: ashby
   board_token: jane
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/jane → 27 jobs; ca_eligible=25, tech_ca=3 (Canada Remote Data/Analytics Engineers)'
+  notes: 'Validated 2026-11-15: ashby/jane → 27 jobs; ca_eligible=25, tech_ca=3 (Canada
+    Remote Data/Analytics Engineers)'
 - name: Jobber
   domain: getjobber.com
   careers_url: https://getjobber.com/about/careers/
@@ -562,13 +618,15 @@ companies:
   ats: ashby
   board_token: kong
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/kong → 116 jobs; ca_eligible=3, tech_ca=3 (Toronto/Canada Hybrid SWE)'
+  notes: 'Validated 2026-11-15: ashby/kong → 116 jobs; ca_eligible=3, tech_ca=3 (Toronto/Canada
+    Hybrid SWE)'
 - name: Kraken
   careers_url: https://jobs.ashbyhq.com/kraken.com
   ats: ashby
   board_token: kraken.com
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/kraken.com → 87 jobs; ca_eligible=3, ca_location_signals=3, eng=31'
+  notes: 'Validated 2026-11-03: ashby/kraken.com → 87 jobs; ca_eligible=3, ca_location_signals=3,
+    eng=31'
 - name: LangChain
   domain: langchain.com
   careers_url: https://www.langchain.com/careers
@@ -588,13 +646,15 @@ companies:
   ats: ashby
   board_token: lazer
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/lazer → 8 jobs; ca_eligible=8, ca_location_signals=8, eng=1'
+  notes: 'Validated 2026-11-03: ashby/lazer → 8 jobs; ca_eligible=8, ca_location_signals=8,
+    eng=1'
 - name: Leadership Connect
   careers_url: https://jobs.lever.co/leadershipconnect
   ats: lever
   board_token: leadershipconnect
   enabled: true
-  notes: 'Validated 2026-11-15: lever/leadershipconnect → 3 jobs; ca_eligible=1, tech_ca=1 (Montreal Remote SWE)'
+  notes: 'Validated 2026-11-15: lever/leadershipconnect → 3 jobs; ca_eligible=1, tech_ca=1
+    (Montreal Remote SWE)'
 - name: League
   domain: league.com
   careers_url: https://league.com/careers
@@ -608,7 +668,8 @@ companies:
   ats: ashby
   board_token: lightspeedhq
   enabled: true
-  notes: 'Validated 2026-11-12: ashby/lightspeedhq → 128 jobs (prior token lightspeed only had 10)'
+  notes: 'Validated 2026-11-12: ashby/lightspeedhq → 128 jobs (prior token lightspeed
+    only had 10)'
 - name: Linear
   careers_url: https://jobs.ashbyhq.com/linear
   ats: ashby
@@ -635,7 +696,8 @@ companies:
   ats: lever
   board_token: magnetforensics
   enabled: true
-  notes: 'Validated 2026-11-02: lever/magnetforensics → 37 jobs (15 Canada-located incl. Staff SWE, SRE/DevOps, AI) — Waterloo cybersecurity'
+  notes: 'Validated 2026-11-02: lever/magnetforensics → 37 jobs (15 Canada-located
+    incl. Staff SWE, SRE/DevOps, AI) — Waterloo cybersecurity'
 - name: Manulife
   domain: manulife.com
   careers_url: https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs
@@ -663,7 +725,8 @@ companies:
   ats: ashby
   board_token: modal
   enabled: false
-  notes: 'Validated 2026-11-03: ashby/modal → 42 jobs; DISABLED — No Canadian location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=42)'
+  notes: 'Validated 2026-11-03: ashby/modal → 42 jobs; DISABLED — No Canadian location
+    evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=42)'
 - name: MongoDB
   domain: mongodb.com
   careers_url: https://www.mongodb.com/careers
@@ -676,7 +739,8 @@ companies:
   ats: ashby
   board_token: nango
   enabled: false
-  notes: 'Validated 2026-11-03: ashby/nango → 8 jobs; DISABLED — No Canadian location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=8)'
+  notes: 'Validated 2026-11-03: ashby/nango → 8 jobs; DISABLED — No Canadian location
+    evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=8)'
 - name: Neo Financial
   domain: neofinancial.com
   careers_url: https://www.neofinancial.com/careers
@@ -690,7 +754,8 @@ companies:
   ats: ashby
   board_token: nerdwallet
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/nerdwallet → 29 jobs; ca_eligible=4, tech_ca=1 (Canada Remote SWE AI & Automation)'
+  notes: 'Validated 2026-11-15: ashby/nerdwallet → 29 jobs; ca_eligible=4, tech_ca=1
+    (Canada Remote SWE AI & Automation)'
 - name: Nesto
   domain: nesto.ca
   careers_url: https://www.nesto.ca/careers
@@ -703,7 +768,8 @@ companies:
   ats: greenhouse
   board_token: northbeam
   enabled: true
-  notes: 'Validated 2026-11-03: greenhouse/northbeam → 22 jobs; ca_eligible=8, ca_location_signals=8, eng=14'
+  notes: 'Validated 2026-11-03: greenhouse/northbeam → 22 jobs; ca_eligible=8, ca_location_signals=8,
+    eng=14'
 - name: Notion
   domain: notion.so
   careers_url: https://www.notion.so/careers
@@ -716,7 +782,8 @@ companies:
   ats: lever
   board_token: novara
   enabled: true
-  notes: 'Validated 2026-11-15: lever/novara → 6 jobs; ca_eligible=1, tech_ca=1 (Toronto SWE-AI Platforms)'
+  notes: 'Validated 2026-11-15: lever/novara → 6 jobs; ca_eligible=1, tech_ca=1 (Toronto
+    SWE-AI Platforms)'
 - name: Nuvei
   domain: nuvei.com
   careers_url: https://www.nuvei.com/careers
@@ -743,7 +810,8 @@ companies:
   ats: ashby
   board_token: owner
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/owner → 50 jobs; ca_eligible=11, ca_location_signals=14, eng=11'
+  notes: 'Validated 2026-11-03: ashby/owner → 50 jobs; ca_eligible=11, ca_location_signals=14,
+    eng=11'
 - name: Oyster
   careers_url: https://jobs.ashbyhq.com/oyster
   ats: ashby
@@ -763,13 +831,16 @@ companies:
   ats: lever
   board_token: paralleldomain
   enabled: true
-  notes: 'Validated 2026-11-15: lever/paralleldomain → 8 jobs; ca_eligible=3, tech_ca=2 (Canada Remote SRE + Vancouver Backend)'
+  notes: 'Validated 2026-11-15: lever/paralleldomain → 8 jobs; ca_eligible=3, tech_ca=2
+    (Canada Remote SRE + Vancouver Backend)'
 - name: Perplexity
   careers_url: https://jobs.ashbyhq.com/perplexity
   ats: ashby
   board_token: perplexity
   enabled: false
-  notes: 'Validated 2026-11-03: ashby/perplexity → 136 jobs; DISABLED — No Canadian location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=12 jobs=136)'
+  notes: 'Validated 2026-11-03: ashby/perplexity → 136 jobs; DISABLED — No Canadian
+    location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=12
+    jobs=136)'
 - name: Plaid
   domain: plaid.com
   careers_url: https://plaid.com/careers/
@@ -802,7 +873,8 @@ companies:
   ats: ashby
   board_token: posthog
   enabled: true
-  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals; city/description eligibility improved'
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals; city/description
+    eligibility improved'
 - name: Ramp
   domain: ramp.com
   careers_url: https://ramp.com/careers
@@ -816,7 +888,8 @@ companies:
   ats: lever
   board_token: ravl_io
   enabled: true
-  notes: 'Validated 2026-11-15: lever/ravl_io → 21 jobs; ca_eligible=21, tech_ca=10 (Toronto AI Platform/Data/SWE)'
+  notes: 'Validated 2026-11-15: lever/ravl_io → 21 jobs; ca_eligible=21, tech_ca=10
+    (Toronto AI Platform/Data/SWE)'
 - name: RBC
   domain: rbc.com
   careers_url: https://jobs.rbc.com/
@@ -832,7 +905,8 @@ companies:
   ats: ashby
   board_token: Redis
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/Redis → 31 jobs; ca_eligible=3, ca_location_signals=3, eng=5'
+  notes: 'Validated 2026-11-03: ashby/Redis → 31 jobs; ca_eligible=3, ca_location_signals=3,
+    eng=5'
 - name: Reflow
   careers_url: https://jobs.ashbyhq.com/reflow
   ats: ashby
@@ -850,7 +924,8 @@ companies:
   ats: ashby
   board_token: render
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/render → 35 jobs; ca_eligible=4, ca_location_signals=4, eng=19'
+  notes: 'Validated 2026-11-03: ashby/render → 35 jobs; ca_eligible=4, ca_location_signals=4,
+    eng=19'
 - name: Replicant
   domain: replicant.ai
   careers_url: https://www.replicant.ai/careers
@@ -863,14 +938,16 @@ companies:
   ats: ashby
   board_token: replit
   enabled: false
-  notes: 'Validated 2026-11-03: ashby/replit → 34 jobs; DISABLED — No Canadian location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=34)'
+  notes: 'Validated 2026-11-03: ashby/replit → 34 jobs; DISABLED — No Canadian location
+    evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=34)'
 - name: Retool
   domain: retool.com
   careers_url: https://retool.com/careers
   ats: gem
   board_token: retool
   enabled: false
-  notes: 'jobs.gem.com/retool returns HTTP 200 but no extractable public job links; left disabled'
+  notes: jobs.gem.com/retool returns HTTP 200 but no extractable public job links;
+    left disabled
 - name: Rippling
   domain: rippling.com
   careers_url: https://www.rippling.com/careers/open-roles
@@ -918,27 +995,31 @@ companies:
   ats: ashby
   board_token: sentry
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/sentry → 40 jobs; ca_eligible=8, ca_location_signals=8, eng=30'
+  notes: 'Validated 2026-11-03: ashby/sentry → 40 jobs; ca_eligible=8, ca_location_signals=8,
+    eng=30'
 - name: Shopify
   domain: shopify.com
   careers_url: https://www.shopify.com/careers
   ats: rss
-  board_token: "https://www.shopify.com/careers/feed.xml"
+  board_token: https://www.shopify.com/careers/feed.xml
   enabled: true
-  notes: 'Validated 2026-10-29: RSS feed URL responds HTTP 200 but currently 0 items; retained for when feed repopulates'
+  notes: 'Validated 2026-10-29: RSS feed URL responds HTTP 200 but currently 0 items;
+    retained for when feed repopulates'
 - name: ShyftLabs
   domain: shyftlabs.io
   careers_url: https://jobs.lever.co/shyftlabs
   ats: lever
   board_token: shyftlabs
   enabled: true
-  notes: 'Validated 2026-11-15: lever/shyftlabs → 27 jobs; ca_eligible=19, tech_ca≈8 (Toronto/Calgary AI/Data/FDE; interns seniority-gated)'
+  notes: 'Validated 2026-11-15: lever/shyftlabs → 27 jobs; ca_eligible=19, tech_ca≈8
+    (Toronto/Calgary AI/Data/FDE; interns seniority-gated)'
 - name: Sierra
   careers_url: https://jobs.ashbyhq.com/sierra
   ats: ashby
   board_token: sierra
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/sierra → 218 jobs; ca_eligible=9, ca_location_signals=23, eng=89'
+  notes: 'Validated 2026-11-03: ashby/sierra → 218 jobs; ca_eligible=9, ca_location_signals=23,
+    eng=89'
 - name: Snowflake
   domain: snowflake.com
   careers_url: https://careers.snowflake.com/
@@ -952,7 +1033,8 @@ companies:
   ats: ashby
   board_token: sovra
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/sovra → 12 jobs; ca_eligible=8, tech_ca=3 (Calgary/Montreal DevOps + Data)'
+  notes: 'Validated 2026-11-15: ashby/sovra → 12 jobs; ca_eligible=8, tech_ca=3 (Calgary/Montreal
+    DevOps + Data)'
 - name: StackAdapt
   domain: stackadapt.com
   careers_url: https://www.stackadapt.com/careers
@@ -982,27 +1064,31 @@ companies:
   ats: ashby
   board_token: supabase
   enabled: true
-  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals; city/description eligibility improved'
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals; city/description
+    eligibility improved'
 - name: Super.com
   domain: super.com
   careers_url: https://jobs.ashbyhq.com/super.com
   ats: ashby
   board_token: super.com
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/super.com → 12 jobs; ca_eligible=10, tech_ca=3 (Canada Remote Full Stack/Security SWE)'
+  notes: 'Validated 2026-11-15: ashby/super.com → 12 jobs; ca_eligible=10, tech_ca=3
+    (Canada Remote Full Stack/Security SWE)'
 - name: Superhuman
   domain: superhuman.com
   careers_url: https://jobs.ashbyhq.com/superhuman%20platform%20inc
   ats: ashby
-  board_token: "superhuman platform inc"
+  board_token: superhuman platform inc
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/superhuman platform inc → 71 jobs; ca_eligible=2, tech_ca=1 (Canada Remote AI Engineer)'
+  notes: 'Validated 2026-11-15: ashby/superhuman platform inc → 71 jobs; ca_eligible=2,
+    tech_ca=1 (Canada Remote AI Engineer)'
 - name: Tailscale
   careers_url: https://boards.greenhouse.io/tailscale
   ats: greenhouse
   board_token: tailscale
   enabled: true
-  notes: 'Validated 2026-11-03: greenhouse/tailscale → 61 jobs; ca_eligible=28, ca_location_signals=28, eng=29'
+  notes: 'Validated 2026-11-03: greenhouse/tailscale → 61 jobs; ca_eligible=28, ca_location_signals=28,
+    eng=29'
 - name: TD
   domain: td.com
   careers_url: https://careers.td.com/
@@ -1028,20 +1114,23 @@ companies:
   ats: ashby
   board_token: temporal
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/temporal → 78 jobs; ca_eligible=1, ca_location_signals=1, eng=35'
+  notes: 'Validated 2026-11-03: ashby/temporal → 78 jobs; ca_eligible=1, ca_location_signals=1,
+    eng=35'
 - name: Tenstorrent
   careers_url: https://boards.greenhouse.io/tenstorrent
   ats: greenhouse
   board_token: tenstorrent
   enabled: true
-  notes: 'Validated 2026-11-03: greenhouse/tenstorrent → 126 jobs; ca_eligible=0, ca_location_signals=41, eng=78'
+  notes: 'Validated 2026-11-03: greenhouse/tenstorrent → 126 jobs; ca_eligible=0,
+    ca_location_signals=41, eng=78'
 - name: Terminal
   domain: terminal.com
   careers_url: https://jobs.ashbyhq.com/terminal
   ats: ashby
   board_token: terminal
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/terminal → 7 jobs; ca_eligible=7, tech_ca=2 (Toronto Data Platform + Backend SWE)'
+  notes: 'Validated 2026-11-15: ashby/terminal → 7 jobs; ca_eligible=7, tech_ca=2
+    (Toronto Data Platform + Backend SWE)'
 - name: Thinkific
   domain: thinkific.com
   careers_url: https://www.thinkific.com/careers/
@@ -1089,13 +1178,23 @@ companies:
   ats: ashby
   board_token: vanta
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/vanta → 81 jobs; ca_eligible=7, ca_location_signals=7, eng=29'
+  notes: 'Validated 2026-11-03: ashby/vanta → 81 jobs; ca_eligible=7, ca_location_signals=7,
+    eng=29'
 - name: Vercel
   careers_url: https://boards.greenhouse.io/vercel
   ats: greenhouse
   board_token: vercel
   enabled: false
-  notes: 'Validated 2026-11-03: greenhouse/vercel → 89 jobs; DISABLED — No Canadian location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=89)'
+  notes: 'Validated 2026-11-03: greenhouse/vercel → 89 jobs; DISABLED — No Canadian
+    location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0
+    jobs=89)'
+- name: Vidyard
+  domain: vidyard.com
+  careers_url: https://boards.greenhouse.io/vidyard
+  ats: greenhouse
+  board_token: vidyard
+  enabled: true
+  notes: 'Candidate: Greenhouse/vidyard (ON)'
 - name: Visier
   domain: visier.com
   careers_url: https://www.visier.com/company/careers/
@@ -1115,14 +1214,16 @@ companies:
   ats: ashby
   board_token: wagmo
   enabled: true
-  notes: 'Validated 2026-11-15: ashby/wagmo → 9 jobs; ca_eligible=1, tech_ca=1 (Canada Remote Senior SWE)'
+  notes: 'Validated 2026-11-15: ashby/wagmo → 9 jobs; ca_eligible=1, tech_ca=1 (Canada
+    Remote Senior SWE)'
 - name: Warner Music Group
   domain: wmg.com
   careers_url: https://jobs.lever.co/wmg
   ats: lever
   board_token: wmg
   enabled: true
-  notes: 'Validated 2026-11-15: lever/wmg → 30 jobs; ca_eligible=2, tech_ca=1 (Toronto Senior AI Engineer, Sureel AI)'
+  notes: 'Validated 2026-11-15: lever/wmg → 30 jobs; ca_eligible=2, tech_ca=1 (Toronto
+    Senior AI Engineer, Sureel AI)'
 - name: Wattpad
   domain: wattpad.com
   careers_url: https://company.wattpad.com/careers
@@ -1136,7 +1237,8 @@ companies:
   ats: lever
   board_token: waveapps
   enabled: true
-  notes: 'Validated 2026-11-02: lever/waveapps → 8 Canada jobs incl. Machine Learning Engineer + Senior Software Engineer (Toronto fintech)'
+  notes: 'Validated 2026-11-02: lever/waveapps → 8 Canada jobs incl. Machine Learning
+    Engineer + Senior Software Engineer (Toronto fintech)'
 - name: Wealthsimple
   domain: wealthsimple.com
   careers_url: https://www.wealthsimple.com/en-ca/careers
@@ -1149,20 +1251,23 @@ companies:
   ats: ashby
   board_token: wrapbook
   enabled: true
-  notes: 'Validated 2026-11-03: ashby/wrapbook → 14 jobs; ca_eligible=13, ca_location_signals=13, eng=5'
+  notes: 'Validated 2026-11-03: ashby/wrapbook → 14 jobs; ca_eligible=13, ca_location_signals=13,
+    eng=5'
 - name: Writer
   careers_url: https://jobs.ashbyhq.com/writer
   ats: ashby
   board_token: writer
   enabled: false
-  notes: 'Validated 2026-11-03: ashby/writer → 46 jobs; DISABLED — No Canadian location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=46)'
+  notes: 'Validated 2026-11-03: ashby/writer → 46 jobs; DISABLED — No Canadian location
+    evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=46)'
 - name: Xsolla
   domain: xsolla.com
   careers_url: https://jobs.lever.co/xsolla
   ats: lever
   board_token: xsolla
   enabled: true
-  notes: 'Validated 2026-11-15: lever/xsolla → 186 jobs; ca_eligible=20, tech_ca=8 (Montreal Backend/Full-Stack/Platform/AI)'
+  notes: 'Validated 2026-11-15: lever/xsolla → 186 jobs; ca_eligible=20, tech_ca=8
+    (Montreal Backend/Full-Stack/Platform/AI)'
 - name: ZoomInfo
   domain: zoominfo.com
   careers_url: https://www.zoominfo.com/careers
@@ -1170,32 +1275,3 @@ companies:
   board_token: zoominfo
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/zoominfo → 102 jobs'
-# Coverage additions (Greenhouse/Lever) across ON/QC/BC
-- name: BenchSci
-  domain: benchsci.com
-  careers_url: https://boards.greenhouse.io/benchsci
-  ats: greenhouse
-  board_token: benchsci
-  enabled: true
-  notes: 'Candidate: Greenhouse/benchsci (ON)'
-- name: GeoComply
-  domain: geocomply.com
-  careers_url: https://boards.greenhouse.io/geocomply
-  ats: greenhouse
-  board_token: geocomply
-  enabled: true
-  notes: 'Candidate: Greenhouse/geocomply (BC)'
-- name: Vidyard
-  domain: vidyard.com
-  careers_url: https://boards.greenhouse.io/vidyard
-  ats: greenhouse
-  board_token: vidyard
-  enabled: true
-  notes: 'Candidate: Greenhouse/vidyard (ON)'
-- name: ApplyBoard
-  domain: applyboard.com
-  careers_url: https://jobs.lever.co/applyboard
-  ats: lever
-  board_token: applyboard
-  enabled: true
-  notes: 'Candidate: Lever/applyboard (ON)'
