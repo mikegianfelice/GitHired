@@ -157,8 +157,20 @@ export async function handleRest(request: Request, env: Env, url: URL): Promise<
     if (!job) {
       return json({ error: "not_found", message: `No job with id ${id}` }, 404);
     }
+    let enriched = job;
+    if (!job.description_excerpt || job.description_excerpt.length < 10) {
+      try {
+        const { fetchDescriptionExcerptOnDemand } = await import("./excerpt");
+        const text = await fetchDescriptionExcerptOnDemand(job.apply_url || "", job.source || "");
+        if (text) {
+          enriched = { ...job, description_excerpt: text };
+        }
+      } catch {
+        // best-effort fallback only
+      }
+    }
     return json({
-      job,
+      job: enriched,
       dataset_id: snapshot.dataset_id,
       generated_at: snapshot.generated_at,
     });
