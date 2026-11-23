@@ -22,6 +22,8 @@ from jobseek.filters.location import (
     _CANADA_WORD,
     _US_GEO,
     find_any_canadian_province,
+    find_any_canadian_cities,
+    province_from_cities,
     infer_work_arrangement,
 )
 from jobseek.filters.tracks import detect_seniority, match_track
@@ -134,7 +136,12 @@ def _salary_max_cad(
 def _province_code(location: str) -> str | None:
     provinces = find_any_canadian_province(location)
     if not provinces:
-        return None
+        # Derive province from city names when province is absent.
+        cities = find_any_canadian_cities(location)
+        prov_name = province_from_cities(cities) if cities else None
+        if not prov_name:
+            return None
+        provinces = [prov_name]
     # Prefer short codes when we can map
     name = provinces[0]
     mapping = {

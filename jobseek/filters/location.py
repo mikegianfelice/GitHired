@@ -157,6 +157,21 @@ _CITY_TO_PROVINCE: dict[str, str] = {
     "iqaluit": "Nunavut",
 }
 
+def province_from_cities(cities: list[str]) -> str | None:
+    """Return canonical province name from the first recognized Canadian city.
+
+    Only used when a province is not explicitly present. Never invents a province
+    for generic/non-Canadian city names.
+    """
+    for city in cities or []:
+        key = str(city or "").strip().casefold()
+        if not key:
+            continue
+        prov = _CITY_TO_PROVINCE.get(key)
+        if prov:
+            return prov
+    return None
+
 # Hiring-eligibility phrases acceptable in description (not office tourism).
 _CANADA_HIRE = re.compile(
     r"""
