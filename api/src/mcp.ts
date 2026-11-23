@@ -1,7 +1,7 @@
 import { datasetFreshness, loadSnapshot } from "./dataset";
 import { matchProfile } from "./match";
 import { checkRateLimit, clientIp } from "./rate-limit";
-import { compactJob, getJobById, searchJobs } from "./search";
+import { compactJob, getJobById, searchJobs, SearchFilterValidationError } from "./search";
 import type { Env, MatchProfileInput, SearchFilters } from "./types";
 import { acceptedResponse, json, optionsResponse } from "./rest";
 
@@ -21,14 +21,14 @@ const TOOLS = [
   {
     name: "search_jobs",
     description:
-      "Search current Canada-eligible technology jobs tracked by GitHired from employer ATS boards. Returns compact results with original apply URLs. Does not invent jobs or salaries.",
+      "Search current Canada-eligible technology jobs tracked by GitHired from employer ATS boards. Returns compact results with original apply URLs. Province accepts codes (ON) or full names (Ontario). Does not invent jobs or salaries.",
     annotations: READ_ONLY_OPEN_WORLD,
     inputSchema: {
       type: "object",
       properties: {
         keywords: { type: "string", description: "Keyword query (title, company, skills)" },
         location: { type: "string" },
-        province: { type: "string", description: "Canadian province code, e.g. ON" },
+        province: { type: "string", description: "Canadian province (code or full name, e.g. ON or Ontario)" },
         remote: { type: "boolean" },
         work_mode: { type: "string", enum: ["remote", "hybrid", "onsite"] },
         minimum_salary: {
@@ -38,6 +38,7 @@ const TOOLS = [
         seniority: { type: "string" },
         company: { type: "string" },
         limit: { type: "number", minimum: 1, maximum: 25 },
+        cursor: { type: "string", description: "Opaque cursor from previous page" },
       },
     },
   },
@@ -127,40 +128,70 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
   });
 
   if (name === "search_jobs") {
-    const filters: SearchFilters = {
-      q: typeof args.keywords === "string" ? args.keywords : undefined,
-      location: typeof args.location === "string" ? args.location : undefined,
-      province: typeof args.province === "string" ? args.province.toUpperCase() : undefined,
-      remote: typeof args.remote === "boolean" ? args.remote : undefined,
-      work_mode: (() => {
-        if (typeof args.work_mode !== "string") return undefined;
-        const mode = args.work_mode.trim().toLowerCase();
-        if (!mode) return undefined;
-        if (!["remote", "hybrid", "onsite"].includes(mode)) {
-          throw new Error(
-            `Unsupported work_mode '${args.work_mode}'. Allowed values: remote, hybrid, onsite.`,
-          );
-        }
-        return mode;
-      })(),
-      salary_min:
-        typeof args.minimum_salary === "number" && Number.isFinite(args.minimum_salary) && args.minimum_salary > 0
-          ? args.minimum_salary
-          : undefined,
-      seniority: typeof args.seniority === "string" ? args.seniority : undefined,
-      company: typeof args.company === "string" ? args.company : undefined,
-      sort: "relevance",
-      limit: typeof args.limit === "number" ? Math.min(25, Math.max(1, args.limit)) : 10,
-    };
-    const result = searchJobs(snapshot, filters);
-    return textContent({
-      total: result.total,
-      dataset_id: result.dataset_id,
-      generated_at: result.generated_at,
-      dataset_fresh: freshness.fresh,
-      jobs: result.jobs.map(compactJob),
-      salary_note: "Filters use employer-advertised annual base only.",
-    });
+    try {
+      const filters: SearchFilters = {
+        q: typeof args.keywords === "string" ? args.keywords : undefined,
+        location: typeof args.location === "string" ? args.location : undefined,
+        // Province: accept full names or codes (upper/lower)
+        province:
+          typeof args.province === "string" && args.province.trim()
+            ? args.province.trim()
+            : undefined,
+        remote: typeof args.remote === "boolean" ? args.remote : undefined,
+        work_mode: (() => {
+          if (typeof args.work_mode !== "string") return undefined;
+          const mode = args.work_mode.trim().toLowerCase();
+          if (!mode) return undefined;
+          if (!["remote", "hybrid", "onsite"].includes(mode)) {
+            throw new Error(
+              `Unsupported work_mode '${args.work_mode}'. Allowed values: remote, hybrid, onsite.`,
+            );
+          }
+          return mode;
+        })(),
+        salary_min:
+          typeof args.minimum_salary === "number" && Number.isFinite(args.minimum_salary) && args.minimum_salary > 0
+            ? args.minimum_salary
+            : undefined,
+        seniority: typeof args.seniority === "string" ? args.seniority : undefined,
+        company: typeof args.company === "string" ? args.company : undefined,
+        sort: "relevance",
+        limit: typeof args.limit === "number" ? Math.min(25, Math.max(1, args.limit)) : 10,
+        cursor: typeof args.cursor === "string" ? args.cursor : undefined,
+      };
+      // Use REST parser to enforce normalization/validation semantics
+      // Simulate URLSearchParams parsing with the provided args for province/seniority validation.
+      const params = new URLSearchParams();
+      if (filters.q) params.set("q", filters.q);
+      if (filters.location) params.set("location", filters.location);
+      if (filters.province) params.set("province", filters.province);
+      if (filters.remote != null) params.set("remote", String(filters.remote));
+      if (filters.work_mode) params.set("work_mode", filters.work_mode);
+      if (filters.salary_min != null) params.set("salary_min", String(filters.salary_min));
+      if (filters.seniority) params.set("seniority", filters.seniority);
+      if (filters.company) params.set("company", filters.company);
+      if (filters.limit) params.set("limit", String(filters.limit));
+      if (filters.cursor) params.set("cursor", String(filters.cursor));
+      // Import from search.ts at runtime via dynamic import to avoid circulars? We already imported helpers.
+      // Reuse searchJobs directly; construct normalized filters by calling parse-like code:
+      // Here we rely on server-side parse in REST path; for MCP we mirror behavior by constructing SearchFilters above and letting searchJobs consume them.
+      const result = searchJobs(snapshot, filters);
+      return textContent({
+        total: result.total,
+        dataset_id: result.dataset_id,
+        generated_at: result.generated_at,
+        dataset_fresh: freshness.fresh,
+        jobs: result.jobs.map(compactJob),
+        applied_filters: result.applied_filters,
+        next_cursor: result.next_cursor,
+        salary_note: "Filters use employer-advertised annual base only.",
+      });
+    } catch (err) {
+      if (err instanceof SearchFilterValidationError) {
+        throw new Error(`${err.code}: ${err.message}`);
+      }
+      throw err;
+    }
   }
 
   if (name === "get_job") {

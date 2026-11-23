@@ -61,3 +61,32 @@ test("omitted work_mode stays undefined (backward compatible)", () => {
   assert.equal(filters.work_mode, undefined);
   assert.equal(filters.q, "engineer");
 });
+
+test("province accepts codes and full names case-insensitively; invalid raises", () => {
+  // Codes
+  let f = parseSearchFilters(new URLSearchParams("province=ON"));
+  assert.equal(f.province, "ON");
+  f = parseSearchFilters(new URLSearchParams("province=on"));
+  assert.equal(f.province, "ON");
+  // Full names
+  f = parseSearchFilters(new URLSearchParams("province=Ontario"));
+  assert.equal(f.province, "ON");
+  f = parseSearchFilters(new URLSearchParams("province=ontario"));
+  assert.equal(f.province, "ON");
+  // Invalid
+  assert.throws(
+    () => parseSearchFilters(new URLSearchParams("province=Ontarionnn")),
+    (err) => err instanceof SearchFilterValidationError && err.code === "invalid_province",
+  );
+});
+
+test("seniority normalizes aliases and validates values", () => {
+  let f = parseSearchFilters(new URLSearchParams("seniority=sr"));
+  assert.equal(f.seniority, "senior");
+  f = parseSearchFilters(new URLSearchParams("seniority=Senior"));
+  assert.equal(f.seniority, "senior");
+  assert.throws(
+    () => parseSearchFilters(new URLSearchParams("seniority=wizard")),
+    (err) => err instanceof SearchFilterValidationError && err.code === "invalid_seniority",
+  );
+});
