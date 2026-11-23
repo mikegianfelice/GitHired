@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import tempfile
+import unittest
 from datetime import datetime, timezone
 from pathlib import Path
-
-import pytest
+from unittest import mock
 
 from jobseek.showcase.readme import (
     END_MARKER,
@@ -75,80 +76,102 @@ def _showcase(**kwargs) -> ShowcaseJob:
 NOW = datetime(2026, 10, 29, 15, 0, tzinfo=timezone.utc)
 
 
-class TestSalaryNormalization:
+class TestSalaryNormalization(unittest.TestCase):
     def test_cad_annual_high(self):
-        assert annualize_for_rank(salary_min=100_000, salary_max=150_000, currency="CAD") == 150_000
+        self.assertEqual(
+            annualize_for_rank(salary_min=100_000, salary_max=150_000, currency="CAD"),
+            150_000,
+        )
 
     def test_usd_converted_with_documented_fx(self):
-        assert annualize_for_rank(
-            salary_min=100_000, salary_max=100_000, currency="USD", fx_usd_cad=1.35
-        ) == pytest.approx(135_000)
+        self.assertAlmostEqual(
+            annualize_for_rank(
+                salary_min=100_000, salary_max=100_000, currency="USD", fx_usd_cad=1.35
+            ),
+            135_000,
+        )
 
     def test_rejects_hourly_noise(self):
-        assert annualize_for_rank(salary_min=45, salary_max=55, currency="CAD") is None
+        self.assertIsNone(annualize_for_rank(salary_min=45, salary_max=55, currency="CAD"))
 
     def test_rejects_unknown_currency(self):
-        assert annualize_for_rank(salary_min=100_000, salary_max=120_000, currency="EUR") is None
+        self.assertIsNone(
+            annualize_for_rank(salary_min=100_000, salary_max=120_000, currency="EUR")
+        )
 
     def test_format_range(self):
-        assert format_salary_range(140_000, 180_000, "CAD") == "CAD 140,000–180,000"
-        assert format_salary_range(200_000, 200_000, "USD") == "USD 200,000"
+        self.assertEqual(format_salary_range(140_000, 180_000, "CAD"), "CAD 140,000–180,000")
+        self.assertEqual(format_salary_range(200_000, 200_000, "USD"), "USD 200,000")
 
 
-class TestLinkValidation:
+class TestLinkValidation(unittest.TestCase):
     def test_accepts_direct_ats(self):
-        assert is_valid_apply_url(
-            "https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply"
+        self.assertTrue(
+            is_valid_apply_url(
+                "https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply"
+            )
         )
-        assert is_valid_apply_url("https://boards.greenhouse.io/x/jobs/1")
-        assert is_career_page_verified(
-            "https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply"
+        self.assertTrue(is_valid_apply_url("https://boards.greenhouse.io/x/jobs/1"))
+        self.assertTrue(
+            is_career_page_verified(
+                "https://jobs.lever.co/wattpad/27d282b1-1d8e-4aa7-9886-e48e897edd2f/apply"
+            )
         )
 
     def test_rejects_generic_careers_hub(self):
-        assert not is_job_specific_apply_url("https://jobs.lever.co/wattpad")
-        assert not is_job_specific_apply_url("https://boards.greenhouse.io/acme/jobs")
-        assert not is_valid_apply_url("https://example.com/careers")
+        self.assertFalse(is_job_specific_apply_url("https://jobs.lever.co/wattpad"))
+        self.assertFalse(is_job_specific_apply_url("https://boards.greenhouse.io/acme/jobs"))
+        self.assertFalse(is_valid_apply_url("https://example.com/careers"))
 
     def test_rejects_affiliate(self):
-        assert not is_valid_apply_url("https://www.whatjobs.com/jobs/foo")
-        assert not is_career_page_verified("https://www.whatjobs.com/jobs/foo")
+        self.assertFalse(is_valid_apply_url("https://www.whatjobs.com/jobs/foo"))
+        self.assertFalse(is_career_page_verified("https://www.whatjobs.com/jobs/foo"))
 
     def test_rejects_empty_and_non_http(self):
-        assert not is_valid_apply_url(None)
-        assert not is_valid_apply_url("")
-        assert not is_valid_apply_url("ftp://example.com/x")
-        assert not is_valid_apply_url("not-a-url")
+        self.assertFalse(is_valid_apply_url(None))
+        self.assertFalse(is_valid_apply_url(""))
+        self.assertFalse(is_valid_apply_url("ftp://example.com/x"))
+        self.assertFalse(is_valid_apply_url("not-a-url"))
 
     def test_apply_links_match_card_order(self):
         jobs = [
-            _showcase(company="Wattpad", apply_url="https://jobs.lever.co/wattpad/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/apply"),
+            _showcase(
+                company="Wattpad",
+                apply_url="https://jobs.lever.co/wattpad/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/apply",
+            ),
             _showcase(
                 company="PointClickCare",
                 apply_url="https://jobs.lever.co/pointclickcare/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/apply",
             ),
         ]
         line = render_apply_links_line(jobs)
-        assert line.startswith("**Apply directly:**")
-        assert "[1. Wattpad ↗](https://jobs.lever.co/wattpad/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/apply)" in line
-        assert "[2. PointClickCare ↗](https://jobs.lever.co/pointclickcare/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/apply)" in line
-        # Order: Wattpad before PointClickCare
-        assert line.index("1. Wattpad") < line.index("2. PointClickCare")
+        self.assertTrue(line.startswith("**Apply directly:**"))
+        self.assertIn(
+            "[1. Wattpad ↗](https://jobs.lever.co/wattpad/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/apply)",
+            line,
+        )
+        self.assertIn(
+            "[2. PointClickCare ↗](https://jobs.lever.co/pointclickcare/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/apply)",
+            line,
+        )
+        self.assertLess(line.index("1. Wattpad"), line.index("2. PointClickCare"))
 
 
-class TestDateLabeling:
+class TestDateLabeling(unittest.TestCase):
     def test_verified_fallback_never_says_today(self):
         label = verified_date_label("2026-10-29", today=NOW)
-        assert "today" not in label.casefold()
-        assert label == "Verified 2026-10-29"
+        self.assertNotIn("today", label.casefold())
+        self.assertEqual(label, "Verified 2026-10-29")
 
     def test_discovered_today_only_when_flag_true(self):
-        assert discovery_date_label(
-            discovered_today=True, verified_at="2026-10-29", today=NOW
-        ) == "Discovered Today"
-        assert discovery_date_label(
-            discovered_today=False, verified_at="2026-10-28", today=NOW
-        ) == "Verified 2026-10-28"
+        self.assertEqual(
+            discovery_date_label(discovered_today=True, verified_at="2026-10-29", today=NOW),
+            "Discovered Today",
+        )
+        self.assertEqual(
+            discovery_date_label(discovered_today=False, verified_at="2026-10-28", today=NOW),
+            "Verified 2026-10-28",
+        )
 
     def test_section_uses_per_job_freshness(self):
         jobs = [
@@ -166,12 +189,12 @@ class TestDateLabeling:
         ]
         md = render_section(jobs, generated_at=NOW, today=NOW)
         svg = render_dashboard_svg(jobs, today=NOW, generated_at=NOW)
-        assert "Top 5 High-Paying Jobs Discovered Today" in md
-        assert "| # | Role |" not in md
-        assert "Verified 2026-10-28" in svg
-        assert "Discovered Today" in svg
-        assert "Get Started with GitHired" in md
-        assert "assets/showcase/top-paying-jobs.svg" in md
+        self.assertIn("Top 5 High-Paying Jobs Discovered Today", md)
+        self.assertNotIn("| # | Role |", md)
+        self.assertIn("Verified 2026-10-28", svg)
+        self.assertIn("Discovered Today", svg)
+        self.assertIn("Get Started with GitHired", md)
+        self.assertIn("assets/showcase/top-paying-jobs.svg", md)
 
     def test_select_marks_discovered_today_from_first_seen(self):
         rows = [
@@ -190,11 +213,11 @@ class TestDateLabeling:
         ]
         selected = select_top_paying_jobs(rows, limit=5, now=NOW)
         by_co = {j.company: j for j in selected}
-        assert by_co["Fresh"].discovered_today is True
-        assert by_co["Older"].discovered_today is False
+        self.assertTrue(by_co["Fresh"].discovered_today)
+        self.assertFalse(by_co["Older"].discovered_today)
 
 
-class TestRanking:
+class TestRanking(unittest.TestCase):
     def test_ranks_by_cad_comparable_high(self):
         rows = [
             _job(company="Low", salary_min=100_000, salary_max=120_000, salary_currency="CAD"),
@@ -215,7 +238,7 @@ class TestRanking:
             ),
         ]
         selected = select_top_paying_jobs(rows, limit=5, now=NOW)
-        assert [j.company for j in selected] == ["CadHigh", "USDHigh", "Low"]
+        self.assertEqual([j.company for j in selected], ["CadHigh", "USDHigh", "Low"])
 
     def test_excludes_geo_ineligible_and_stale_and_removed(self):
         rows = [
@@ -225,7 +248,7 @@ class TestRanking:
             _job(company="Ok", salary_max=160_000),
         ]
         selected = select_top_paying_jobs(rows, limit=5, max_age_days=14, now=NOW)
-        assert [j.company for j in selected] == ["Ok"]
+        self.assertEqual([j.company for j in selected], ["Ok"])
 
     def test_excludes_undisclosed_and_non_engineering(self):
         rows = [
@@ -236,7 +259,7 @@ class TestRanking:
         rows[0]["salary_min"] = None
         rows[0]["salary_max"] = None
         selected = select_top_paying_jobs(rows, limit=5, now=NOW)
-        assert [j.company for j in selected] == ["Eng"]
+        self.assertEqual([j.company for j in selected], ["Eng"])
 
     def test_dedupes_company_title(self):
         rows = [
@@ -244,16 +267,16 @@ class TestRanking:
             _job(company="Dup", salary_max=190_000, apply_url="https://jobs.lever.co/a/2"),
         ]
         selected = select_top_paying_jobs(rows, limit=5, now=NOW)
-        assert len(selected) == 1
-        assert selected[0].salary_max == 190_000
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0].salary_max, 190_000)
 
     def test_returns_fewer_than_five(self):
         rows = [_job(company="Only", salary_max=155_000)]
         selected = select_top_paying_jobs(rows, limit=5, now=NOW)
-        assert len(selected) == 1
+        self.assertEqual(len(selected), 1)
 
 
-class TestSvgAndReadme:
+class TestSvgAndReadme(unittest.TestCase):
     def test_svg_looks_like_app_ui(self):
         jobs = [
             _showcase(
@@ -266,15 +289,15 @@ class TestSvgAndReadme:
             )
         ]
         svg = render_dashboard_svg(jobs, today=NOW, generated_at=NOW)
-        assert 'fill="#FFFFFF"' in svg or "ghBg" in svg
-        assert "Top 5 High-Paying Jobs Discovered Today" in svg
-        assert "CAD 240,000" in svg
-        assert "#168A43" in svg  # deep green salary / readable accents
-        assert "#65E52B" in svg  # electric green accent
-        assert "Apply →" not in svg
-        assert "Apply below ↓" in svg
-        assert "Discovered and verified by GitHired" in svg
-        assert "Wattpad" in svg
+        self.assertTrue('fill="#FFFFFF"' in svg or "ghBg" in svg)
+        self.assertIn("Top 5 High-Paying Jobs Discovered Today", svg)
+        self.assertIn("CAD 240,000", svg)
+        self.assertIn("#168A43", svg)  # deep green salary / readable accents
+        self.assertIn("#65E52B", svg)  # electric green accent
+        self.assertNotIn("Apply →", svg)
+        self.assertIn("Apply below ↓", svg)
+        self.assertIn("Discovered and verified by GitHired", svg)
+        self.assertIn("Wattpad", svg)
 
     def test_replace_section_only(self):
         original = (
@@ -284,113 +307,127 @@ class TestSvgAndReadme:
         )
         new = render_section([], generated_at=NOW)
         updated = replace_section(original, new)
-        assert "## Docs\nkeep me" in updated
-        assert "Intro" in updated
-        assert "\nold\n" not in updated
-        assert START_MARKER in updated and END_MARKER in updated
+        self.assertIn("## Docs\nkeep me", updated)
+        self.assertIn("Intro", updated)
+        self.assertNotIn("\nold\n", updated)
+        self.assertIn(START_MARKER, updated)
+        self.assertIn(END_MARKER, updated)
 
     def test_missing_markers_raise(self):
-        with pytest.raises(ValueError, match="markers"):
+        with self.assertRaisesRegex(ValueError, "markers"):
             replace_section("# no markers\n", render_section([]))
 
-    def test_update_readme_writes_svg(self, tmp_path: Path):
-        jobs = [_showcase()]
-        readme = tmp_path / "README.md"
-        readme.write_text(
-            f"# X\n\n{START_MARKER}\nplaceholder\n{END_MARKER}\n\n## Tail\n",
-            encoding="utf-8",
-        )
-        svg = tmp_path / "assets" / "showcase" / "top-paying-jobs.svg"
-        assert update_readme_file(readme, jobs, generated_at=NOW, svg_path=svg) is True
-        assert svg.is_file()
-        text = readme.read_text(encoding="utf-8")
-        assert "Acme" in text and "## Tail" in text
-        assert "**Apply directly:**" in text
-        assert "[1. Acme ↗](https://boards.greenhouse.io/acme/jobs/1)" in text
-        assert "Apply →" not in svg.read_text(encoding="utf-8")
-        assert "Apply below ↓" in svg.read_text(encoding="utf-8")
-        assert "| # | Role |" not in text
-        assert "CAD 150,000–180,000" in svg.read_text(encoding="utf-8")
+    def test_update_readme_writes_svg(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            jobs = [_showcase()]
+            readme = tmp_path / "README.md"
+            readme.write_text(
+                f"# X\n\n{START_MARKER}\nplaceholder\n{END_MARKER}\n\n## Tail\n",
+                encoding="utf-8",
+            )
+            svg = tmp_path / "assets" / "showcase" / "top-paying-jobs.svg"
+            self.assertTrue(update_readme_file(readme, jobs, generated_at=NOW, svg_path=svg))
+            self.assertTrue(svg.is_file())
+            text = readme.read_text(encoding="utf-8")
+            self.assertIn("Acme", text)
+            self.assertIn("## Tail", text)
+            self.assertIn("**Apply directly:**", text)
+            self.assertIn("[1. Acme ↗](https://boards.greenhouse.io/acme/jobs/1)", text)
+            self.assertNotIn("Apply →", svg.read_text(encoding="utf-8"))
+            self.assertIn("Apply below ↓", svg.read_text(encoding="utf-8"))
+            self.assertNotIn("| # | Role |", text)
+            self.assertIn("CAD 150,000–180,000", svg.read_text(encoding="utf-8"))
 
 
-class TestFailureHandling:
-    def test_preserves_prior_on_empty_selection(self, tmp_path: Path):
-        snap = tmp_path / "snap.json"
-        readme = tmp_path / "README.md"
-        prior_jobs = [_showcase(company="Kept", verified_at="2026-10-20")]
-        from jobseek.showcase.top_paying import snapshot_payload
-        from jobseek.showcase.refresh import write_snapshot
+class TestFailureHandling(unittest.TestCase):
+    def test_preserves_prior_on_empty_selection(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            snap = tmp_path / "snap.json"
+            readme = tmp_path / "README.md"
+            prior_jobs = [_showcase(company="Kept", verified_at="2026-10-20")]
+            from jobseek.showcase.top_paying import snapshot_payload
+            from jobseek.showcase.refresh import write_snapshot
 
-        prior = snapshot_payload(
-            prior_jobs,
-            generated_at=datetime(2026, 10, 20, 12, 0, tzinfo=timezone.utc),
-        )
-        write_snapshot(snap, prior)
-        readme.write_text(
-            f"# H\n{START_MARKER}\nKept section\n{END_MARKER}\n",
-            encoding="utf-8",
-        )
-        result = refresh_readme(
-            readme_path=readme,
-            snapshot_path=snap,
-            jobs_rows=[],
-            now=NOW,
-        )
-        assert result["preserved_prior"] is True
-        assert result["wrote_snapshot"] is False
-        assert result["count"] == 1
-        assert "2026-10-20" in result["generated_at"]
-        assert "Kept section" in readme.read_text(encoding="utf-8")
+            prior = snapshot_payload(
+                prior_jobs,
+                generated_at=datetime(2026, 10, 20, 12, 0, tzinfo=timezone.utc),
+            )
+            write_snapshot(snap, prior)
+            readme.write_text(
+                f"# H\n{START_MARKER}\nKept section\n{END_MARKER}\n",
+                encoding="utf-8",
+            )
+            result = refresh_readme(
+                readme_path=readme,
+                snapshot_path=snap,
+                jobs_rows=[],
+                now=NOW,
+            )
+            self.assertTrue(result["preserved_prior"])
+            self.assertFalse(result["wrote_snapshot"])
+            self.assertEqual(result["count"], 1)
+            self.assertIn("2026-10-20", result["generated_at"])
+            self.assertIn("Kept section", readme.read_text(encoding="utf-8"))
 
-    def test_preserves_prior_on_selection_exception(self, tmp_path: Path, monkeypatch):
-        snap = tmp_path / "snap.json"
-        readme = tmp_path / "README.md"
-        from jobseek.showcase.top_paying import snapshot_payload
-        from jobseek.showcase.refresh import write_snapshot
-        import jobseek.showcase.refresh as refresh_mod
+    def test_preserves_prior_on_selection_exception(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            snap = tmp_path / "snap.json"
+            readme = tmp_path / "README.md"
+            from jobseek.showcase.top_paying import snapshot_payload
+            from jobseek.showcase.refresh import write_snapshot
+            import jobseek.showcase.refresh as refresh_mod
 
-        prior = snapshot_payload(
-            [_showcase(company="Prior", verified_at="2026-10-15")],
-            generated_at=datetime(2026, 10, 15, tzinfo=timezone.utc),
-        )
-        write_snapshot(snap, prior)
-        readme.write_text(f"{START_MARKER}\nx\n{END_MARKER}\n", encoding="utf-8")
+            prior = snapshot_payload(
+                [_showcase(company="Prior", verified_at="2026-10-15")],
+                generated_at=datetime(2026, 10, 15, tzinfo=timezone.utc),
+            )
+            write_snapshot(snap, prior)
+            readme.write_text(f"{START_MARKER}\nx\n{END_MARKER}\n", encoding="utf-8")
 
-        def boom(*_a, **_k):
-            raise RuntimeError("db exploded")
+            def boom(*_a, **_k):
+                raise RuntimeError("db exploded")
 
-        monkeypatch.setattr(refresh_mod, "select_top_paying_jobs", boom)
-        result = refresh_readme(
-            readme_path=readme,
-            snapshot_path=snap,
-            jobs_rows=[_job()],
-            now=NOW,
-        )
-        assert result["ok"] is False
-        assert result["preserved_prior"] is True
-        assert "2026-10-15" in result["generated_at"]
+            with mock.patch.object(refresh_mod, "select_top_paying_jobs", boom):
+                result = refresh_readme(
+                    readme_path=readme,
+                    snapshot_path=snap,
+                    jobs_rows=[_job()],
+                    now=NOW,
+                )
+            self.assertFalse(result["ok"])
+            self.assertTrue(result["preserved_prior"])
+            self.assertIn("2026-10-15", result["generated_at"])
 
-    def test_empty_overwrite_when_allowed(self, tmp_path: Path):
-        snap = tmp_path / "snap.json"
-        readme = tmp_path / "README.md"
-        from jobseek.showcase.top_paying import snapshot_payload
-        from jobseek.showcase.refresh import write_snapshot
+    def test_empty_overwrite_when_allowed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            snap = tmp_path / "snap.json"
+            readme = tmp_path / "README.md"
+            from jobseek.showcase.top_paying import snapshot_payload
+            from jobseek.showcase.refresh import write_snapshot
 
-        write_snapshot(
-            snap,
-            snapshot_payload(
-                [_showcase(company="Old", verified_at="2026-10-01")],
-                generated_at=datetime(2026, 10, 1, tzinfo=timezone.utc),
-            ),
-        )
-        readme.write_text(f"# R\n{START_MARKER}\nold\n{END_MARKER}\n", encoding="utf-8")
-        result = refresh_readme(
-            readme_path=readme,
-            snapshot_path=snap,
-            jobs_rows=[],
-            now=NOW,
-            allow_empty_overwrite=True,
-        )
-        assert result["wrote_snapshot"] is True
-        assert result["count"] == 0
-        assert "No qualifying" in readme.read_text(encoding="utf-8")
+            write_snapshot(
+                snap,
+                snapshot_payload(
+                    [_showcase(company="Old", verified_at="2026-10-01")],
+                    generated_at=datetime(2026, 10, 1, tzinfo=timezone.utc),
+                ),
+            )
+            readme.write_text(f"# R\n{START_MARKER}\nold\n{END_MARKER}\n", encoding="utf-8")
+            result = refresh_readme(
+                readme_path=readme,
+                snapshot_path=snap,
+                jobs_rows=[],
+                now=NOW,
+                allow_empty_overwrite=True,
+            )
+            self.assertTrue(result["wrote_snapshot"])
+            self.assertEqual(result["count"], 0)
+            self.assertIn("No qualifying", readme.read_text(encoding="utf-8"))
+
+
+if __name__ == "__main__":
+    unittest.main()

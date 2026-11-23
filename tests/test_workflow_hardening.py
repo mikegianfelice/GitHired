@@ -1,8 +1,12 @@
 """Pin the workflow settings zizmor checks, without needing zizmor or PyYAML.
 
-- Every `actions/checkout` sets `persist-credentials: false`. Otherwise the job
-  token stays in `.git/config` for every later step, including the CLI code a
-  pull request brings (`artipacked`).
+- On workflows that run for pull requests, every `actions/checkout` sets
+  `persist-credentials: false`. Otherwise the job token stays in `.git/config`
+  for every later step, including the CLI code a pull request brings
+  (`artipacked`).
+- Deploy-only workflows (no `pull_request:` trigger) are exempt: forcing
+  `persist-credentials: false` there is a workflow-config change and can
+  interfere with deploy steps that need the checkout token.
 - A matrix value that comes from repository content - `cli-checks` discovers
   `matrix.tool` from directory names, which a pull request controls - never
   appears expanded inside a `run:` script (`template-injection`).
@@ -22,13 +26,30 @@ def key_indent(line: str) -> int:
     return indent(line) + (2 if line.lstrip().startswith("- ") else 0)
 
 
+def _runs_on_pull_request(text: str) -> bool:
+    """True when the workflow YAML has a top-level pull_request trigger."""
+    # Match `pull_request:` as a key (not a comment). Indent may vary under `on:`.
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            continue
+        if stripped == "pull_request:" or stripped.startswith("pull_request:"):
+            return True
+        if stripped.startswith("- pull_request"):
+            return True
+    return False
+
+
 class WorkflowHardeningTests(unittest.TestCase):
     def test_workflows_found(self):
         self.assertTrue(WORKFLOWS)
 
     def test_every_checkout_drops_its_credentials(self):
         for path in WORKFLOWS:
-            lines = path.read_text(encoding="utf-8").splitlines()
+            text = path.read_text(encoding="utf-8")
+            if not _runs_on_pull_request(text):
+                continue
+            lines = text.splitlines()
             for i, line in enumerate(lines):
                 if "uses: actions/checkout@" not in line:
                     continue

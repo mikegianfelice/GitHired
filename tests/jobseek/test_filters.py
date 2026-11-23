@@ -63,8 +63,9 @@ class HardFilterTests(unittest.TestCase):
             "description": "Work from anywhere. Worldwide remote OK.",
         }
         result = apply_hard_filters(job, SEARCH)
-        self.assertEqual(result.location_verdict, "PASS")
-        self.assertEqual(result.verdict, "PASS")
+        # Policy tightened: worldwide-remote without explicit Canada evidence is flagged uncertain.
+        self.assertEqual(result.location_verdict, "FLAG")
+        self.assertEqual(result.verdict, "FLAG")
 
     def test_silent_remote_flag(self):
         job = {

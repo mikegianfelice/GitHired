@@ -81,6 +81,9 @@ PUBLIC_SEARCH: dict[str, Any] = {
         "usd_to_cad": 1.35,
         "floors": {},
     },
+    # Policy toggle: publish worldwide-remote roles without explicit Canada evidence.
+    # Default false — Michael may enable later.
+    "include_global_remote": False,
 }
 
 
@@ -328,7 +331,7 @@ def select_public_jobs(
             continue
 
         hard = apply_hard_filters(job, cfg)
-        if hard.verdict != "PASS" or hard.eligibility != "ELIGIBLE":
+        if hard.verdict != "PASS":
             continue
         if hard.relevance == "NO_MATCH" or not hard.title_match:
             continue
@@ -356,6 +359,18 @@ def select_public_jobs(
         # Province-restricted remote must not be labeled canada-wide
         if scope == "province" and work == "remote":
             pass  # explicit province scope kept
+
+        # Eligibility gate: confirmed ELIGIBLE, or optional global-remote include.
+        if not (
+            hard.eligibility == "ELIGIBLE"
+            or (
+                bool(cfg.get("include_global_remote"))
+                and work == "remote"
+                and scope == "global"
+                and hard.eligibility == "UNCERTAIN"
+            )
+        ):
+            continue
 
         lo, hi, currency, salary_ok = _salary_fields(job)
         max_cad = _salary_max_cad(hi, currency) if salary_ok else None
