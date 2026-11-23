@@ -492,18 +492,18 @@ def find_any_canadian_province(location: str) -> list[str]:
             seen.add(canonical)
     # Fallback: infer from known Canadian cities when no province tokens found.
     if not found:
-        cities = find_any_canadian_cities(location)
-        for city in cities:
-            key = city.casefold()
-            # Normalize special-cased city labels
-            if key == "montreal":
-                key = "montreal"
-            if key == "london":
-                key = "london"
-            prov = _CITY_TO_PROVINCE.get(key)
-            if prov and prov not in seen:
-                found.append(prov)
-                seen.add(prov)
+        loc_cf = loc_cf  # already computed above
+        # Simple city token presence without province recursion to avoid cycles.
+        for city_key, prov in _CITY_TO_PROVINCE.items():
+            ck = city_key.casefold()
+            # Skip ambiguous bare "london" without ON context
+            if ck == "london":
+                continue
+            pattern = rf"\\b{re.escape(ck)}\\b"
+            if re.search(pattern, loc_cf):
+                if prov not in seen:
+                    found.append(prov)
+                    seen.add(prov)
     return found
 
 
