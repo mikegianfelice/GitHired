@@ -9,6 +9,7 @@ from jobseek.adapters.gem import GemAdapter
 from jobseek.adapters.greenhouse import GreenhouseAdapter
 from jobseek.adapters.lever import LeverAdapter
 from jobseek.adapters.rippling import RipplingAdapter
+from jobseek.adapters.smartrecruiters import SmartRecruitersAdapter
 from jobseek.adapters.rss import RssAdapter
 from jobseek.adapters.workable import WorkableAdapter
 from jobseek.adapters.workday import WorkdayAdapter
@@ -37,6 +38,7 @@ COMPANY_ADAPTERS: dict[str, type] = {
     "workable": WorkableAdapter,
     "rss": RssAdapter,
     "rippling": RipplingAdapter,
+    "smartrecruiters": SmartRecruitersAdapter,
     "gem": GemAdapter,
     "workday": WorkdayAdapter,
 }
