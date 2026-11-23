@@ -1,0 +1,1349 @@
+version: 1
+companies:
+- name: 1Password
+  domain: 1password.com
+  careers_url: https://1password.com/jobs
+  ats: ashby
+  board_token: 1password
+  notes: 'Validated 2026-10-29: ashby/1password → 88 jobs (https://api.ashbyhq.com/posting-api/job-board/1password)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:40Z'
+- name: 7shifts
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/7shifts
+  ats: ashby
+  board_token: 7shifts
+  notes: 'Validated 2026-11-03: ashby/7shifts → 11 jobs; ca_eligible=9, ca_location_signals=9,
+    eng=4'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:40Z'
+- name: AbCellera
+  domain: abcellera.com
+  careers_url: https://www.abcellera.com/careers
+  ats: greenhouse
+  board_token: abcellera
+  notes: 'Validated 2026-11-12: greenhouse/abcellera → 36 jobs, ~30 Canada-location'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:40Z'
+- name: Acquird
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/acquird
+  ats: ashby
+  board_token: acquird
+  notes: 'Validated 2026-11-03: ashby/acquird → 10 jobs; ca_eligible=5, ca_location_signals=10,
+    eng=5'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:40Z'
+- name: Ada
+  domain: ada.cx
+  careers_url: https://www.ada.cx/careers/
+  ats: greenhouse
+  board_token: ada18
+  notes: 'Validated 2026-11-02: greenhouse/ada18 → 7 jobs (5 Remote-Canada); Toronto
+    AI customer-automation'
+  validation_status: empty
+  last_validated_at: '2026-11-23T03:50:41Z'
+- name: Aduna Global
+  domain: jobs.lever.co
+  careers_url: https://jobs.lever.co/adunaglobal
+  ats: lever
+  board_token: adunaglobal
+  notes: 'Validated 2026-11-15: lever/adunaglobal → 24 jobs; ca_eligible≈9, tech_ca=3
+    (Montreal Data/SWE/SRE)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:43Z'
+- name: Affirm
+  domain: affirm.com
+  careers_url: https://www.affirm.com/careers
+  ats: greenhouse
+  board_token: affirm
+  notes: 'Validated 2026-10-29: greenhouse/affirm → 240 jobs (https://boards-api.greenhouse.io/v1/boards/affirm/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:44Z'
+- name: Air-tek
+  domain: jobs.lever.co
+  careers_url: https://jobs.lever.co/air-tek
+  ats: lever
+  board_token: air-tek
+  notes: 'Validated 2026-11-03: lever/air-tek → 13 jobs; ca_eligible=0, ca_location_signals=13,
+    eng=5'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:44Z'
+- name: Airbnb
+  domain: airbnb.com
+  careers_url: https://careers.airbnb.com/
+  ats: greenhouse
+  board_token: airbnb
+  notes: 'Validated 2026-10-29: greenhouse/airbnb → 190 jobs (https://boards-api.greenhouse.io/v1/boards/airbnb/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:45Z'
+- name: Airbyte
+  domain: airbyte.com
+  careers_url: https://airbyte.com/careers
+  ats: ashby
+  board_token: airbyte
+  notes: 'Validated 2026-11-12: ashby/airbyte → 13 jobs, Canada location signals present'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:45Z'
+- name: Airtable
+  domain: airtable.com
+  careers_url: https://airtable.com/careers
+  ats: greenhouse
+  board_token: airtable
+  notes: 'Validated 2026-10-29: greenhouse/airtable → 5 jobs (https://boards-api.greenhouse.io/v1/boards/airtable/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:45Z'
+- name: AlphaSense
+  domain: boards.greenhouse.io
+  careers_url: https://boards.greenhouse.io/alphasense
+  ats: greenhouse
+  board_token: alphasense
+  notes: 'Validated 2026-11-03: greenhouse/alphasense → 206 jobs; ca_eligible=13,
+    ca_location_signals=13, eng=49'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:46Z'
+- name: AltaML
+  domain: altaml.com
+  careers_url: https://jobs.lever.co/altaml
+  ats: lever
+  board_token: altaml
+  notes: 'Validated 2026-11-15: lever/altaml → 5 jobs; ca_eligible=4, tech_ca=3 (AI/SWE
+    Calgary+Toronto)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:47Z'
+- name: Anthropic
+  domain: anthropic.com
+  careers_url: https://www.anthropic.com/careers
+  ats: greenhouse
+  board_token: anthropic
+  notes: 'Validated 2026-10-29: greenhouse/anthropic → 680 jobs (https://boards-api.greenhouse.io/v1/boards/anthropic/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:50Z'
+- name: Anyscale
+  domain: anyscale.com
+  careers_url: https://www.anyscale.com/careers
+  ats: ashby
+  board_token: anyscale
+  notes: 'Validated 2026-11-12: ashby/anyscale → 24 jobs; Ray/AI platform'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:50Z'
+- name: Apply Digital
+  domain: jobs.lever.co
+  careers_url: https://jobs.lever.co/applydigital
+  ats: lever
+  board_token: applydigital
+  notes: 'Validated 2026-11-03: lever/applydigital → 9 jobs; ca_eligible=0, ca_location_signals=5,
+    eng=3'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:51Z'
+- name: Arc'teryx
+  domain: jobs.lever.co
+  careers_url: https://jobs.lever.co/arcteryx.com
+  ats: lever
+  board_token: arcteryx.com
+  notes: 'Validated 2026-11-03: lever/arcteryx.com → 251 jobs; ca_eligible=0, ca_location_signals=105,
+    eng=11'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:50:54Z'
+- name: Asana
+  domain: asana.com
+  careers_url: https://asana.com/jobs
+  ats: greenhouse
+  board_token: asana
+  notes: 'Validated 2026-10-29: greenhouse/asana → 112 jobs (https://boards-api.greenhouse.io/v1/boards/asana/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:10Z'
+- name: Ashby
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/ashby
+  ats: ashby
+  board_token: ashby
+  notes: 'Validated 2026-11-03: ashby/ashby → 70 jobs; ca_eligible=5, ca_location_signals=5,
+    eng=23'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:11Z'
+- name: Astronomer
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/astronomer
+  ats: ashby
+  board_token: astronomer
+  notes: 'Validated 2026-11-03: ashby/astronomer → 19 jobs; DISABLED — No Canadian
+    location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0
+    jobs=19)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:11Z'
+- name: Badge
+  domain: jobs.lever.co
+  careers_url: https://jobs.lever.co/badge-group
+  ats: lever
+  board_token: badge-group
+  notes: 'Validated 2026-11-15: lever/badge-group → 3 jobs; ca_eligible=1, tech_ca=1
+    (Vancouver Fullstack SWE)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:11Z'
+- name: Baseten
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/baseten
+  ats: ashby
+  board_token: baseten
+  notes: 'Validated 2026-11-03: ashby/baseten → 103 jobs; DISABLED — No Canadian location
+    evidence in structured location fields (eligible=0 loc_signals=0 uncertain=2 jobs=103)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:12Z'
+- name: Benevity
+  domain: benevity.com
+  careers_url: https://www.benevity.com/careers
+  ats: ashby
+  board_token: benevity
+  notes: 'Validated 2026-10-29: ashby/benevity → 23 jobs (https://api.ashbyhq.com/posting-api/job-board/benevity)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:12Z'
+- name: Blackpoint Cyber
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/blackpoint%20cyber
+  ats: ashby
+  board_token: blackpoint cyber
+  notes: 'Validated 2026-11-03: ashby/blackpoint cyber → 20 jobs; ca_eligible=10,
+    ca_location_signals=10, eng=12'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:12Z'
+- name: Block
+  domain: block.xyz
+  careers_url: https://block.xyz/careers
+  ats: greenhouse
+  board_token: block
+  notes: 'Validated 2026-10-29: greenhouse/block → 203 jobs (https://boards-api.greenhouse.io/v1/boards/block/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:13Z'
+- name: Blockstream
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/blockstream
+  ats: ashby
+  board_token: blockstream
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:13Z'
+- name: Borrowell
+  domain: borrowell.com
+  careers_url: https://borrowell.com/careers
+  ats: workable
+  board_token: borrowell
+  notes: 'Validated 2026-10-29: workable/borrowell → 2 jobs (https://apply.workable.com/api/v1/widget/accounts/borrowell)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:30Z'
+- name: Boson AI
+  domain: jobs.lever.co
+  careers_url: https://jobs.lever.co/bosonai
+  ats: lever
+  board_token: bosonai
+  notes: 'Validated 2026-11-15: lever/bosonai → 11 jobs; ca_eligible=5, tech_ca=2
+    (Toronto ML Engineer + SRE)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:31Z'
+- name: Brex
+  domain: brex.com
+  careers_url: https://www.brex.com/careers
+  ats: greenhouse
+  board_token: brex
+  notes: 'Validated 2026-10-29: greenhouse/brex → 262 jobs (https://boards-api.greenhouse.io/v1/boards/brex/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:32Z'
+- name: Camunda
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/camunda
+  ats: ashby
+  board_token: camunda
+  notes: 'Validated 2026-11-03: ashby/camunda → 49 jobs; ca_eligible=1, ca_location_signals=1,
+    eng=19'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:32Z'
+- name: Canals
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/canals
+  ats: ashby
+  board_token: canals
+  notes: 'Validated 2026-11-15: ashby/canals → 20 jobs; ca_eligible=1, tech_ca=1 (Toronto
+    Remote Senior SWE)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:51:49Z'
+- name: Clearco
+  domain: clear.co
+  careers_url: https://clear.co/careers
+  ats: ashby
+  board_token: clearco
+  notes: 'Validated 2026-10-29: ashby/clearco → 5 jobs (https://api.ashbyhq.com/posting-api/job-board/clearco)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:52:06Z'
+- name: ClickHouse
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/clickhouse
+  ats: ashby
+  board_token: clickhouse
+  notes: 'Validated 2026-11-03: ashby/clickhouse → 209 jobs; ca_eligible=4, ca_location_signals=5,
+    eng=129'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:52:07Z'
+- name: Cloudflare
+  domain: cloudflare.com
+  careers_url: https://www.cloudflare.com/careers
+  ats: greenhouse
+  board_token: cloudflare
+  notes: 'Validated 2026-10-29: greenhouse/cloudflare → 460 jobs (https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:52:10Z'
+- name: Cockroach Labs
+  domain: boards.greenhouse.io
+  careers_url: https://boards.greenhouse.io/cockroachlabs
+  ats: greenhouse
+  board_token: cockroachlabs
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:52:10Z'
+- name: Cohere
+  domain: cohere.com
+  careers_url: https://cohere.com/careers
+  ats: ashby
+  board_token: cohere
+  notes: 'Validated 2026-10-29: ashby/cohere → 119 jobs (https://api.ashbyhq.com/posting-api/job-board/cohere)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:52:11Z'
+- name: Coinbase
+  domain: coinbase.com
+  careers_url: https://www.coinbase.com/careers
+  ats: greenhouse
+  board_token: coinbase
+  notes: 'Validated 2026-10-29: greenhouse/coinbase → 228 jobs (https://boards-api.greenhouse.io/v1/boards/coinbase/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:52:12Z'
+- name: Crunchyroll
+  domain: crunchyroll.com
+  careers_url: https://www.crunchyroll.com/jobs
+  ats: greenhouse
+  board_token: crunchyroll
+  notes: 'Validated 2026-10-29: greenhouse/crunchyroll → 100 jobs (https://boards-api.greenhouse.io/v1/boards/crunchyroll/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:52:12Z'
+- name: D2L
+  domain: d2l.com
+  careers_url: https://www.d2l.com/careers/
+  ats: greenhouse
+  board_token: d2l
+  notes: 'Validated 2026-10-29: greenhouse/d2l → 15 jobs (https://boards-api.greenhouse.io/v1/boards/d2l/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:52:13Z'
+- name: Databricks
+  domain: databricks.com
+  careers_url: https://www.databricks.com/company/careers
+  ats: greenhouse
+  board_token: databricks
+  notes: 'Validated 2026-10-29: greenhouse/databricks → 902 jobs (https://boards-api.greenhouse.io/v1/boards/databricks/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:52:16Z'
+- name: Datadog
+  domain: datadoghq.com
+  careers_url: https://careers.datadoghq.com
+  ats: greenhouse
+  board_token: datadog
+  notes: 'Validated 2026-10-29: greenhouse/datadog → 394 jobs (https://boards-api.greenhouse.io/v1/boards/datadog/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:52:17Z'
+- name: Deep Genomics
+  domain: deepgenomics.com
+  careers_url: https://www.deepgenomics.com/careers
+  ats: lever
+  board_token: deepgenomics
+  notes: 'Validated 2026-10-29: lever/deepgenomics → 2 jobs (https://api.lever.co/v0/postings/deepgenomics?mode=json)'
+  validation_status: empty
+  last_validated_at: '2026-11-23T03:52:17Z'
+- name: Desjardins
+  domain: desjardins.com
+  careers_url: https://desjardins.wd10.myworkdayjobs.com/Desjardins2
+  ats: workday
+  board_token: desjardins.wd10.myworkdayjobs.com/desjardins/Desjardins2
+  notes: 'Validated 2026-11-15: Workday CXS → 415 jobs; tech_ca=3 (Montreal/Lévis
+    Data Engineering hybrid)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:25Z'
+- name: Docker
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/docker
+  ats: ashby
+  board_token: docker
+  notes: 'Validated 2026-11-03: ashby/docker → 52 jobs; ca_eligible=13, ca_location_signals=13,
+    eng=27'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:26Z'
+- name: Dropbox
+  domain: dropbox.com
+  careers_url: https://jobs.dropbox.com/
+  ats: greenhouse
+  board_token: dropbox
+  notes: 'Validated 2026-10-29: greenhouse/dropbox → 21 jobs (https://boards-api.greenhouse.io/v1/boards/dropbox/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:26Z'
+- name: Elastic
+  domain: elastic.co
+  careers_url: https://www.elastic.co/careers
+  ats: greenhouse
+  board_token: elastic
+  notes: 'Validated 2026-10-29: greenhouse/elastic → 404 jobs (https://boards-api.greenhouse.io/v1/boards/elastic/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:28Z'
+- name: ElevenLabs
+  domain: elevenlabs.io
+  careers_url: https://elevenlabs.io/careers
+  ats: ashby
+  board_token: elevenlabs
+  notes: 'Validated 2026-11-12: ashby/elevenlabs → 128 jobs; remote AI (Canada via
+    description when evidenced)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:29Z'
+- name: Faire
+  domain: faire.com
+  careers_url: https://www.faire.com/careers
+  ats: greenhouse
+  board_token: faire
+  notes: 'Validated 2026-10-29: greenhouse/faire → 67 jobs (https://boards-api.greenhouse.io/v1/boards/faire/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:29Z'
+- name: Fellow
+  domain: fellow.app
+  careers_url: https://jobs.ashbyhq.com/fellowai
+  ats: ashby
+  board_token: fellowai
+  notes: 'Validated 2026-11-15: ashby/fellowai → 5 jobs; ca_eligible=5, tech_ca≥1
+    mid+ (Canada Remote SWE; new-grad excluded by seniority)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:29Z'
+- name: Fig Financial
+  domain: fig.ca
+  careers_url: https://jobs.lever.co/figfinancial
+  ats: lever
+  board_token: figfinancial
+  notes: 'Validated 2026-11-15: lever/figfinancial → 4 jobs; ca_eligible=4, tech_ca=2
+    (Toronto Backend + DevOps)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:30Z'
+- name: Figma
+  domain: figma.com
+  careers_url: https://www.figma.com/careers
+  ats: greenhouse
+  board_token: figma
+  notes: 'Validated 2026-10-29: greenhouse/figma → 141 jobs (https://boards-api.greenhouse.io/v1/boards/figma/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:31Z'
+- name: Fireworks AI
+  domain: fireworks.ai
+  careers_url: https://fireworks.ai/careers
+  ats: ashby
+  board_token: fireworks
+  notes: 'Validated 2026-11-12: ashby/fireworks → 93 jobs; remote AI infra'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:31Z'
+- name: Fivetran
+  domain: boards.greenhouse.io
+  careers_url: https://boards.greenhouse.io/fivetran
+  ats: greenhouse
+  board_token: fivetran
+  notes: 'Validated 2026-11-03: greenhouse/fivetran → 158 jobs; ca_eligible=0, ca_location_signals=9,
+    eng=54'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:32Z'
+- name: Flexport
+  domain: flexport.com
+  careers_url: https://www.flexport.com/careers
+  ats: greenhouse
+  board_token: flexport
+  notes: 'Validated 2026-10-29: greenhouse/flexport → 192 jobs (https://boards-api.greenhouse.io/v1/boards/flexport/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:33Z'
+- name: Flipp
+  domain: flipp.com
+  careers_url: https://careers.flipp.com/
+  ats: greenhouse
+  board_token: flipp
+  notes: 'Validated 2026-10-29: greenhouse/flipp → 12 jobs (https://boards-api.greenhouse.io/v1/boards/flipp/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:33Z'
+- name: Float
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/float
+  ats: ashby
+  board_token: float
+  notes: 'Validated 2026-11-03: ashby/float → 19 jobs; ca_eligible=18, ca_location_signals=19,
+    eng=2'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:33Z'
+- name: Fullscript
+  domain: jobs.lever.co
+  careers_url: https://jobs.lever.co/fullscript
+  ats: lever
+  board_token: fullscript
+  notes: 'Validated 2026-11-03: lever/fullscript → 15 jobs; ca_eligible=2, ca_location_signals=11,
+    eng=6'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:34Z'
+- name: FutureFit AI
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/futurefitai
+  ats: ashby
+  board_token: futurefitai
+  notes: 'Re-enabled 2026-11-12: Canadian AI; prior uncertain signals'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:34Z'
+- name: Geotab
+  domain: geotab.com
+  careers_url: https://www.geotab.com/careers/
+  ats: greenhouse
+  board_token: geotab
+  notes: 'Validated 2026-10-29: greenhouse/geotab → 60 jobs'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:35Z'
+- name: GitLab
+  domain: gitlab.com
+  careers_url: https://about.gitlab.com/jobs
+  ats: greenhouse
+  board_token: gitlab
+  notes: 'Validated 2026-10-29: greenhouse/gitlab → 231 jobs (https://boards-api.greenhouse.io/v1/boards/gitlab/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:36Z'
+- name: Grafana Labs
+  domain: boards.greenhouse.io
+  careers_url: https://boards.greenhouse.io/grafanalabs
+  ats: greenhouse
+  board_token: grafanalabs
+  notes: 'Validated 2026-11-03: greenhouse/grafanalabs → 128 jobs; ca_eligible=19,
+    ca_location_signals=19, eng=72'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:37Z'
+- name: Gusto
+  domain: gusto.com
+  careers_url: https://gusto.com/about/careers
+  ats: greenhouse
+  board_token: gusto
+  notes: 'Validated 2026-10-29: greenhouse/gusto → 88 jobs (https://boards-api.greenhouse.io/v1/boards/gusto/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:38Z'
+- name: H2 Analytics
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/h2analytics
+  ats: ashby
+  board_token: h2analytics
+  notes: 'Validated 2026-11-15: ashby/h2analytics → 2 jobs; ca_eligible=2, tech_ca=1
+    (Canada Remote Senior SWE)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:38Z'
+- name: HackerOne
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/hackerone
+  ats: ashby
+  board_token: hackerone
+  notes: 'Validated 2026-11-03: ashby/hackerone → 14 jobs; DISABLED — No Canadian
+    location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0
+    jobs=14)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:38Z'
+- name: Harvey
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/harvey
+  ats: ashby
+  board_token: harvey
+  notes: 'Validated 2026-11-03: ashby/harvey → 374 jobs; ca_eligible=12, ca_location_signals=13,
+    eng=120'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:39Z'
+- name: Hive.co
+  domain: hive.co
+  careers_url: https://jobs.ashbyhq.com/hive.co
+  ats: ashby
+  board_token: hive.co
+  notes: 'Validated 2026-11-15: ashby/hive.co → 1 job; ca_eligible=1, tech_ca=1 (Canada
+    Remote Senior SWE/ML)'
+  validation_status: empty
+  last_validated_at: '2026-11-23T03:54:39Z'
+- name: Hootsuite
+  domain: hootsuite.com
+  careers_url: https://careers.hootsuite.com/
+  ats: greenhouse
+  board_token: hootsuite
+  notes: 'Validated 2026-10-29: greenhouse/hootsuite → 3 jobs (https://boards-api.greenhouse.io/v1/boards/hootsuite/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:39Z'
+- name: Hopper
+  domain: hopper.com
+  careers_url: https://hopper.com/careers
+  ats: ashby
+  board_token: hopper
+  notes: 'Validated 2026-10-29: ashby/hopper → 18 jobs (https://api.ashbyhq.com/posting-api/job-board/hopper)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:40Z'
+- name: Hugging Face
+  domain: huggingface.co
+  careers_url: https://apply.workable.com/huggingface/
+  ats: workable
+  board_token: huggingface
+  notes: 'Validated 2026-10-29: workable/huggingface → 6 jobs (https://apply.workable.com/api/v1/widget/accounts/huggingface)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:40Z'
+- name: Instacart
+  domain: instacart.com
+  careers_url: https://instacart.careers/
+  ats: greenhouse
+  board_token: instacart
+  notes: 'Validated 2026-10-29: greenhouse/instacart → 93 jobs (https://boards-api.greenhouse.io/v1/boards/instacart/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:41Z'
+- name: Integrate.ai
+  domain: integrate.ai
+  careers_url: https://www.integrate.ai/careers
+  ats: ashby
+  board_token: integrate
+  notes: 'Validated 2026-10-29: ashby/integrate → 9 jobs'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:57Z'
+- name: Jane App
+  domain: jane.app
+  careers_url: https://jobs.ashbyhq.com/jane
+  ats: ashby
+  board_token: jane
+  notes: 'Validated 2026-11-15: ashby/jane → 27 jobs; ca_eligible=25, tech_ca=3 (Canada
+    Remote Data/Analytics Engineers)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:58Z'
+- name: Jobber
+  domain: getjobber.com
+  careers_url: https://getjobber.com/about/careers/
+  ats: ashby
+  board_token: jobber
+  notes: 'Validated 2026-10-29: ashby/jobber → 39 jobs (https://api.ashbyhq.com/posting-api/job-board/jobber)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:58Z'
+- name: Kin
+  domain: kin.com
+  careers_url: https://www.kin.com/careers
+  ats: ashby
+  board_token: kin
+  notes: 'Validated 2026-10-29: ashby/kin → 21 jobs (https://api.ashbyhq.com/posting-api/job-board/kin)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:59Z'
+- name: KOHO
+  domain: koho.ca
+  careers_url: https://www.koho.ca/careers
+  ats: ashby
+  board_token: koho
+  notes: 'Validated 2026-10-29: ashby/koho → 9 jobs (https://api.ashbyhq.com/posting-api/job-board/koho)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:59Z'
+- name: Kong
+  domain: konghq.com
+  careers_url: https://jobs.ashbyhq.com/kong
+  ats: ashby
+  board_token: kong
+  notes: 'Validated 2026-11-15: ashby/kong → 116 jobs; ca_eligible=3, tech_ca=3 (Toronto/Canada
+    Hybrid SWE)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:54:59Z'
+- name: Kraken
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/kraken.com
+  ats: ashby
+  board_token: kraken.com
+  notes: 'Validated 2026-11-03: ashby/kraken.com → 87 jobs; ca_eligible=3, ca_location_signals=3,
+    eng=31'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:55:00Z'
+- name: LangChain
+  domain: langchain.com
+  careers_url: https://www.langchain.com/careers
+  ats: ashby
+  board_token: langchain
+  notes: 'Validated 2026-11-12: ashby/langchain → 100 jobs; remote AI tooling'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:55:00Z'
+- name: Later
+  domain: later.com
+  careers_url: https://later.com/careers/
+  ats: greenhouse
+  board_token: later
+  notes: 'Validated 2026-10-29: greenhouse/later → 38 jobs (https://boards-api.greenhouse.io/v1/boards/later/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:55:00Z'
+- name: Lazer
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/lazer
+  ats: ashby
+  board_token: lazer
+  notes: 'Validated 2026-11-03: ashby/lazer → 8 jobs; ca_eligible=8, ca_location_signals=8,
+    eng=1'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:55:01Z'
+- name: Leadership Connect
+  domain: jobs.lever.co
+  careers_url: https://jobs.lever.co/leadershipconnect
+  ats: lever
+  board_token: leadershipconnect
+  notes: 'Validated 2026-11-15: lever/leadershipconnect → 3 jobs; ca_eligible=1, tech_ca=1
+    (Montreal Remote SWE)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:55:01Z'
+- name: League
+  domain: league.com
+  careers_url: https://league.com/careers
+  ats: greenhouse
+  board_token: leagueinc
+  notes: 'Validated 2026-10-29: greenhouse/leagueinc → 5 jobs'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:55:01Z'
+- name: Lightspeed
+  domain: lightspeedhq.com
+  careers_url: https://www.lightspeedhq.com/careers/
+  ats: ashby
+  board_token: lightspeed
+  notes: 'Validated 2026-10-29: ashby/lightspeed → 8 jobs (https://api.ashbyhq.com/posting-api/job-board/lightspeed)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:55:02Z'
+- name: Linear
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/linear
+  ats: ashby
+  board_token: linear
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:55:02Z'
+- name: Loopio
+  domain: loopio.com
+  careers_url: https://loopio.com/careers/
+  ats: ashby
+  board_token: loopio
+  notes: 'Validated 2026-10-29: ashby/loopio → 16 jobs'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:55:02Z'
+- name: MagicSchool
+  domain: magicschool.ai
+  careers_url: https://www.magicschool.ai/careers
+  ats: ashby
+  board_token: magicschool
+  notes: 'Validated 2026-11-12: ashby/magicschool → 9 jobs; remote-friendly edtech'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:55:03Z'
+- name: Magnet Forensics
+  domain: magnetforensics.com
+  careers_url: https://www.magnetforensics.com/careers-at-magnet/
+  ats: lever
+  board_token: magnetforensics
+  notes: 'Validated 2026-11-02: lever/magnetforensics → 37 jobs (15 Canada-located
+    incl. Staff SWE, SRE/DevOps, AI) — Waterloo cybersecurity'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:55:04Z'
+- name: Merge
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/merge
+  ats: ashby
+  board_token: merge
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:49Z'
+- name: Modal
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/modal
+  ats: ashby
+  board_token: modal
+  notes: 'Validated 2026-11-03: ashby/modal → 42 jobs; DISABLED — No Canadian location
+    evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=42)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:49Z'
+- name: MongoDB
+  domain: mongodb.com
+  careers_url: https://www.mongodb.com/careers
+  ats: greenhouse
+  board_token: mongodb
+  notes: 'Validated 2026-10-29: greenhouse/mongodb → 369 jobs (https://boards-api.greenhouse.io/v1/boards/mongodb/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:51Z'
+- name: Nango
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/nango
+  ats: ashby
+  board_token: nango
+  notes: 'Validated 2026-11-03: ashby/nango → 8 jobs; DISABLED — No Canadian location
+    evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=8)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:51Z'
+- name: Neo Financial
+  domain: neofinancial.com
+  careers_url: https://www.neofinancial.com/careers
+  ats: ashby
+  board_token: neofinancial
+  notes: 'Validated 2026-10-29: ashby/neofinancial → 63 jobs (https://api.ashbyhq.com/posting-api/job-board/neofinancial)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:52Z'
+- name: NerdWallet
+  domain: nerdwallet.com
+  careers_url: https://jobs.ashbyhq.com/nerdwallet
+  ats: ashby
+  board_token: nerdwallet
+  notes: 'Validated 2026-11-15: ashby/nerdwallet → 29 jobs; ca_eligible=4, tech_ca=1
+    (Canada Remote SWE AI & Automation)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:52Z'
+- name: Nesto
+  domain: nesto.ca
+  careers_url: https://www.nesto.ca/careers
+  ats: rippling
+  board_token: nesto
+  notes: 'Validated 2026-10-29: rippling/nesto → 20 jobs (https://ats.rippling.com/api/v2/board/nesto/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:53Z'
+- name: Northbeam
+  domain: boards.greenhouse.io
+  careers_url: https://boards.greenhouse.io/northbeam
+  ats: greenhouse
+  board_token: northbeam
+  notes: 'Validated 2026-11-03: greenhouse/northbeam → 22 jobs; ca_eligible=8, ca_location_signals=8,
+    eng=14'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:53Z'
+- name: Notion
+  domain: notion.so
+  careers_url: https://www.notion.so/careers
+  ats: ashby
+  board_token: notion
+  notes: 'Validated 2026-10-29: ashby/notion → 143 jobs (https://api.ashbyhq.com/posting-api/job-board/notion)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:54Z'
+- name: Novara
+  domain: jobs.lever.co
+  careers_url: https://jobs.lever.co/novara
+  ats: lever
+  board_token: novara
+  notes: 'Validated 2026-11-15: lever/novara → 6 jobs; ca_eligible=1, tech_ca=1 (Toronto
+    SWE-AI Platforms)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:54Z'
+- name: Nuvei
+  domain: nuvei.com
+  careers_url: https://www.nuvei.com/careers
+  ats: workable
+  board_token: nuvei
+  notes: 'Validated 2026-11-12: workable/nuvei → 66 jobs; Canadian fintech'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:54Z'
+- name: Okta
+  domain: okta.com
+  careers_url: https://www.okta.com/company/careers/
+  ats: greenhouse
+  board_token: okta
+  notes: 'Validated 2026-10-29: greenhouse/okta → 385 jobs (https://boards-api.greenhouse.io/v1/boards/okta/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:56Z'
+- name: OpenAI
+  domain: openai.com
+  careers_url: https://openai.com/careers
+  ats: ashby
+  board_token: openai
+  notes: 'Validated 2026-10-29: ashby/openai → 812 jobs (https://api.ashbyhq.com/posting-api/job-board/openai)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:57Z'
+- name: Owner.com
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/owner
+  ats: ashby
+  board_token: owner
+  notes: 'Validated 2026-11-03: ashby/owner → 50 jobs; ca_eligible=11, ca_location_signals=14,
+    eng=11'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:58Z'
+- name: Oyster
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/oyster
+  ats: ashby
+  board_token: oyster
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals; remote hiring platform'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:58Z'
+- name: PagerDuty
+  domain: pagerduty.com
+  careers_url: https://www.pagerduty.com/careers/
+  ats: greenhouse
+  board_token: pagerduty
+  notes: 'Validated 2026-10-29: greenhouse/pagerduty → 49 jobs (https://boards-api.greenhouse.io/v1/boards/pagerduty/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:58Z'
+- name: Parallel Domain
+  domain: paralleldomain.com
+  careers_url: https://jobs.lever.co/paralleldomain
+  ats: lever
+  board_token: paralleldomain
+  notes: 'Validated 2026-11-15: lever/paralleldomain → 8 jobs; ca_eligible=3, tech_ca=2
+    (Canada Remote SRE + Vancouver Backend)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:59Z'
+- name: Perplexity
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/perplexity
+  ats: ashby
+  board_token: perplexity
+  notes: 'Validated 2026-11-03: ashby/perplexity → 136 jobs; DISABLED — No Canadian
+    location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=12
+    jobs=136)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:59Z'
+- name: Plaid
+  domain: plaid.com
+  careers_url: https://plaid.com/careers/
+  ats: ashby
+  board_token: plaid
+  notes: 'Validated 2026-10-29: ashby/plaid → 129 jobs (https://api.ashbyhq.com/posting-api/job-board/plaid)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:56:59Z'
+- name: PlanetScale
+  domain: boards.greenhouse.io
+  careers_url: https://boards.greenhouse.io/planetscale
+  ats: greenhouse
+  board_token: planetscale
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:57:00Z'
+- name: PointClickCare
+  domain: pointclickcare.com
+  careers_url: https://pointclickcare.com/company/careers/
+  ats: lever
+  board_token: pointclickcare
+  notes: 'Validated 2026-10-29: lever/pointclickcare → 72 jobs (https://api.lever.co/v0/postings/pointclickcare?mode=json)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:57:00Z'
+- name: PolicyMe
+  domain: policyme.com
+  careers_url: https://www.policyme.com/careers
+  ats: lever
+  board_token: policyme
+  notes: 'Validated 2026-10-29: lever/policyme → 10 jobs (https://api.lever.co/v0/postings/policyme?mode=json)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:57:00Z'
+- name: PostHog
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/posthog
+  ats: ashby
+  board_token: posthog
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals; city/description
+    eligibility improved'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:57:01Z'
+- name: Ramp
+  domain: ramp.com
+  careers_url: https://ramp.com/careers
+  ats: ashby
+  board_token: ramp
+  notes: 'Validated 2026-10-29: ashby/ramp → 168 jobs (https://api.ashbyhq.com/posting-api/job-board/ramp)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:57:01Z'
+- name: RAVL
+  domain: ravl.io
+  careers_url: https://jobs.lever.co/ravl_io
+  ats: lever
+  board_token: ravl_io
+  notes: 'Validated 2026-11-15: lever/ravl_io → 21 jobs; ca_eligible=21, tech_ca=10
+    (Toronto AI Platform/Data/SWE)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T03:57:02Z'
+- name: Redis
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/Redis
+  ats: ashby
+  board_token: Redis
+  notes: 'Validated 2026-11-03: ashby/Redis → 31 jobs; ca_eligible=3, ca_location_signals=3,
+    eng=5'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:00Z'
+- name: Reflow
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/reflow
+  ats: ashby
+  board_token: reflow
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:01Z'
+- name: Relay
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/relay
+  ats: ashby
+  board_token: relay
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:01Z'
+- name: Render
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/render
+  ats: ashby
+  board_token: render
+  notes: 'Validated 2026-11-03: ashby/render → 35 jobs; ca_eligible=4, ca_location_signals=4,
+    eng=19'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:01Z'
+- name: Replicant
+  domain: replicant.ai
+  careers_url: https://www.replicant.ai/careers
+  ats: ashby
+  board_token: replicant
+  notes: 'Validated 2026-11-12: ashby/replicant → 8 jobs; CA location signal observed'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:02Z'
+- name: Replit
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/replit
+  ats: ashby
+  board_token: replit
+  notes: 'Validated 2026-11-03: ashby/replit → 34 jobs; DISABLED — No Canadian location
+    evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=34)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:02Z'
+- name: Retool
+  domain: retool.com
+  careers_url: https://retool.com/careers
+  ats: gem
+  board_token: retool
+  notes: jobs.gem.com/retool returns HTTP 200 but no extractable public job links;
+    left disabled
+  validation_status: empty
+  last_validated_at: '2026-11-23T04:00:03Z'
+- name: Rippling
+  domain: rippling.com
+  careers_url: https://www.rippling.com/careers/open-roles
+  ats: rippling
+  board_token: rippling
+  notes: 'Validated 2026-10-29: rippling/rippling → 20 jobs (https://ats.rippling.com/api/v2/board/rippling/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:03Z'
+- name: Ritual
+  domain: ritual.co
+  careers_url: https://ritual.co/careers
+  ats: greenhouse
+  board_token: ritual
+  notes: 'Validated 2026-10-29: greenhouse/ritual → 15 jobs (https://boards-api.greenhouse.io/v1/boards/ritual/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:03Z'
+- name: Robinhood
+  domain: robinhood.com
+  careers_url: https://careers.robinhood.com/
+  ats: greenhouse
+  board_token: robinhood
+  notes: 'Validated 2026-10-29: greenhouse/robinhood → 162 jobs (https://boards-api.greenhouse.io/v1/boards/robinhood/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:04Z'
+- name: Samsara
+  domain: samsara.com
+  careers_url: https://www.samsara.com/company/careers
+  ats: greenhouse
+  board_token: samsara
+  notes: 'Validated 2026-10-29: greenhouse/samsara → 324 jobs (https://boards-api.greenhouse.io/v1/boards/samsara/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:06Z'
+- name: Sanctuary AI
+  domain: sanctuary.ai
+  careers_url: https://www.sanctuary.ai/careers
+  ats: ashby
+  board_token: sanctuary
+  notes: 'Validated 2026-10-29: ashby/sanctuary → 7 jobs (https://api.ashbyhq.com/posting-api/job-board/sanctuary)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:06Z'
+- name: Scale AI
+  domain: scale.com
+  careers_url: https://scale.com/careers
+  ats: greenhouse
+  board_token: scaleai
+  notes: 'Validated 2026-10-29: greenhouse/scaleai → 171 jobs (https://boards-api.greenhouse.io/v1/boards/scaleai/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:07Z'
+- name: Sentry
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/sentry
+  ats: ashby
+  board_token: sentry
+  notes: 'Validated 2026-11-03: ashby/sentry → 40 jobs; ca_eligible=8, ca_location_signals=8,
+    eng=30'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:07Z'
+- name: Shopify
+  domain: shopify.com
+  careers_url: https://www.shopify.com/careers
+  ats: rss
+  board_token: https://www.shopify.com/careers/feed.xml
+  notes: 'Validated 2026-10-29: RSS feed URL responds HTTP 200 but currently 0 items;
+    retained for when feed repopulates'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:08Z'
+- name: ShyftLabs
+  domain: shyftlabs.io
+  careers_url: https://jobs.lever.co/shyftlabs
+  ats: lever
+  board_token: shyftlabs
+  notes: 'Validated 2026-11-15: lever/shyftlabs → 27 jobs; ca_eligible=19, tech_ca≈8
+    (Toronto/Calgary AI/Data/FDE; interns seniority-gated)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:21Z'
+- name: Sierra
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/sierra
+  ats: ashby
+  board_token: sierra
+  notes: 'Validated 2026-11-03: ashby/sierra → 218 jobs; ca_eligible=9, ca_location_signals=23,
+    eng=89'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:21Z'
+- name: Snowflake
+  domain: snowflake.com
+  careers_url: https://careers.snowflake.com/
+  ats: ashby
+  board_token: snowflake
+  notes: 'Validated 2026-10-29: ashby/snowflake → 361 jobs (https://api.ashbyhq.com/posting-api/job-board/snowflake)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:22Z'
+- name: SOVRA
+  domain: sovra.io
+  careers_url: https://jobs.ashbyhq.com/sovra
+  ats: ashby
+  board_token: sovra
+  notes: 'Validated 2026-11-15: ashby/sovra → 12 jobs; ca_eligible=8, tech_ca=3 (Calgary/Montreal
+    DevOps + Data)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:22Z'
+- name: StackAdapt
+  domain: stackadapt.com
+  careers_url: https://www.stackadapt.com/careers
+  ats: greenhouse
+  board_token: stackadapt
+  notes: 'Validated 2026-10-29: greenhouse/stackadapt → 75 jobs (https://boards-api.greenhouse.io/v1/boards/stackadapt/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:23Z'
+- name: Stripe
+  domain: stripe.com
+  careers_url: https://stripe.com/jobs
+  ats: greenhouse
+  board_token: stripe
+  notes: 'Validated 2026-10-29: greenhouse/stripe → 725 jobs (https://boards-api.greenhouse.io/v1/boards/stripe/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:25Z'
+- name: Supabase
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/supabase
+  ats: ashby
+  board_token: supabase
+  notes: 'Re-enabled 2026-11-12: prior uncertain Canada signals; city/description
+    eligibility improved'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:42Z'
+- name: Super.com
+  domain: super.com
+  careers_url: https://jobs.ashbyhq.com/super.com
+  ats: ashby
+  board_token: super.com
+  notes: 'Validated 2026-11-15: ashby/super.com → 12 jobs; ca_eligible=10, tech_ca=3
+    (Canada Remote Full Stack/Security SWE)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:42Z'
+- name: Superhuman
+  domain: superhuman.com
+  careers_url: https://jobs.ashbyhq.com/superhuman%20platform%20inc
+  ats: ashby
+  board_token: superhuman platform inc
+  notes: 'Validated 2026-11-15: ashby/superhuman platform inc → 71 jobs; ca_eligible=2,
+    tech_ca=1 (Canada Remote AI Engineer)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:43Z'
+- name: Tailscale
+  domain: boards.greenhouse.io
+  careers_url: https://boards.greenhouse.io/tailscale
+  ats: greenhouse
+  board_token: tailscale
+  notes: 'Validated 2026-11-03: greenhouse/tailscale → 61 jobs; ca_eligible=28, ca_location_signals=28,
+    eng=29'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:00:44Z'
+- name: Temporal
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/temporal
+  ats: ashby
+  board_token: temporal
+  notes: 'Validated 2026-11-03: ashby/temporal → 78 jobs; ca_eligible=1, ca_location_signals=1,
+    eng=35'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:23Z'
+- name: Tenstorrent
+  domain: boards.greenhouse.io
+  careers_url: https://boards.greenhouse.io/tenstorrent
+  ats: greenhouse
+  board_token: tenstorrent
+  notes: 'Validated 2026-11-03: greenhouse/tenstorrent → 126 jobs; ca_eligible=0,
+    ca_location_signals=41, eng=78'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:24Z'
+- name: Terminal
+  domain: terminal.com
+  careers_url: https://jobs.ashbyhq.com/terminal
+  ats: ashby
+  board_token: terminal
+  notes: 'Validated 2026-11-15: ashby/terminal → 7 jobs; ca_eligible=7, tech_ca=2
+    (Toronto Data Platform + Backend SWE)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:24Z'
+- name: Thinkific
+  domain: thinkific.com
+  careers_url: https://www.thinkific.com/careers/
+  ats: ashby
+  board_token: thinkific
+  notes: 'Validated 2026-10-29: ashby/thinkific → 3 jobs (https://api.ashbyhq.com/posting-api/job-board/thinkific)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:24Z'
+- name: Thoughtworks
+  domain: thoughtworks.com
+  careers_url: https://www.thoughtworks.com/careers
+  ats: greenhouse
+  board_token: thoughtworks
+  notes: 'Validated 2026-10-29: greenhouse/thoughtworks → 49 jobs (https://boards-api.greenhouse.io/v1/boards/thoughtworks/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:25Z'
+- name: Toast
+  domain: toasttab.com
+  careers_url: https://careers.toasttab.com/
+  ats: greenhouse
+  board_token: toast
+  notes: 'Validated 2026-10-29: greenhouse/toast → 340 jobs'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:26Z'
+- name: Trulioo
+  domain: trulioo.com
+  careers_url: https://www.trulioo.com/about/careers
+  ats: ashby
+  board_token: trulioo
+  notes: 'Validated 2026-10-29: ashby/trulioo → 25 jobs (https://api.ashbyhq.com/posting-api/job-board/trulioo)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:27Z'
+- name: Twilio
+  domain: twilio.com
+  careers_url: https://www.twilio.com/company/jobs
+  ats: greenhouse
+  board_token: twilio
+  notes: 'Validated 2026-10-29: greenhouse/twilio → 130 jobs (https://boards-api.greenhouse.io/v1/boards/twilio/jobs)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:27Z'
+- name: Unbounce
+  domain: unbounce.com
+  careers_url: https://unbounce.com/careers/
+  ats: greenhouse
+  board_token: unbounce
+  notes: 'Validated 2026-10-29: greenhouse/unbounce → 1 jobs (https://boards-api.greenhouse.io/v1/boards/unbounce/jobs)'
+  validation_status: empty
+  last_validated_at: '2026-11-23T04:04:27Z'
+- name: Vanta
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/vanta
+  ats: ashby
+  board_token: vanta
+  notes: 'Validated 2026-11-03: ashby/vanta → 81 jobs; ca_eligible=7, ca_location_signals=7,
+    eng=29'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:28Z'
+- name: Vercel
+  domain: boards.greenhouse.io
+  careers_url: https://boards.greenhouse.io/vercel
+  ats: greenhouse
+  board_token: vercel
+  notes: 'Validated 2026-11-03: greenhouse/vercel → 89 jobs; DISABLED — No Canadian
+    location evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0
+    jobs=89)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:28Z'
+- name: Visier
+  domain: visier.com
+  careers_url: https://www.visier.com/company/careers/
+  ats: ashby
+  board_token: visier
+  notes: 'Validated 2026-10-29: ashby/visier → 3 jobs (https://api.ashbyhq.com/posting-api/job-board/visier)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:29Z'
+- name: Waabi
+  domain: waabi.ai
+  careers_url: https://waabi.ai/careers
+  ats: lever
+  board_token: waabi
+  notes: 'Validated 2026-10-29: lever/waabi → 94 jobs (https://api.lever.co/v0/postings/waabi?mode=json)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:30Z'
+- name: Wagmo
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/wagmo
+  ats: ashby
+  board_token: wagmo
+  notes: 'Validated 2026-11-15: ashby/wagmo → 9 jobs; ca_eligible=1, tech_ca=1 (Canada
+    Remote Senior SWE)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:30Z'
+- name: Warner Music Group
+  domain: wmg.com
+  careers_url: https://jobs.lever.co/wmg
+  ats: lever
+  board_token: wmg
+  notes: 'Validated 2026-11-15: lever/wmg → 30 jobs; ca_eligible=2, tech_ca=1 (Toronto
+    Senior AI Engineer, Sureel AI)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:30Z'
+- name: Wattpad
+  domain: wattpad.com
+  careers_url: https://company.wattpad.com/careers
+  ats: lever
+  board_token: wattpad
+  notes: 'Validated 2026-10-29: lever/wattpad → 16 jobs (https://api.lever.co/v0/postings/wattpad?mode=json)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:31Z'
+- name: Wave
+  domain: waveapps.com
+  careers_url: https://www.waveapps.com/careers
+  ats: lever
+  board_token: waveapps
+  notes: 'Validated 2026-11-02: lever/waveapps → 8 Canada jobs incl. Machine Learning
+    Engineer + Senior Software Engineer (Toronto fintech)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:31Z'
+- name: Wealthsimple
+  domain: wealthsimple.com
+  careers_url: https://www.wealthsimple.com/en-ca/careers
+  ats: ashby
+  board_token: wealthsimple
+  notes: 'Validated 2026-10-29: ashby/wealthsimple → 38 jobs (https://api.ashbyhq.com/posting-api/job-board/wealthsimple)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:31Z'
+- name: Wrapbook
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/wrapbook
+  ats: ashby
+  board_token: wrapbook
+  notes: 'Validated 2026-11-03: ashby/wrapbook → 14 jobs; ca_eligible=13, ca_location_signals=13,
+    eng=5'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:32Z'
+- name: Writer
+  domain: jobs.ashbyhq.com
+  careers_url: https://jobs.ashbyhq.com/writer
+  ats: ashby
+  board_token: writer
+  notes: 'Validated 2026-11-03: ashby/writer → 46 jobs; DISABLED — No Canadian location
+    evidence in structured location fields (eligible=0 loc_signals=0 uncertain=0 jobs=46)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:32Z'
+- name: Xsolla
+  domain: xsolla.com
+  careers_url: https://jobs.lever.co/xsolla
+  ats: lever
+  board_token: xsolla
+  notes: 'Validated 2026-11-15: lever/xsolla → 186 jobs; ca_eligible=20, tech_ca=8
+    (Montreal Backend/Full-Stack/Platform/AI)'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:33Z'
+- name: ZoomInfo
+  domain: zoominfo.com
+  careers_url: https://www.zoominfo.com/careers
+  ats: greenhouse
+  board_token: zoominfo
+  notes: 'Validated 2026-10-29: greenhouse/zoominfo → 102 jobs'
+  validation_status: ok
+  last_validated_at: '2026-11-23T04:04:33Z'
