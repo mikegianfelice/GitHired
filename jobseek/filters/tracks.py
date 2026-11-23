@@ -349,10 +349,12 @@ def _phrase_to_pattern(phrase: str) -> re.Pattern[str]:
         return re.compile(r"(?!)")  # never matches
     body = r"[\s\-_/]+".join(_normalize_role_token(t) for t in tokens)
     # Word-boundary contiguous match; optional seniority immediately before.
-    pattern = (
-        rf"(?i)(?:(?<![a-z0-9])(?:{_SENIORITY_PREFIX})[\s,/\-]*)*"
-        rf"(?<![a-z0-9]){body}(?![a-z0-9])"
-    )
+    # Allow common grade suffixes right after the phrase (II/III/2 etc.).
+    # Two acceptable endings:
+    #   1) Not followed by a lowercase letter (blocks 'Engineering' overrun)
+    #   2) Followed by optional whitespace and a Roman numeral or digit grade, then not a letter
+    suffix = r"(?:\s*(?:[IVX]{1,4}|\d{1,2})(?![A-Za-z]))?"
+    pattern = rf"(?i)(?:(?<![a-z0-9])(?:{_SENIORITY_PREFIX})[\s,/\-]*)*(?<![a-z0-9]){body}(?:{suffix}|(?![a-z0-9]))"
     return re.compile(pattern)
 
 

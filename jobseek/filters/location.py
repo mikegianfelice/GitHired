@@ -499,7 +499,8 @@ def find_any_canadian_province(location: str) -> list[str]:
             # Skip ambiguous bare "london" without ON context
             if ck == "london":
                 continue
-            pattern = rf"\\b{re.escape(ck)}\\b"
+            # Word-boundary city token (correctly use \b, not a literal backslash+b)
+            pattern = rf"\b{re.escape(ck)}\b"
             if re.search(pattern, loc_cf):
                 if prov not in seen:
                     found.append(prov)

@@ -1585,6 +1585,36 @@ def build_parser(prog: str | None = None) -> argparse.ArgumentParser:
     )
     d.set_defaults(func=cmd_discover)
 
+    def cmd_funnel(args: argparse.Namespace) -> int:
+        load_dotenv()
+        settings = Settings.from_env()
+        db = _db(settings)
+        try:
+            from jobseek.public_shortlist.export import load_jobs_from_db
+            from jobseek.diagnostics.funnel import build_funnel
+            jobs = load_jobs_from_db(db)
+            report = build_funnel(
+                jobs,
+                max_age_days=int(args.max_age_days),
+            )
+        finally:
+            db.close()
+        if args.output:
+            import json as _json
+            from pathlib import Path as _Path
+            path = _Path(args.output)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(_json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            _print_json({"ok": True, "path": str(path), "final_after_dedupe": report["totals"]["final_after_dedupe"]})
+            return 0
+        _print_json(report)
+        return 0
+
+    f = sub.add_parser("funnel", help="Diagnostics: gate-by-gate dropoff and samples")
+    f.add_argument("--max-age-days", type=int, default=21)
+    f.add_argument("--output", default=None, help="Optional JSON output path")
+    f.set_defaults(func=cmd_funnel)
+
     en = sub.add_parser(
         "enrich",
         help="Hydrate Workday descriptions / geo for queued jobs",

@@ -1,167 +1,107 @@
-# Job discovery search configuration (Canada-remote engineering)
-
-# Select one or more engineering tracks (preferred over raw title lists).
 tracks:
-  - software_engineering
-  - ai_engineering
-  - ml_engineering
-  - data_engineering
-  - analytics_engineering
-  - platform_engineering
-  - cloud_engineering
-  - devops_sre
-  - forward_deployed
-
-# Title phrases / aliases per track. Users select tracks; overrides are advanced.
-# Phrases match as contiguous role titles (not loose token bags).
+- software_engineering
+- ai_engineering
+- data_engineering
+- forward_deployed
 track_aliases:
   software_engineering:
-    - Software Engineer
-    - Software Developer
-    - Full Stack Engineer
-    - Backend Engineer
-    - Frontend Engineer
-    - Full-Stack Engineer
+  - Software Engineer
+  - Software Developer
+  - Full Stack Engineer
+  - Backend Engineer
+  - Frontend Engineer
+  - Full-Stack Engineer
   ai_engineering:
-    - AI Engineer
-    - Applied AI Engineer
-    - Generative AI Engineer
-    - LLM Engineer
-    - AI Solutions Architect
-    - Solutions Architect AI
-    - AI Platform Engineer
+  - AI Engineer
+  - Applied AI Engineer
+  - Generative AI Engineer
+  - LLM Engineer
+  - AI Solutions Architect
+  - Solutions Architect AI
+  - AI Platform Engineer
   ml_engineering:
-    - Machine Learning Engineer
-    - ML Engineer
-    - MLOps Engineer
-    - Deep Learning Engineer
+  - Machine Learning Engineer
+  - ML Engineer
+  - MLOps Engineer
+  - Deep Learning Engineer
   data_engineering:
-    - Data Engineer
-    - Senior Data Engineer
-    - Staff Data Engineer
-    - Lead Data Engineer
-    - Principal Data Engineer
-    - Cloud Data Engineer
-    - Data Platform Engineer
-    - Data Engineering
-    - Risk Data Engineering
-    - ETL Engineer
+  - Data Engineer
+  - Senior Data Engineer
+  - Staff Data Engineer
+  - Lead Data Engineer
+  - Principal Data Engineer
+  - Cloud Data Engineer
+  - Data Platform Engineer
+  - Data Engineering
+  - Risk Data Engineering
+  - ETL Engineer
   analytics_engineering:
-    - Analytics Engineer
-    - Senior Analytics Engineer
-    - Staff Analytics Engineer
+  - Analytics Engineer
+  - Senior Analytics Engineer
+  - Staff Analytics Engineer
   platform_engineering:
-    - Platform Engineer
-    - Software Platform Engineer
-    - Developer Platform Engineer
-    - Infrastructure Engineer
-    - Developer Experience Engineer
-    - DevEx Engineer
+  - Platform Engineer
+  - Software Platform Engineer
+  - Developer Platform Engineer
+  - Infrastructure Engineer
+  - Developer Experience Engineer
+  - DevEx Engineer
   cloud_engineering:
-    - Cloud Engineer
-    - Cloud Architect
-    - AWS Engineer
-    - Azure Engineer
-    - GCP Engineer
+  - Cloud Engineer
+  - Cloud Architect
+  - AWS Engineer
+  - Azure Engineer
+  - GCP Engineer
   devops_sre:
-    - DevOps Engineer
-    - Site Reliability Engineer
-    - SRE
-    - Reliability Engineer
+  - DevOps Engineer
+  - Site Reliability Engineer
+  - SRE
+  - Reliability Engineer
   forward_deployed:
-    - Forward Deployed Engineer
-    - Forward Deployed Software Engineer
-    - Deployment Engineer
-
-# Seniority policy: mid+ by default; student/intern/new-grad excluded.
-# Unknown seniority (no keywords in title) is allowed.
+  - Forward Deployed Engineer
+  - Forward Deployed Software Engineer
+  - Deployment Engineer
 seniority:
   include:
-    - mid
-    - senior
-    - staff
-    - principal
-    - lead
+  - mid
+  - senior
+  - staff
+  - principal
+  - lead
   exclude:
-    - intern
-    - coop
-    - student
-    - new_grad
-    - junior
-
-
-# Advanced: extra title phrases beyond track aliases
+  - intern
+  - coop
+  - student
+  - new_grad
+  - junior
 custom_title_overrides: []
-
-# Legacy flat lists (still honored if tracks empty / for backward compatibility)
 target_titles: []
 title_aliases: []
-
 location:
-  # Accepted work modes for the candidate
   modes:
-    - remote_canada
-    - remote_province
-    - hybrid
-    - onsite
+  - remote_canada
   provinces:
-    - Ontario
-    - Quebec
-    - British Columbia
-    - Alberta
-    - Manitoba
-    - Saskatchewan
-    - Nova Scotia
-    - New Brunswick
-    - Newfoundland
-    - Prince Edward Island
-    - Yukon
-    - Northwest Territories
-    - Nunavut
-    # Quote 2-letter codes — unquoted ON is a YAML boolean
-    - 'ON'
-    - 'QC'
-    - 'BC'
-    - 'AB'
+  - Ontario
+  - 'ON'
   cities:
-    - Toronto
-    - Vancouver
-    - Montreal
-    - Ottawa
-    - Calgary
-    - Edmonton
-    - Waterloo
-    - Kitchener
-    - Mississauga
-    - Halifax
+  - Toronto
   preferred:
-    - Canada remote
-    - Remote Canada
-    - Remote - Canada
-    - Canada (Remote)
-    - Anywhere in Canada
+  - Canada remote
+  - Remote Canada
+  - Remote - Canada
+  - Canada (Remote)
+  - Anywhere in Canada
   allow_us_employer_remote_with_canada_evidence: true
   reject_us_only_remote: true
-  # When location is silent / ambiguous: flag (hold), reject, or pass
-  unknown_location_policy: flag  # flag | reject | pass
-
+  unknown_location_policy: flag
 salary:
-  # flexible (default): missing pay allowed with warning; below-floor rejected
-  # strict: require verified compensation meeting the floor
-  # none: ignore salary minimum entirely
   policy: flexible
-  reject_missing: false  # legacy alias for policy=strict when true
-  # Authoritative currency for floor checks. Job pay is converted into this
-  # currency via usd_to_cad before comparing (never treated as 1:1).
+  reject_missing: false
   preferred_currency: CAD
-  # When true, compare each job in its native currency against that currency's
-  # floor only (advanced dual-floor setups). Default false — preferred wins.
   floors_independent: false
-  # Explicit USD→CAD rate for cross-currency floor checks (never equate 1:1).
   usd_to_cad: 1.35
   floors:
     CAD: 120000
-
 sources:
   greenhouse: true
   lever: true
@@ -170,30 +110,17 @@ sources:
   rss: true
   rippling: true
   workday: true
-  # Separate Workday budgets (monotonic seconds). List pagination can no longer
-  # consume the detail budget (RBC-style boards previously exhausted both).
-  # Legacy workday_company_budget_s still maps to the detail budget.
   workday_list_budget_s: 180
   workday_detail_budget_s: 120
   workday_company_budget_s: 120
-  # Reuse complete SQLite descriptions younger than this TTL (seconds).
   workday_description_ttl_s: 604800
-  # Set workday_complete: true (or `githired discover --mode deep`) for full hydration.
   workday_complete: false
-  # Bounded concurrent company fetches (non-Workday / Workday pools).
-  # Workday boards use isolated HTTP clients; 3 concurrent hosts is polite
-  # across distinct myworkdayjobs.com tenants without shared-throttle starvation.
   company_concurrency: 4
   workday_company_concurrency: 3
-  # Enrichment (post-discover detail hydration) — independent of listing discover.
-  # Priority + employer fairness select the batch; off-track titles are low priority.
   enrich_concurrency: 4
   enrich_batch_size: 200
   enrich_budget_s: 300
-  # Cap jobs from one employer per enrich claim (round-robin fills the rest).
   enrich_max_per_company: 12
-  # Minimum enrich_priority to claim (track-match floor ≈ 500). Do not pad with
-  # off-track titles. deep=0 allows backlog drain when explicitly requested.
   enrich_min_priority_quick: 500
   enrich_min_priority_standard: 400
   enrich_min_priority_deep: 0
@@ -202,25 +129,25 @@ sources:
   linkedin_search_index: true
   linkedin_alert_import: true
   linkedin_guest: false
-  # Optional Freehire.me aggregator (public API, no key). Default off — enable
-  # only after reviewing affiliate-URL filtering; not required for core discovery.
   freehire: false
-
-# Optional Freehire queries (used only when sources.freehire: true)
 freehire_queries:
-  - q: "title:Data Engineer"
-    countries: ca
-    seniority: [senior, staff]
-  - q: "title:Software Engineer OR title:AI Engineer OR title:Machine Learning"
-    countries: ca
-  - q: "title:Backend Engineer OR title:Software Developer"
-    countries: ca
-    seniority: [junior, middle]
-  - q: "title:DevOps OR title:SRE OR title:Platform Engineer"
-    countries: ca
-    seniority: [senior, staff]
-
-# Company discovery (separate from daily job discover)
+- q: title:Data Engineer
+  countries: ca
+  seniority:
+  - senior
+  - staff
+- q: title:Software Engineer OR title:AI Engineer OR title:Machine Learning
+  countries: ca
+- q: title:Backend Engineer OR title:Software Developer
+  countries: ca
+  seniority:
+  - junior
+  - middle
+- q: title:DevOps OR title:SRE OR title:Platform Engineer
+  countries: ca
+  seniority:
+  - senior
+  - staff
 company_discovery:
   auto_enable_validated: true
   transient_cooldown_days: 7
@@ -234,19 +161,15 @@ company_discovery:
     search_index: true
     alert_import: true
     serpapi: true
-
 recency_days: 30
-
 linkedin_search_queries:
-  - 'site:linkedin.com/jobs "AI Engineer" (Canada OR "Remote Canada" OR "remote in Canada")'
-  - 'site:linkedin.com/jobs "Applied AI" (Canada OR Remote) (Canada OR Canadian)'
-  - 'site:linkedin.com/jobs "Forward Deployed Engineer" (Canada OR Remote)'
-  - 'site:linkedin.com/jobs "Data Engineer" Senior OR Staff (Canada OR "Remote Canada")'
-  - 'site:linkedin.com/jobs "Software Engineer" (Canada OR "Remote Canada")'
-  - 'site:linkedin.com/jobs "Platform Engineer" OR SRE OR DevOps (Canada OR "Remote Canada")'
-
+- site:linkedin.com/jobs "AI Engineer" (Canada OR "Remote Canada" OR "remote in Canada")
+- site:linkedin.com/jobs "Applied AI" (Canada OR Remote) (Canada OR Canadian)
+- site:linkedin.com/jobs "Forward Deployed Engineer" (Canada OR Remote)
+- site:linkedin.com/jobs "Data Engineer" Senior OR Staff (Canada OR "Remote Canada")
+- site:linkedin.com/jobs "Software Engineer" (Canada OR "Remote Canada")
+- site:linkedin.com/jobs "Platform Engineer" OR SRE OR DevOps (Canada OR "Remote Canada")
 digest:
   top_n: 10
   min_score: 60
-  # Secondary shortlist of UNCERTAIN roles (never promoted to confirmed)
   uncertain_top_n: 15
