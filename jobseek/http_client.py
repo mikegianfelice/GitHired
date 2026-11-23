@@ -138,8 +138,12 @@ def workday_http_client() -> RateLimitedClient:
     polite (~6–7 req/s peak per host) while allowing pagination to proceed.
     """
     return RateLimitedClient(
-        min_interval_s=0.15,
+        min_interval_s=0.2,
         max_connections=12,
         max_keepalive=8,
         timeout_s=45.0,
+        user_agent=(
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+        ),
     )

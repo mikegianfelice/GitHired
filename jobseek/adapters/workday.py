@@ -811,7 +811,14 @@ class WorkdayAdapter:
             "searchText": self.search_text or "",
         }
         try:
-            resp = self.client.post(list_url, json_body=payload)
+            resp = self.client.post(
+                list_url,
+                json_body=payload,
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+            )
         except Exception as exc:  # noqa: BLE001
             return offset, None, [], None, str(exc)
         if resp.status_code != 200:
@@ -948,8 +955,8 @@ class WorkdayAdapter:
                         )
                         complete = False
                         break
-                    # Jitter to stay polite
-                    _time.sleep(random.uniform(1.5, 3.0))
+                    # Jitter to stay polite (empirically reduces 429s on large tenants)
+                    _time.sleep(random.uniform(2.0, 4.0))
                     # Retry on 429 with capped exponential backoff up to ~60s
                     retries = 0
                     while True:
