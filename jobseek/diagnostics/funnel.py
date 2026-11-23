@@ -115,12 +115,25 @@ def build_funnel(
     stages["after_apply_url"] = keep
     current = keep
 
-    # hard filters
+    # hard filters with breakdown
     keep = []
+    hard_breakdown: Dict[str, int] = defaultdict(int)
+    hard_samples: Dict[str, List[dict[str, Any]]] = defaultdict(list)
     for j in current:
         hf = apply_hard_filters(j, cfg)
         if hf.verdict != "PASS" or hf.eligibility != "ELIGIBLE" or hf.relevance == "NO_MATCH" or not hf.title_match:
             removed["hard_filters"].append(j)
+            kind = "other"
+            if hf.eligibility == "ELIGIBLE" and hf.verdict != "PASS":
+                kind = "geo_fail"
+            # Seniority strictness gate (title bands)
+            if any("seniority gate" in (r or "").lower() for r in (hf.reasons or [])):
+                kind = "seniority_gate_strict_title_band"
+            if hf.relevance == "NO_MATCH":
+                kind = "relevance_no_match"
+            hard_breakdown[kind] += 1
+            if len(hard_samples[kind]) < 30:
+                hard_samples[kind].append(j)
         else:
             keep.append(j)
     stages["after_hard"] = keep
@@ -199,5 +212,7 @@ def build_funnel(
         "drops": drops,
         "canada_eligible_removed_by_gate_company": {g: dict(Counter(comp).items()) for g, comp in ce_removed_by_gate_company.items()},
         "samples_per_gate": {g: _sample(v, 30) for g, v in removed.items()},
+        "hard_filters_breakdown": dict(hard_breakdown),
+        "hard_filters_samples": {k: v for k, v in hard_samples.items()},
     }
 

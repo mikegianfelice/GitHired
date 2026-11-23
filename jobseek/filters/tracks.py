@@ -29,12 +29,14 @@ DEFAULT_TRACK_ALIASES: dict[str, list[str]] = {
     "software_engineering": [
         "Software Engineer",
         "Software Developer",
+        "Developer",
         "Full Stack Engineer",
         "Full-Stack Engineer",
         "Backend Engineer",
         "Frontend Engineer",
         "Front-End Engineer",
         "Fullstack Engineer",
+        "Software Architect",
     ],
     "ai_engineering": [
         "AI Engineer",
@@ -60,6 +62,7 @@ DEFAULT_TRACK_ALIASES: dict[str, list[str]] = {
         "Cloud Data Engineer",
         "Data Platform Engineer",
         "Data Engineering",
+        "Data Developer",
         "Risk Data Engineering",
         "ETL Engineer",
         "ELT Engineer",

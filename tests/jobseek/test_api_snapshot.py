@@ -84,12 +84,13 @@ class ApiSnapshotTests(unittest.TestCase):
                 url=f"https://boards.greenhouse.io/co{i}/jobs/{1000 + i}",
                 apply_url=f"https://boards.greenhouse.io/co{i}/jobs/{1000 + i}",
                 ats_job_id=str(1000 + i),
-                description=("Build with Python TypeScript. " * 80),
+                description=("Build with Python TypeScript. " * 200),
             )
             for i in range(40)
         ]
         full = build_api_snapshot(jobs, limit=100, max_bytes=MAX_SNAPSHOT_BYTES)
         self.assertEqual(full["count"], 40)
+        # Force a very small budget so slimming + trimming must apply
         tiny = build_api_snapshot(jobs, limit=100, max_bytes=25_000)
         self.assertLess(tiny["count"], 40)
         self.assertGreater(tiny["count"], 0)

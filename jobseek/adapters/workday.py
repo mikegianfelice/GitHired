@@ -377,6 +377,7 @@ class WorkdayAdapter:
         force_refresh: bool = False,
         complete: bool = False,
         description_cache: dict[str, dict[str, Any]] | None = None,
+        search_text: str | None = None,
     ) -> None:
         # Shared keep-alive client; slightly tighter spacing is safe with the
         # global throttle lock and bounded detail concurrency below.
@@ -389,6 +390,8 @@ class WorkdayAdapter:
         self.description_ttl_s = float(description_ttl_s)
         self.force_refresh = bool(force_refresh)
         self._description_cache = dict(description_cache or {})
+        # Optional query hint to reduce page counts on large tenants (e.g., banks)
+        self.search_text = (search_text or "").strip()
         # complete=True disables wall clocks (full list + hydration).
         if complete:
             self.list_budget_s: float | None = None
@@ -469,6 +472,15 @@ class WorkdayAdapter:
         t0 = time.monotonic()
 
         try:
+            # Heuristic: large Canadian banks/insurers — prefer serial pagination,
+            # higher list budget, and engineering searchText hint to reduce pages.
+            large_tenants = {"rbc", "td", "bmo", "manulife", "sunlife"}
+            if tenant.lower() in large_tenants:
+                self.list_page_concurrency = 1
+                if self.list_budget_s is None or self.list_budget_s < 1800:
+                    self.list_budget_s = 1800.0
+                if not self.search_text:
+                    self.search_text = "engineer developer data ml sre devops architect security"
             log.info(
                 "workday start company=%s host=%s site=%s list_budget_s=%s "
                 "detail_budget_s=%s ttl_s=%.0f force_refresh=%s cache_entries=%s",
@@ -796,7 +808,7 @@ class WorkdayAdapter:
             "appliedFacets": {},
             "limit": self.page_size,
             "offset": offset,
-            "searchText": "",
+            "searchText": self.search_text or "",
         }
         try:
             resp = self.client.post(list_url, json_body=payload)
@@ -898,7 +910,9 @@ class WorkdayAdapter:
             if total > 5000:
                 errors.append("workday list capped at 5000-job safety limit")
             workers = min(self.list_page_concurrency, len(offsets))
+            # Serial pagination with polite jitter/backoff
             if workers <= 1 or _over_budget():
+                import random, time as _time
                 for offset in offsets:
                     if _over_budget():
                         errors.append(
@@ -907,10 +921,22 @@ class WorkdayAdapter:
                         )
                         complete = False
                         break
-                    _off, st, batch, _tot, err = self._fetch_list_page(list_url, offset)
+                    # Jitter to stay polite
+                    _time.sleep(random.uniform(1.5, 3.0))
+                    # Retry on 429 with capped exponential backoff up to ~60s
+                    retries = 0
+                    while True:
+                        _off, st, batch, _tot, err = self._fetch_list_page(list_url, offset)
+                        http_requests += 1
+                        pages += 1
+                        last_status = st if st is not None else last_status
+                        if st == 429 and retries < 5:
+                            delay = min(60, 5 * (2**retries))
+                            _time.sleep(delay)
+                            retries += 1
+                            continue
+                        break
                     http_requests += 1
-                    pages += 1
-                    last_status = st if st is not None else last_status
                     if err:
                         errors.append(f"workday list at offset {offset}: {err}")
                         complete = False

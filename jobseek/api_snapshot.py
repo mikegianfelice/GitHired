@@ -180,28 +180,54 @@ def _snapshot_payload(
     }
 
 
-def _trim_jobs_to_byte_budget(
+def _bytes(payload: dict[str, Any]) -> int:
+    return len(json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8"))
+
+
+def _strip_field_all(api_jobs: list[dict[str, Any]], field: str) -> None:
+    for j in api_jobs:
+        j.pop(field, None)
+
+
+def _fit_payload_with_slimming(
     api_jobs: list[dict[str, Any]],
     *,
     limit: int,
     generated_at: datetime,
     repo_url: str,
     max_bytes: int = MAX_SNAPSHOT_BYTES,
-) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """Drop trailing (lowest-ranked) jobs until compact JSON fits max_bytes."""
-    trimmed = list(api_jobs)
-    payload = _snapshot_payload(
-        trimmed, limit=limit, generated_at=generated_at, repo_url=repo_url
-    )
+) -> dict[str, Any]:
+    """Prefer slimming heavy fields before dropping jobs to fit byte budget.
+
+    Order:
+      1) Try full payload
+      2) Strip description_excerpt from all jobs
+      3) Strip technologies from all jobs
+      4) Finally drop trailing jobs until within budget
+    """
+    # Start with a copy to avoid mutating caller
+    trimmed = [dict(j) for j in api_jobs]
+    payload = _snapshot_payload(trimmed, limit=limit, generated_at=generated_at, repo_url=repo_url)
+    if _bytes(payload) <= max_bytes:
+        return payload
+    # 2) Strip excerpts (largest per-row blob)
+    _strip_field_all(trimmed, "description_excerpt")
+    payload = _snapshot_payload(trimmed, limit=limit, generated_at=generated_at, repo_url=repo_url)
+    if _bytes(payload) <= max_bytes:
+        return payload
+    # 3) Strip technologies (secondary cost; recomputable client-side)
+    for j in trimmed:
+        j["technologies"] = []
+    payload = _snapshot_payload(trimmed, limit=limit, generated_at=generated_at, repo_url=repo_url)
+    if _bytes(payload) <= max_bytes:
+        return payload
+    # 4) Trim job count (lowest-ranked last)
     while trimmed:
-        raw = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
-        if len(raw) <= max_bytes:
-            break
         trimmed.pop()
-        payload = _snapshot_payload(
-            trimmed, limit=limit, generated_at=generated_at, repo_url=repo_url
-        )
-    return trimmed, payload
+        payload = _snapshot_payload(trimmed, limit=limit, generated_at=generated_at, repo_url=repo_url)
+        if _bytes(payload) <= max_bytes:
+            break
+    return payload
 
 
 def build_api_snapshot(
@@ -226,14 +252,9 @@ def build_api_snapshot(
     by_id = _index_raw_jobs(raw_jobs)
     api_jobs = [build_api_job(j, by_id.get(j.id)) for j in selected]
     api_jobs = dedupe_api_jobs(api_jobs)
-    _, payload = _trim_jobs_to_byte_budget(
-        api_jobs,
-        limit=limit,
-        generated_at=generated_at,
-        repo_url=repo_url,
-        max_bytes=max_bytes,
+    return _fit_payload_with_slimming(
+        api_jobs, limit=limit, generated_at=generated_at, repo_url=repo_url, max_bytes=max_bytes
     )
-    return payload
 
 
 def _apply_url_key(job: dict[str, Any]) -> str:
