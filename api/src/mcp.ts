@@ -1,7 +1,7 @@
 import { datasetFreshness, loadSnapshot } from "./dataset";
 import { matchProfile } from "./match";
 import { checkRateLimit, clientIp } from "./rate-limit";
-import { compactJob, getJobById, searchJobs, SearchFilterValidationError } from "./search";
+import { compactJob, getJobById, searchJobs, SearchFilterValidationError, parseSearchFilters } from "./search";
 import type { Env, MatchProfileInput, SearchFilters } from "./types";
 import { acceptedResponse, json, optionsResponse } from "./rest";
 
@@ -129,52 +129,21 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
 
   if (name === "search_jobs") {
     try {
-      const filters: SearchFilters = {
-        q: typeof args.keywords === "string" ? args.keywords : undefined,
-        location: typeof args.location === "string" ? args.location : undefined,
-        // Province: accept full names or codes (upper/lower)
-        province:
-          typeof args.province === "string" && args.province.trim()
-            ? args.province.trim()
-            : undefined,
-        remote: typeof args.remote === "boolean" ? args.remote : undefined,
-        work_mode: (() => {
-          if (typeof args.work_mode !== "string") return undefined;
-          const mode = args.work_mode.trim().toLowerCase();
-          if (!mode) return undefined;
-          if (!["remote", "hybrid", "onsite"].includes(mode)) {
-            throw new Error(
-              `Unsupported work_mode '${args.work_mode}'. Allowed values: remote, hybrid, onsite.`,
-            );
-          }
-          return mode;
-        })(),
-        salary_min:
-          typeof args.minimum_salary === "number" && Number.isFinite(args.minimum_salary) && args.minimum_salary > 0
-            ? args.minimum_salary
-            : undefined,
-        seniority: typeof args.seniority === "string" ? args.seniority : undefined,
-        company: typeof args.company === "string" ? args.company : undefined,
-        sort: "relevance",
-        limit: typeof args.limit === "number" ? Math.min(25, Math.max(1, args.limit)) : 10,
-        cursor: typeof args.cursor === "string" ? args.cursor : undefined,
-      };
-      // Use REST parser to enforce normalization/validation semantics
-      // Simulate URLSearchParams parsing with the provided args for province/seniority validation.
+      // Normalize and validate exactly like REST by round-tripping through URLSearchParams.
       const params = new URLSearchParams();
-      if (filters.q) params.set("q", filters.q);
-      if (filters.location) params.set("location", filters.location);
-      if (filters.province) params.set("province", filters.province);
-      if (filters.remote != null) params.set("remote", String(filters.remote));
-      if (filters.work_mode) params.set("work_mode", filters.work_mode);
-      if (filters.salary_min != null) params.set("salary_min", String(filters.salary_min));
-      if (filters.seniority) params.set("seniority", filters.seniority);
-      if (filters.company) params.set("company", filters.company);
-      if (filters.limit) params.set("limit", String(filters.limit));
-      if (filters.cursor) params.set("cursor", String(filters.cursor));
-      // Import from search.ts at runtime via dynamic import to avoid circulars? We already imported helpers.
-      // Reuse searchJobs directly; construct normalized filters by calling parse-like code:
-      // Here we rely on server-side parse in REST path; for MCP we mirror behavior by constructing SearchFilters above and letting searchJobs consume them.
+      if (typeof args.keywords === "string" && args.keywords.trim()) params.set("q", args.keywords.trim());
+      if (typeof args.location === "string" && args.location.trim()) params.set("location", args.location.trim());
+      if (typeof args.province === "string" && args.province.trim()) params.set("province", args.province.trim());
+      if (typeof args.remote === "boolean") params.set("remote", String(args.remote));
+      if (typeof args.work_mode === "string" && args.work_mode.trim()) params.set("work_mode", args.work_mode.trim());
+      if (typeof args.minimum_salary === "number" && Number.isFinite(args.minimum_salary) && args.minimum_salary > 0) {
+        params.set("salary_min", String(args.minimum_salary));
+      }
+      if (typeof args.seniority === "string" && args.seniority.trim()) params.set("seniority", args.seniority.trim());
+      if (typeof args.company === "string" && args.company.trim()) params.set("company", args.company.trim());
+      if (typeof args.limit === "number") params.set("limit", String(Math.min(25, Math.max(1, Math.floor(args.limit as number)))));
+      if (typeof args.cursor === "string" && args.cursor.trim()) params.set("cursor", args.cursor.trim());
+      const filters = parseSearchFilters(params);
       const result = searchJobs(snapshot, filters);
       return textContent({
         total: result.total,
