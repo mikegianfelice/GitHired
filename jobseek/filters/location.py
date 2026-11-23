@@ -1217,9 +1217,14 @@ def _classify_canada_level(
                 ],
                 evidence,
             )
+        # Strict policy: worldwide remote alone is not explicit Canada evidence.
         evidence.append(desc_wfa.group(0))
-        reasons.append("genuine worldwide / work-from-anywhere remote")
-        return "ELIGIBLE", "PASS", reasons, evidence
+        return (
+            "UNCERTAIN",
+            "FLAG",
+            ["worldwide remote without explicit Canada evidence"],
+            evidence,
+        )
 
     # Offices worldwide alone is NOT eligibility.
     if offices_ww and not desc_wfa:

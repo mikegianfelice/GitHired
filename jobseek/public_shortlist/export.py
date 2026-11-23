@@ -228,6 +228,11 @@ def _remote_scope(location: str, arrangement: str, provinces: list[str]) -> str:
     """canada | province | local | unspecified — never overclaim nationwide remote."""
     loc = (location or "").casefold()
     americas = bool(re.search(r"\b(?:americas|namer|north\s+america)\b", loc) and re.search(r"\bremote\b", loc))
+    worldwide = bool(
+        re.search(r"\bglobal(?:ly)?\b", loc)
+        or re.search(r"\bworldwide\b", loc)
+        or re.search(r"\banywhere\b", loc)
+    )
     nationwide = bool(
         re.search(
             r"\banywhere in canada\b|\bacross canada\b|\bcanada[-\s]?wide\b|"
@@ -249,6 +254,8 @@ def _remote_scope(location: str, arrangement: str, provinces: list[str]) -> str:
     if arrangement == "remote":
         if americas:
             return "americas"
+        if worldwide:
+            return "global"
         if province_remote:
             return "province"
         if nationwide or re.search(r"\bcanada\b", loc):

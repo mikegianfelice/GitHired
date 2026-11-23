@@ -180,7 +180,7 @@ class ForeignGeoIneligibleTests(unittest.TestCase):
         self.assertEqual(elig, "ELIGIBLE")
         self.assertEqual(verdict, "PASS")
 
-    def test_genuine_worldwide_remote_without_foreign_office_eligible(self):
+    def test_genuine_worldwide_remote_without_foreign_office_uncertain(self):
         elig, verdict, _, _ = classify_canada_eligibility(
             {
                 "title": "Software Engineer",
@@ -189,8 +189,8 @@ class ForeignGeoIneligibleTests(unittest.TestCase):
             },
             SEARCH,
         )
-        self.assertEqual(elig, "ELIGIBLE")
-        self.assertEqual(verdict, "PASS")
+        self.assertEqual(elig, "UNCERTAIN")
+        self.assertEqual(verdict, "FLAG")
 
     def test_french_montreal_recognized(self):
         cfg = {
