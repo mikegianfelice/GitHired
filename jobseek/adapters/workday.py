@@ -170,7 +170,8 @@ def workday_apply_url(host: str, site: str, external_path: str) -> str | None:
     """Build the official guest apply URL from a verified list ``externalPath``."""
     path = (external_path or "").strip()
     if not path.startswith("/"):
-        return None
+        # Some CXS payloads omit the leading slash; normalize conservatively.
+        path = "/" + path
     host = host.strip().lower().removeprefix("https://").removeprefix("http://")
     site = site.strip().strip("/")
     if not host or not site or "myworkdayjobs.com" not in host:
