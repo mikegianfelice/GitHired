@@ -6,7 +6,7 @@ import type { Env, MatchProfileInput, SearchFilters } from "./types";
 import { acceptedResponse, json, optionsResponse } from "./rest";
 
 const PROTOCOL_VERSION = "2024-11-05";
-const SERVER_INFO = { name: "githired", version: "1.0.1" };
+const SERVER_INFO = { name: "githired", version: "1.0.2" };
 
 /** Shared MCP tool hints required by directory reviewers (OpenAI ChatGPT/Codex). */
 const READ_ONLY_OPEN_WORLD = {
@@ -39,6 +39,19 @@ const TOOLS = [
         company: { type: "string" },
         limit: { type: "number", minimum: 1, maximum: 25 },
         cursor: { type: "string", description: "Opaque cursor from previous page" },
+      },
+    },
+  },
+  {
+    name: "list_companies",
+    description:
+      "List companies in the current dataset with their active job counts. Optional name filter performs a case-insensitive substring search.",
+    annotations: READ_ONLY_OPEN_WORLD,
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "Substring match on company name (case-insensitive)" },
+        limit: { type: "number", minimum: 1, maximum: 500 },
       },
     },
   },
@@ -171,6 +184,24 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
       return textContent({ error: "not_found", id });
     }
     return textContent({ job, dataset_id: snapshot.dataset_id, generated_at: snapshot.generated_at });
+  }
+
+  if (name === "list_companies") {
+    const needle = typeof args.name === "string" ? args.name.trim().toLowerCase() : "";
+    const limit =
+      typeof args.limit === "number" && Number.isFinite(args.limit) ? Math.min(500, Math.max(1, Math.floor(args.limit))) : 250;
+    let rows = snapshot.companies || [];
+    if (needle) {
+      rows = rows.filter((c) => c.name.toLowerCase().includes(needle));
+    }
+    const out = rows.slice(0, limit);
+    return textContent({
+      count: out.length,
+      total: rows.length,
+      companies: out,
+      dataset_id: snapshot.dataset_id,
+      generated_at: snapshot.generated_at,
+    });
   }
 
   if (name === "match_profile") {

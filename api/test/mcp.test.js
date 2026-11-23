@@ -29,7 +29,7 @@ test("MCP implements required JSON-RPC methods", () => {
 });
 
 test("MCP exposes documented tools", () => {
-  for (const name of ["search_jobs", "get_job", "match_profile", "get_market_stats"]) {
+  for (const name of ["search_jobs", "get_job", "match_profile", "get_market_stats", "list_companies"]) {
     assert.match(mcpSrc, new RegExp(`name:\\s*["']${name}["']`));
   }
 });
