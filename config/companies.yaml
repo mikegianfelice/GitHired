@@ -1170,3 +1170,32 @@ companies:
   board_token: zoominfo
   enabled: true
   notes: 'Validated 2026-10-29: greenhouse/zoominfo → 102 jobs'
+# Coverage additions (Greenhouse/Lever) across ON/QC/BC
+- name: BenchSci
+  domain: benchsci.com
+  careers_url: https://boards.greenhouse.io/benchsci
+  ats: greenhouse
+  board_token: benchsci
+  enabled: true
+  notes: 'Candidate: Greenhouse/benchsci (ON)'
+- name: GeoComply
+  domain: geocomply.com
+  careers_url: https://boards.greenhouse.io/geocomply
+  ats: greenhouse
+  board_token: geocomply
+  enabled: true
+  notes: 'Candidate: Greenhouse/geocomply (BC)'
+- name: Vidyard
+  domain: vidyard.com
+  careers_url: https://boards.greenhouse.io/vidyard
+  ats: greenhouse
+  board_token: vidyard
+  enabled: true
+  notes: 'Candidate: Greenhouse/vidyard (ON)'
+- name: ApplyBoard
+  domain: applyboard.com
+  careers_url: https://jobs.lever.co/applyboard
+  ats: lever
+  board_token: applyboard
+  enabled: true
+  notes: 'Candidate: Lever/applyboard (ON)'
