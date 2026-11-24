@@ -17,6 +17,8 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  # deploy-pages must list the github-pages artifact uploaded in this job
+  actions: read
 
 concurrency:
   group: public-shortlist-pages
