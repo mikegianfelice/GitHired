@@ -274,6 +274,8 @@ class PublicSiteStaticTests(unittest.TestCase):
             "resume.js",
             "jobs.json",
             ".nojekyll",
+            "icon.png",
+            "icon.svg",
         ):
             self.assertTrue((SITE / name).is_file(), name)
 

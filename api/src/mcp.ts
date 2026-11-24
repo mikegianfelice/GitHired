@@ -6,7 +6,7 @@ import type { Env, MatchProfileInput, SearchFilters } from "./types";
 import { acceptedResponse, json, optionsResponse } from "./rest";
 
 const PROTOCOL_VERSION = "2024-11-05";
-const SERVER_INFO = { name: "githired", version: "1.0.2" };
+const SERVER_INFO = { name: "githired", version: "1.0.3" };
 
 /** Shared MCP tool hints required by directory reviewers (OpenAI ChatGPT/Codex). */
 const READ_ONLY_OPEN_WORLD = {
@@ -26,54 +26,114 @@ const TOOLS = [
     inputSchema: {
       type: "object",
       properties: {
-        keywords: { type: "string", description: "Keyword query (title, company, skills)" },
-        location: { type: "string" },
-        province: { type: "string", description: "Canadian province (code or full name, e.g. ON or Ontario)" },
-        remote: { type: "boolean" },
-        work_mode: { type: "string", enum: ["remote", "hybrid", "onsite"] },
+        keywords: {
+          type: "string",
+          description:
+            "Free-text keyword query matched against title, company, location, track, seniority, and technologies (not description-only). Example: \"data engineer pyspark\".",
+        },
+        location: {
+          type: "string",
+          description:
+            "Substring filter on the job location label (and province when present). Example: \"Toronto\" or \"Remote\".",
+        },
+        province: {
+          type: "string",
+          description:
+            "Canadian province filter. Accepts two-letter codes (ON, BC, QC, …) or full names (Ontario), case-insensitive. Unrecognized values return a validation error.",
+        },
+        remote: {
+          type: "boolean",
+          description:
+            "When true, keep remote-friendly listings; when false, exclude remote work_arrangement. Omit for no remote filter.",
+        },
+        work_mode: {
+          type: "string",
+          enum: ["remote", "hybrid", "onsite"],
+          description:
+            "Exact work arrangement filter. Allowed: remote | hybrid | onsite. Omit for any arrangement.",
+        },
         remote_scope: {
           type: "string",
           enum: ["canada", "province", "americas", "global", "local", "unspecified"],
           description:
-            "Exact remote_scope match. global = explicit worldwide/anywhere remote (no invented Canadian province).",
+            "Exact remote_scope match. Allowed: canada | province | americas | global | local | unspecified. global = explicit worldwide/anywhere remote (null province).",
         },
         exclude_global_remote: {
           type: "boolean",
-          description: "When true, drop remote_scope=global jobs from results.",
+          description:
+            "When true, drop remote_scope=global jobs. Default when omitted: include global (ranked below Canada/province).",
         },
-        salary_disclosed: { type: "boolean", description: "true: only jobs with advertised salary; false: only jobs without; omit for either" },
+        salary_disclosed: {
+          type: "boolean",
+          description:
+            "true: only jobs with an employer-advertised annual salary; false: only jobs without; omit for either.",
+        },
         minimum_salary: {
           type: "number",
-          description: "Minimum advertised annual base in CAD (employer-advertised only)",
+          description:
+            "Minimum advertised annual base pay in CAD (employer-advertised only; USD converted with the dataset FX rate). Non-positive values are ignored. Example: 150000.",
         },
-        seniority: { type: "string" },
-        company: { type: "string" },
-        limit: { type: "number", minimum: 1, maximum: 25 },
-        cursor: { type: "string", description: "Opaque cursor from previous page" },
+        seniority: {
+          type: "string",
+          description:
+            "Seniority band filter. Allowed: intern, junior, mid, senior, staff, principal, lead (aliases sr/jr accepted). Case-insensitive.",
+        },
+        company: {
+          type: "string",
+          description:
+            "Case-insensitive substring match on company name. Example: \"Shopify\".",
+        },
+        limit: {
+          type: "number",
+          minimum: 1,
+          maximum: 25,
+          description:
+            "Page size. Integer from 1 to 25 inclusive. Default: 20 (MCP caps at 25).",
+        },
+        cursor: {
+          type: "string",
+          description:
+            "Opaque pagination cursor from a previous response's next_cursor. Omit on the first page.",
+        },
       },
     },
   },
   {
     name: "list_companies",
     description:
-      "List companies in the current dataset with their active job counts. Optional name filter performs a case-insensitive substring search.",
+      "List companies in the current dataset with their active job counts. Optional name filter performs a case-insensitive substring search. Useful for discovering which employers GitHired currently tracks.",
     annotations: READ_ONLY_OPEN_WORLD,
     inputSchema: {
       type: "object",
       properties: {
-        name: { type: "string", description: "Substring match on company name (case-insensitive)" },
-        limit: { type: "number", minimum: 1, maximum: 500 },
+        name: {
+          type: "string",
+          description:
+            "Optional case-insensitive substring match on company name. Example: \"cohere\". Omit to list all companies (up to limit).",
+        },
+        limit: {
+          type: "number",
+          minimum: 1,
+          maximum: 500,
+          description:
+            "Maximum companies to return. Integer from 1 to 500. Default: 250.",
+        },
       },
     },
   },
   {
     name: "get_job",
-    description: "Retrieve detailed information for a GitHired job by stable id.",
+    description:
+      "Retrieve detailed information for one GitHired job by its stable id, including description excerpt when present. Use search_jobs or match_profile first to obtain ids.",
     annotations: READ_ONLY_OPEN_WORLD,
     inputSchema: {
       type: "object",
       properties: {
-        id: { type: "string", description: "GitHired job id" },
+        id: {
+          type: "string",
+          description:
+            "Stable GitHired job id from search_jobs / match_profile (hex string). Required. Example: \"a372d357d8537eef\".",
+        },
       },
       required: ["id"],
     },
@@ -86,54 +146,103 @@ const TOOLS = [
     inputSchema: {
       type: "object",
       properties: {
-        skills: { type: "array", items: { type: "string" } },
-        years_experience: { type: "number" },
+        skills: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Skill keywords to confirm against listing tags/technologies (e.g. [\"Python\", \"Kubernetes\"]). Unconfirmed skills are noted as gaps, not auto-rejections.",
+        },
+        years_experience: {
+          type: "number",
+          description:
+            "Candidate years of experience (non-negative number). Used with seniority to score fit against years required in the listing when present. Example: 5.",
+        },
         preferred_roles: {
           type: "array",
           items: { type: "string" },
-          description: "Preferred titles; matched by role family tokens (e.g. Senior Data Engineer also matches Data Platform Engineer).",
+          description:
+            "Preferred job titles; matched by role-family tokens (e.g. \"Senior Data Engineer\" also matches \"Data Platform Engineer\").",
         },
-        preferred_locations: { type: "array", items: { type: "string" } },
+        preferred_locations: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Preferred cities or provinces (codes or names). Remote jobs still match when remote is allowed. Examples: [\"Toronto\", \"ON\"].",
+        },
         remote_preference: {
           type: "boolean",
-          description: "Legacy: true → remote-only hard filter when work_arrangements omitted.",
+          description:
+            "Legacy arrangement hint. true → remote-only hard filter when work_arrangements is omitted. Ignored when work_arrangements is provided.",
         },
         work_arrangements: {
           type: "array",
           items: { type: "string", enum: ["remote", "hybrid", "onsite"] },
-          description: "Hard allow-list of work arrangements. Overrides remote_preference when provided.",
+          description:
+            "Hard allow-list of work arrangements. Values: remote | hybrid | onsite. Overrides remote_preference when provided. Example: [\"remote\", \"hybrid\"].",
         },
-        minimum_salary: { type: "number", description: "CAD-normalized annual base floor." },
+        minimum_salary: {
+          type: "number",
+          description:
+            "CAD-normalized annual base pay floor (employer-advertised only). Compared using salary_mode. Example: 140000.",
+        },
         salary_mode: {
           type: "string",
           enum: ["strict", "flexible"],
-          description: "strict: advertised min must meet floor. flexible (default): advertised max may meet floor.",
+          description:
+            "Salary floor semantics. strict: advertised min must meet floor. flexible (default): advertised max may meet floor.",
         },
-        seniority: { type: "string" },
-        limit: { type: "number" },
+        seniority: {
+          type: "string",
+          description:
+            "Preferred seniority band for scoring (intern, junior, mid, senior, staff, principal, lead; sr/jr aliases). Influences match_score; not a hard exclude alone.",
+        },
+        limit: {
+          type: "number",
+          description:
+            "Maximum matches to return. Integer from 1 to 25. Default: 10.",
+        },
       },
     },
   },
   {
     name: "get_market_stats",
     description:
-      "Aggregate statistics from GitHired's tracked Canadian tech employer dataset — not a full labour-market census. Includes by_remote_scope so worldwide-remote (global) jobs are counted under remote_scope=global, not as Canadian provinces.",
+      "Aggregate statistics from GitHired's tracked Canadian tech employer dataset — not a full labour-market census. Includes by_remote_scope so worldwide-remote (global) jobs are counted under remote_scope=global, not as Canadian provinces. Optional filters narrow the aggregate before counting.",
     annotations: READ_ONLY_OPEN_WORLD,
     inputSchema: {
       type: "object",
       properties: {
-        role: { type: "string" },
-        province: { type: "string" },
-        seniority: { type: "string" },
-        work_arrangement: { type: "string", enum: ["remote", "hybrid", "onsite"] },
+        role: {
+          type: "string",
+          description:
+            "Optional substring filter on title or track (e.g. \"data engineer\" or \"platform\"). Case-insensitive.",
+        },
+        province: {
+          type: "string",
+          description:
+            "Optional Canadian province code filter (e.g. ON, BC). Compared to job.province exactly (case-insensitive).",
+        },
+        seniority: {
+          type: "string",
+          description:
+            "Optional exact seniority band filter (intern, junior, mid, senior, staff, principal, lead). Case-insensitive.",
+        },
+        work_arrangement: {
+          type: "string",
+          enum: ["remote", "hybrid", "onsite"],
+          description:
+            "Optional exact work arrangement filter. Allowed: remote | hybrid | onsite.",
+        },
         remote_scope: {
           type: "string",
           enum: ["canada", "province", "americas", "global", "local", "unspecified"],
-          description: "Optional exact remote_scope filter before aggregating.",
+          description:
+            "Optional exact remote_scope filter before aggregating. Allowed: canada | province | americas | global | local | unspecified.",
         },
         exclude_global_remote: {
           type: "boolean",
-          description: "When true, exclude remote_scope=global jobs from aggregates.",
+          description:
+            "When true, exclude remote_scope=global jobs from aggregates. Default when omitted: include them under by_remote_scope.global.",
         },
       },
     },

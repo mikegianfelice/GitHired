@@ -34,6 +34,21 @@ test("MCP exposes documented tools", () => {
   }
 });
 
+test("MCP serverInfo is 1.0.3 and every inputSchema property has a description", () => {
+  assert.match(mcpSrc, /version:\s*["']1\.0\.3["']/);
+  // Strip block comments then collect property keys that lack a sibling description nearby.
+  const props = [...mcpSrc.matchAll(/^\s{8}([a-z_]+):\s*\{/gm)].map((m) => m[1]);
+  assert.ok(props.length >= 20, `expected many tool properties, got ${props.length}`);
+  for (const key of props) {
+    // Each property block should include description: "..."
+    const re = new RegExp(
+      `${key}:\\s*\\{[\\s\\S]*?description:\\s*["'\`][^"'\`]{8,}["'\`]`,
+      "m",
+    );
+    assert.match(mcpSrc, re, `missing/too-short description for property ${key}`);
+  }
+});
+
 test("MCP tools declare directory-required annotations", () => {
   assert.match(mcpSrc, /readOnlyHint:\s*true/);
   assert.match(mcpSrc, /destructiveHint:\s*false/);
