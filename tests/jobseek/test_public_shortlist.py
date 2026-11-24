@@ -302,13 +302,31 @@ class PublicSiteStaticTests(unittest.TestCase):
     def test_relative_assets_for_github_pages_base_path(self):
         html = (SITE / "index.html").read_text(encoding="utf-8")
         js = (SITE / "app.js").read_text(encoding="utf-8")
-        # Relative href/src so /GitHired/ project Pages resolves correctly
+        # Relative href/src plus <base href="/"> so /from/<channel> attribution
+        # paths still resolve CSS/JS/data at the site root.
         # Cache-busting query strings are allowed (styles.css?v=…).
         self.assertRegex(html, r'href="styles\.css(\?[^"]*)?"')
         self.assertRegex(html, r'src="app\.js(\?[^"]*)?"')
         self.assertNotIn('href="/styles.css"', html)
-        self.assertIn("new URL(name, window.location.href)", js)
+        self.assertIn('<base href="/"', html)
+        self.assertIn('rel="canonical" href="https://githired.ca/"', html)
+        self.assertIn("document.baseURI", js)
         self.assertIn("GitHiredPublic", js)
+
+    def test_from_attribution_rewrite_and_robots(self):
+        redirects = (SITE / "_redirects").read_text(encoding="utf-8")
+        self.assertIn("/from/*", redirects)
+        self.assertIn("/index.html", redirects)
+        self.assertIn("200", redirects)
+        robots = (SITE / "robots.txt").read_text(encoding="utf-8")
+        self.assertIn("Disallow: /from/", robots)
+        # /from/test must be a 200 attribution shell that loads the homepage in-place
+        from_test = SITE / "from" / "test" / "index.html"
+        self.assertTrue(from_test.is_file())
+        body = from_test.read_text(encoding="utf-8")
+        self.assertIn('rel="canonical" href="https://githired.ca/"', body)
+        self.assertIn('fetch("/index.html"', body)
+        self.assertIn('<base href="/"', body)
 
     def test_placeholder_jobs_json_safe(self):
         data = json.loads((SITE / "jobs.json").read_text(encoding="utf-8"))

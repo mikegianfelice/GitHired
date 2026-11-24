@@ -65,7 +65,10 @@
   let totalJobCount = 0;
 
   function assetUrl(name) {
-    return new URL(name, window.location.href).toString();
+    // Resolve against <base href="/"> (document.baseURI) so /from/<channel>
+    // attribution paths still load /jobs.json and other root assets.
+    const base = document.baseURI || `${window.location.origin}/`;
+    return new URL(name, base).toString();
   }
 
   function escapeHtml(text) {

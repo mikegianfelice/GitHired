@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Write thin site/from/<channel>/index.html shells for attribution paths.
+
+GitHub Pages does not honor Cloudflare Pages `_redirects`. Each channel directory
+returns HTTP 200 while keeping the /from/<slug> URL; the shell fetches /index.html
+and replaces the document so relative assets resolve via <base href="/">.
+
+Cloudflare Pages still applies site/_redirects (/from/* → /index.html 200) for any
+slug when the site is hosted there — no materialization required.
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SITE = ROOT / "site"
+CHANNELS = SITE / "from" / "channels.txt"
+
+SHELL = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="/" />
+  <link rel="canonical" href="https://githired.ca/" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="GitHired — browse verified Canadian engineering jobs or match them to your experience in-browser. Your résumé never leaves your device." />
+  <title>GitHired — Jobs Without the Noise</title>
+  <script>
+    (function () {
+      fetch("/index.html", { cache: "no-cache" })
+        .then(function (r) {
+          if (!r.ok) throw new Error("homepage fetch failed");
+          return r.text();
+        })
+        .then(function (html) {
+          document.open();
+          document.write(html);
+          document.close();
+        })
+        .catch(function () {
+          document.body.textContent = "Unable to load GitHired. Open https://githired.ca/";
+        });
+    })();
+  </script>
+</head>
+<body>
+  <p>Loading GitHired…</p>
+</body>
+</html>
+"""
+
+
+def main() -> int:
+    channels: list[str] = []
+    for line in CHANNELS.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        channels.append(line)
+    if "test" not in channels:
+        channels.insert(0, "test")
+    body = SHELL.encode("utf-8")
+    for slug in channels:
+        if "/" in slug or slug in (".", ".."):
+            print(f"invalid channel slug: {slug}", file=sys.stderr)
+            return 1
+        dest_dir = SITE / "from" / slug
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        (dest_dir / "index.html").write_bytes(body)
+        print(f"synced /from/{slug}/")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

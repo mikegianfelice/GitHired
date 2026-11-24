@@ -1,0 +1,16 @@
+# Attribution channel slugs materialized under site/from/<slug>/ for GitHub Pages.
+# Cloudflare Pages also applies site/_redirects (/from/* → /index.html 200) for any slug.
+test
+linkedin
+twitter
+x
+reddit
+email
+newsletter
+discord
+chatgpt
+claude
+cursor
+mcp
+hn
+youtube

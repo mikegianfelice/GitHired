@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="/" />
+  <link rel="canonical" href="https://githired.ca/" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="GitHired — browse verified Canadian engineering jobs or match them to your experience in-browser. Your résumé never leaves your device." />
+  <title>GitHired — Jobs Without the Noise</title>
+  <script>
+    (function () {
+      fetch("/index.html", { cache: "no-cache" })
+        .then(function (r) {
+          if (!r.ok) throw new Error("homepage fetch failed");
+          return r.text();
+        })
+        .then(function (html) {
+          document.open();
+          document.write(html);
+          document.close();
+        })
+        .catch(function () {
+          document.body.textContent = "Unable to load GitHired. Open https://githired.ca/";
+        });
+    })();
+  </script>
+</head>
+<body>
+  <p>Loading GitHired…</p>
+</body>
+</html>

@@ -9,6 +9,9 @@ Allow: /openapi.json
 Allow: /api-dataset.json
 Allow: /jobs.json
 
+# Attribution landing paths — same homepage content; do not index as duplicates
+Disallow: /from/
+
 # Prefer the canonical marketing domain
 Host: https://githired.ca
 

@@ -27,6 +27,7 @@ Terms: https://githired.ca/terms
 
 - Jobs are ingested from public employer ATS boards via scheduled discovery.
 - Geographic eligibility is deterministic and Canada-first. Confirmed ineligible roles (for example US-only remote) are excluded from the public API and website shortlist.
+- Worldwide-remote roles are included only when the posting is explicit (global / worldwide / anywhere / work-from-anywhere). They are labeled `remote_scope=global` with a null province and rank below Canada and province-scoped roles. Bare “Remote” without that wording stays out; US-only stays out. Callers can filter with `exclude_global_remote=true` or `remote_scope`.
 - Province-restricted remote/hybrid is labeled as province-scoped — never implied Canada-wide.
 - Salaries are employer-advertised annual base pay only (CAD/USD). GitHired never invents or estimates compensation.
 - Application links are original employer posting URLs.
@@ -56,7 +57,7 @@ Read-only. No authentication required for normal use. Rate limited (~120 req/min
 
 - Not a complete Canadian labour-market census — only tracked employer ATS boards.
 - Public snapshots are capped for Worker/Pages size; check `/api/v1/health` for live count.
-- UNCERTAIN geography is excluded from the public confirmed set (precision over recall).
+- Ambiguous geography without explicit Canada or worldwide-remote evidence stays out of the public confirmed set. Explicit worldwide-remote is included as `remote_scope=global` (see Data methodology).
 - Match scores are deterministic relevance, not hiring decisions or LLM judgments.
 - Publishing an MCP server does not guarantee automatic discovery by ChatGPT/Claude.
 - Directory packages live in-repo under `plugins/` (Cursor + OpenAI); registry metadata is `server.json` / `docs/mcp-registry-prep.md`.

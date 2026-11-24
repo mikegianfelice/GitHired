@@ -234,6 +234,7 @@ githired prepare <job_id>   # briefing only — never drafts or submits
 ## Canada market defaults
 
 - **Geographic eligibility:** ELIGIBLE · UNCERTAIN · INELIGIBLE (plus IRRELEVANT for off-track titles) — never invented from a global brand alone ([`jobseek/filters/hard.py`](jobseek/filters/hard.py))
+- **Public shortlist / API:** confirmed ELIGIBLE roles, plus optional explicit worldwide-remote (`include_global_remote`, default on) labeled `remote_scope=global` and ranked below Canada/province. Bare Remote and US-only stay out.
 - **Relevance** (MATCH / NO_MATCH / REVIEW) is reported separately from Canadian eligibility
 - **Salary policy:** `flexible` (default) · `strict` · `none` — preferred currency + explicit `usd_to_cad` (never 1:1); setup does not invent a USD floor
 - **Uncertain jobs:** `githired jobs --eligibility uncertain` shows root causes and whether enrichment can help

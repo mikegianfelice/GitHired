@@ -1,5 +1,14 @@
 # Public shortlist (GitHub Pages)
 
+## Attribution paths (`/from/<channel>`)
+
+Marketing links can use `https://githired.ca/from/<channel>` (for example `/from/test`). The homepage is served at that path as a **200** (not a redirect) so Cloudflare Web Analytics records `/from/...` as the landing page.
+
+- Cloudflare Pages: `site/_redirects` rewrites `/from/*` → `/index.html` with status 200 for **any** channel slug.
+- GitHub Pages origin: materialize channels listed in `site/from/channels.txt` via `python3 scripts/sync_from_attribution_pages.py` (thin `/from/<slug>/index.html` shells that fetch `/index.html` in-place). Add a slug to `channels.txt` and re-run to publish a new channel.
+- `site/index.html` sets `<base href="/">` and a canonical URL of `https://githired.ca/` so relative assets and SEO stay correct under `/from/...`.
+- `robots.txt` disallows `/from/` to avoid duplicate indexing.
+
 Zero-install browsing of **confirmed Canada-eligible engineering jobs**. No clone, Python install, account, or profile required to browse.
 
 ## Public browsing vs personalized CLI
@@ -41,7 +50,7 @@ Privacy copy on the site: *Your résumé stays in your browser. We don't upload 
 2. Bounded `githired enrich` hydrates promising descriptions.
 3. `scripts/export_public_shortlist.py` selects up to **400** jobs that:
    - match engineering tracks,
-   - are geographically **ELIGIBLE** (not UNCERTAIN),
+   - are geographically **ELIGIBLE**, or optional worldwide-remote (**UNCERTAIN** with explicit global/worldwide/anywhere wording) when `include_global_remote` is enabled — labeled `remote_scope=global`, ranked below Canada/province,
    - have a **direct, posting-specific** employer apply URL,
    - have a complete description (required to label **Verified**),
    - are not stale / removed.

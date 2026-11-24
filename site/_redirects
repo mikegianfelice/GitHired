@@ -1,0 +1,4 @@
+# Channel attribution: serve the homepage under /from/<channel> as a 200 rewrite
+# (not a redirect) so Cloudflare Web Analytics records /from/... as the landing path.
+# Cloudflare Pages splat syntax — any channel slug.
+/from/*  /index.html  200
