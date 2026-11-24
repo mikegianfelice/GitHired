@@ -2,3 +2,4 @@
 # (not a redirect) so Cloudflare Web Analytics records /from/... as the landing path.
 # Cloudflare Pages splat syntax — any channel slug.
 /from/*  /index.html  200
+# deploy-retry 135606
