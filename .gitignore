@@ -74,6 +74,8 @@ config/companies.local.yaml
 !site/assets/brand/**/*.webp
 !assets/brand/**/*.webp
 !assets/banner.webp
+# Stable public MCP / directory icon (site root)
+!site/icon.png
 
 # OS files
 .DS_Store
