@@ -108,15 +108,11 @@
     "model context protocol": "MCP",
   };
 
-  // Conservative exact-match related hits (broad ≠ specific).
+  // Profile specialization → broader job tag only (not PySpark→Python).
   const RELATED_SKILLS = {
     PostgreSQL: ["SQL"],
     MySQL: ["SQL"],
     "SQL Server": ["SQL"],
-    PySpark: ["Python", "Spark"],
-    "Node.js": ["JavaScript", "Node"],
-    Node: ["Node.js", "JavaScript"],
-    JavaScript: ["Node.js"],
   };
 
   const JOB_SKILL_EXPAND = {
@@ -235,11 +231,36 @@
     return "principal";
   }
 
+  const SHORT_ROLE_TOKENS = new Set(["ai", "ml", "bi", "qa", "ux", "ui", "sre", "de", "ae"]);
+  const GENERIC_ROLE_TOKENS = new Set([
+    "engineer",
+    "developer",
+    "software",
+    "programmer",
+    "specialist",
+    "consultant",
+    "manager",
+    "associate",
+    "member",
+  ]);
+  // Preferred-role specific tokens → job-title synonyms (title gate only).
+  const SPECIFIC_TOKEN_ALIASES = {
+    data: ["lakehouse", "etl"],
+    ai: ["llm", "ml"],
+    ml: ["ai", "llm"],
+    deployed: ["forward"],
+    forward: ["deployed"],
+  };
+
   function roleFamilyTokens(text) {
     return String(text || "")
       .toLowerCase()
       .split(/[^a-z0-9+#.]+/)
-      .filter((t) => t.length > 2 && !SENIORITY_STOP.has(t));
+      .filter((t) => {
+        if (SENIORITY_STOP.has(t)) return false;
+        if (t.length > 2) return true;
+        return SHORT_ROLE_TOKENS.has(t);
+      });
   }
 
   /**
@@ -649,7 +670,11 @@
         .split(/[^a-z0-9+#.]+/)
         .filter((t) => t.length > 1),
     ]);
-    return parts.has(token);
+    if (parts.has(token)) return true;
+    for (const alias of SPECIFIC_TOKEN_ALIASES[token] || []) {
+      if (parts.has(alias)) return true;
+    }
+    return false;
   }
 
   function titleRelevance(profile, job) {
@@ -661,14 +686,33 @@
     if (!titles.length) return 0.5; // neutral when unknown
     let best = 0;
     for (const nt of titles) {
+      const family = roleFamilyTokens(nt);
+      const specific = family.filter((tok) => !GENERIC_ROLE_TOKENS.has(tok));
       if (jobTitle.includes(nt) || nt.includes(jobTitle)) {
-        best = Math.max(best, 1);
+        if (!specific.length || specific.some((tok) => tokenInTitle(jobTitle, tok))) {
+          best = Math.max(best, 1);
+        }
         continue;
       }
       // Prefer role-family tokens (strip seniority) so "Senior Data Engineer"
       // aligns with "Lead Data Engineer" / "Senior Data Platform Engineer".
-      const family = roleFamilyTokens(nt);
+      // Specific tokens (data, ai, …) must hit — "AI Engineer" ≠ every engineer.
       if (family.length) {
+        if (specific.length) {
+          const specificHits = specific.filter((tok) => tokenInTitle(jobTitle, tok)).length;
+          if (specificHits === 0) {
+            best = Math.max(best, 0.35);
+            continue;
+          }
+          const generic = family.filter((tok) => GENERIC_ROLE_TOKENS.has(tok));
+          const specScore = specificHits / specific.length;
+          const genBonus = generic.length
+            ? 0.15 * (generic.filter((tok) => tokenInTitle(jobTitle, tok)).length / generic.length)
+            : 0.1;
+          const raw = specScore * 0.85 + genBonus;
+          best = Math.max(best, Math.min(1, Math.max(0.6, raw)));
+          continue;
+        }
         const hit = family.filter((tok) => tokenInTitle(jobTitle, tok)).length;
         best = Math.max(best, hit / family.length);
         continue;

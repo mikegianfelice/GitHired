@@ -2,6 +2,9 @@ import type { ApiSnapshot, Env } from "./types";
 
 let cached: { snapshot: ApiSnapshot; loadedAt: number; source: string } | null = null;
 
+/** Re-read R2/bundled snapshot periodically so deploys are not stuck on a cold isolate. */
+const CACHE_TTL_MS = 15 * 60 * 1000;
+
 /** Bundled fallback — replaced by export_api_snapshot.py before deploy. */
 import bundled from "../data/jobs.snapshot.json";
 
@@ -16,9 +19,10 @@ export async function loadSnapshot(env: Env, request?: Request): Promise<{
   source: string;
   cache_hit: boolean;
 }> {
-  if (cached) {
+  if (cached && Date.now() - cached.loadedAt < CACHE_TTL_MS) {
     return { snapshot: cached.snapshot, source: cached.source, cache_hit: true };
   }
+  cached = null;
 
   // Prefer R2 current pointer when bound (data updates without Worker redeploy).
   if (env.DATA) {

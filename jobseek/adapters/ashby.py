@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 from urllib.parse import quote
 
@@ -21,6 +22,14 @@ from jobseek.models import RawJob
 # compensationTiers[].components — never treat equity/bonus/commission as base.
 _ANNUAL_INTERVALS = frozenset({"1 YEAR"})
 _BASE_SALARY_TYPE = "Salary"
+_CAD_TOKEN = re.compile(r"\b(?:CAD|CDN)\b|C\$|CA\$", re.I)
+_USD_TOKEN = re.compile(r"\b(?:USD)\b|US\$", re.I)
+# "base salary … USD" / "USD … base" — structured USD corroborated in prose.
+_EXPLICIT_USD_BASE = re.compile(
+    r"(?:base\s+salary|salary\s+range|annual\s+base).{0,40}\bUSD\b|"
+    r"\bUSD\b.{0,40}(?:base\s+salary|salary\s+range|annual\s+base)",
+    re.I | re.S,
+)
 
 
 def _location(job: dict[str, Any]) -> str | None:
@@ -69,13 +78,43 @@ def _location_suggests_canada(location_raw: str | None) -> bool:
     return any(m in blob for m in markers)
 
 
-def _tier_label(tier: dict[str, Any]) -> str:
-    parts: list[str] = []
-    for key in ("title", "tierSummary", "name", "label"):
-        val = tier.get(key)
-        if val:
-            parts.append(str(val))
-    return " ".join(parts)
+def _location_suggests_usa(location_raw: str | None) -> bool:
+    """True when primary location is US-facing and not also Canada-labeled."""
+    blob = (location_raw or "").casefold()
+    if not blob.strip() or _location_suggests_canada(location_raw):
+        return False
+    markers = (
+        "united states",
+        "u.s.a",
+        "u.s.",
+        "usa",
+        "us -",
+        "us remote",
+        "remote - us",
+        "remote, us",
+    )
+    if any(m in blob for m in markers):
+        return True
+    # Bare "US - Remote" / leading "US "
+    return bool(re.match(r"^\s*us\b", blob))
+
+
+def _tier_matches_labels(tier: dict[str, Any], labels: tuple[str, ...]) -> bool:
+    label = _tier_label(tier).casefold()
+    return any(token in label for token in labels)
+
+
+_CANADA_TIER_LABELS = ("canada", "canadian")
+_USA_TIER_LABELS = (
+    "united states",
+    "u.s.",
+    "usa",
+    "us -",
+    "us,",
+    "california",
+    "new york",
+    "all other states",
+)
 
 
 def _canada_tier_components(compensation: dict[str, Any]) -> list[Any] | None:
@@ -87,13 +126,119 @@ def _canada_tier_components(compensation: dict[str, Any]) -> list[Any] | None:
     for tier in tiers:
         if not isinstance(tier, dict):
             continue
-        label = _tier_label(tier).casefold()
-        if "canada" not in label and "canadian" not in label:
+        if not _tier_matches_labels(tier, _CANADA_TIER_LABELS):
             continue
         comps = tier.get("components") or []
         if isinstance(comps, list):
             out.extend(comps)
     return out or None
+
+
+def _usa_tier_components(compensation: dict[str, Any]) -> list[Any] | None:
+    """Return salary components from USA-labeled tiers, if any."""
+    tiers = compensation.get("compensationTiers") or []
+    if not isinstance(tiers, list):
+        return None
+    out: list[Any] = []
+    for tier in tiers:
+        if not isinstance(tier, dict):
+            continue
+        if not _tier_matches_labels(tier, _USA_TIER_LABELS):
+            continue
+        comps = tier.get("components") or []
+        if isinstance(comps, list):
+            out.extend(comps)
+    return out or None
+
+
+def _compensation_prose(compensation: dict[str, Any] | None, description: str | None) -> str:
+    """Concatenate employer-authored compensation prose (not currencyCode fields)."""
+    parts: list[str] = []
+    if isinstance(compensation, dict):
+        for key in (
+            "compensationTiersSummary",
+            "scrapeableCompensationSalarySummary",
+        ):
+            val = compensation.get(key)
+            if val:
+                parts.append(str(val))
+        for tier in compensation.get("compensationTiers") or []:
+            if not isinstance(tier, dict):
+                continue
+            for key in ("tierSummary", "title", "additionalInformation", "summary"):
+                val = tier.get(key)
+                if val:
+                    parts.append(str(val))
+            for comp in tier.get("components") or []:
+                if isinstance(comp, dict) and comp.get("summary"):
+                    parts.append(str(comp["summary"]))
+    if description:
+        parts.append(strip_html(description))
+    return "\n".join(parts)
+
+
+def _reconcile_structured_currency(
+    smin: float | None,
+    smax: float | None,
+    scur: str | None,
+    *,
+    location_raw: str | None,
+    compensation: dict[str, Any] | None,
+    description: str | None,
+) -> tuple[float | None, float | None, str | None]:
+    """Align structured currencyCode with Canada/US location + employer prose.
+
+    Hopper (and similar) stamp ``currencyCode=USD`` on Canada Remote postings
+    while tier summaries explicitly quote CAD total/base bands. Montreal twins
+    publish the same numeric base band as CAD. Relabel only when CAD is
+    evidenced in prose and USD is not corroborated as the Canada base currency.
+
+    When prose CAD and explicit USD-base language both appear for a Canada
+    listing, refuse rather than guess.
+    """
+    if scur not in ("CAD", "USD") or smin is None and smax is None:
+        return smin, smax, scur
+
+    prose = _compensation_prose(compensation, description)
+    loc_ca = _location_suggests_canada(location_raw)
+
+    if loc_ca and scur == "USD":
+        prose_cad = bool(_CAD_TOKEN.search(prose))
+        prose_usd_base = bool(_EXPLICIT_USD_BASE.search(prose))
+        # Canada-named tiers that themselves declare USD (e.g. Cohere Senior
+        # Staff DE) are employer-explicit — keep USD.
+        canada_comps = (
+            _canada_tier_components(compensation) if isinstance(compensation, dict) else None
+        )
+        canada_tier_usd = False
+        if canada_comps:
+            for raw in canada_comps:
+                if not isinstance(raw, dict) or not _is_annual_base_salary(raw):
+                    continue
+                code = str(raw.get("currencyCode") or raw.get("currency") or "").strip().upper()
+                if code == "USD":
+                    canada_tier_usd = True
+                    break
+        if canada_tier_usd:
+            return smin, smax, "USD"
+        if prose_cad and prose_usd_base:
+            # Conflicting explicit signals — do not invent a currency.
+            return None, None, None
+        if prose_cad:
+            # Same numeric base band; currencyCode was wrong relative to prose
+            # (Hopper Canada Remote vs Montréal CAD twin).
+            return smin, smax, "CAD"
+
+    return smin, smax, scur
+
+
+def _tier_label(tier: dict[str, Any]) -> str:
+    parts: list[str] = []
+    for key in ("title", "tierSummary", "name", "label"):
+        val = tier.get(key)
+        if val:
+            parts.append(str(val))
+    return " ".join(parts)
 
 
 def _annotate_location_arrangement(item: dict[str, Any], loc: str | None) -> str | None:
@@ -219,6 +364,36 @@ def _salary_from_description(
     return apply_salary_info_to_raw(info=info)
 
 
+def _finalize_structured_salary(
+    parsed: tuple[str | None, float | None, float | None, str | None],
+    *,
+    location_raw: str | None,
+    compensation: dict[str, Any] | None,
+    description: str | None,
+) -> tuple[str | None, float | None, float | None, str | None] | None:
+    """Apply currency reconciliation; return None to try the next source."""
+    _, smin, smax, scur = parsed
+    if smin is None and smax is None:
+        return None
+    smin, smax, scur = _reconcile_structured_currency(
+        smin,
+        smax,
+        scur,
+        location_raw=location_raw,
+        compensation=compensation,
+        description=description,
+    )
+    if smin is None and smax is None:
+        # Ambiguous currency — fall through to description extraction.
+        return None
+    if smin is None:
+        smin = smax
+    if smax is None:
+        smax = smin
+    raw = f"{scur} {smin:g}-{smax:g}" if scur else None
+    return raw, smin, smax, scur
+
+
 def _salary(
     job: dict[str, Any],
     *,
@@ -230,47 +405,80 @@ def _salary(
     Prefer verified structured ``compensation`` components; fall back to
     description text when structure is absent or multi-currency (refused).
     """
+    loc = location_raw or _location(job)
+    desc = description or ""
     compensation = job.get("compensation")
     if isinstance(compensation, dict):
-        # Prefer Canada geo tier when the posting's primary location is Canada-
-        # facing. Ashby summaryComponents often envelope all geo bands
-        # (e.g. US low + Canada high), which misstates the Canada range.
-        if _location_suggests_canada(location_raw):
+        # Prefer geo-matched tiers. Ashby summaryComponents often envelopes
+        # all bands (US + Canada) or stamps the wrong currencyCode on a
+        # Canada Remote twin that publishes CAD in tier prose (Hopper).
+        if _location_suggests_canada(loc):
             canada_comps = _canada_tier_components(compensation)
             if canada_comps:
-                parsed = _salary_from_components(canada_comps)
-                if parsed[1] is not None or parsed[2] is not None:
-                    return parsed
+                finalized = _finalize_structured_salary(
+                    _salary_from_components(canada_comps),
+                    location_raw=loc,
+                    compensation=compensation,
+                    description=desc,
+                )
+                if finalized is not None:
+                    return finalized
+        elif _location_suggests_usa(loc):
+            usa_comps = _usa_tier_components(compensation)
+            if usa_comps:
+                finalized = _finalize_structured_salary(
+                    _salary_from_components(usa_comps),
+                    location_raw=loc,
+                    compensation=compensation,
+                    description=desc,
+                )
+                if finalized is not None:
+                    return finalized
 
         # Prefer Ashby's published summary (already envelope-aggregated).
         summary = compensation.get("summaryComponents")
         if isinstance(summary, list) and summary:
-            parsed = _salary_from_components(summary)
-            if parsed[1] is not None or parsed[2] is not None:
-                return parsed
+            finalized = _finalize_structured_salary(
+                _salary_from_components(summary),
+                location_raw=loc,
+                compensation=compensation,
+                description=desc,
+            )
+            if finalized is not None:
+                return finalized
 
         tier_comps = _collect_tier_components(compensation)
         if tier_comps:
-            parsed = _salary_from_components(tier_comps)
-            if parsed[1] is not None or parsed[2] is not None:
-                return parsed
+            finalized = _finalize_structured_salary(
+                _salary_from_components(tier_comps),
+                location_raw=loc,
+                compensation=compensation,
+                description=desc,
+            )
+            if finalized is not None:
+                return finalized
 
         # Legacy flat shape (minValue directly on compensation).
         if any(k in compensation for k in ("minValue", "maxValue", "min", "max")):
-            parsed = _salary_from_components(
-                [
-                    {
-                        "compensationType": _BASE_SALARY_TYPE,
-                        "interval": "1 YEAR",
-                        "currencyCode": compensation.get("currencyCode")
-                        or compensation.get("currency"),
-                        "minValue": compensation.get("minValue", compensation.get("min")),
-                        "maxValue": compensation.get("maxValue", compensation.get("max")),
-                    }
-                ]
+            finalized = _finalize_structured_salary(
+                _salary_from_components(
+                    [
+                        {
+                            "compensationType": _BASE_SALARY_TYPE,
+                            "interval": "1 YEAR",
+                            "currencyCode": compensation.get("currencyCode")
+                            or compensation.get("currency"),
+                            "minValue": compensation.get("minValue", compensation.get("min")),
+                            "maxValue": compensation.get("maxValue", compensation.get("max")),
+                        }
+                    ]
+                ),
+                location_raw=loc,
+                compensation=compensation,
+                description=desc,
             )
-            if parsed[1] is not None or parsed[2] is not None:
-                return parsed
+            if finalized is not None:
+                return finalized
 
     # Rare: tiers at job root (older fixtures / partner feeds).
     root_tiers = job.get("compensationTiers")
@@ -292,31 +500,38 @@ def _salary(
                             "maxValue": tier.get("maxValue", tier.get("max")),
                         }
                     )
-        parsed = _salary_from_components(comps)
-        if parsed[1] is not None or parsed[2] is not None:
-            return parsed
+        finalized = _finalize_structured_salary(
+            _salary_from_components(comps),
+            location_raw=loc,
+            compensation=compensation if isinstance(compensation, dict) else None,
+            description=desc,
+        )
+        if finalized is not None:
+            return finalized
 
     # Legacy: job.salary flat object
     salary = job.get("salary")
     if isinstance(salary, dict):
-        parsed = _salary_from_components(
-            [
-                {
-                    "compensationType": _BASE_SALARY_TYPE,
-                    "interval": "1 YEAR",
-                    "currencyCode": salary.get("currencyCode") or salary.get("currency"),
-                    "minValue": salary.get("minValue", salary.get("min")),
-                    "maxValue": salary.get("maxValue", salary.get("max")),
-                }
-            ]
+        finalized = _finalize_structured_salary(
+            _salary_from_components(
+                [
+                    {
+                        "compensationType": _BASE_SALARY_TYPE,
+                        "interval": "1 YEAR",
+                        "currencyCode": salary.get("currencyCode") or salary.get("currency"),
+                        "minValue": salary.get("minValue", salary.get("min")),
+                        "maxValue": salary.get("maxValue", salary.get("max")),
+                    }
+                ]
+            ),
+            location_raw=loc,
+            compensation=compensation if isinstance(compensation, dict) else None,
+            description=desc,
         )
-        if parsed[1] is not None or parsed[2] is not None:
-            return parsed
+        if finalized is not None:
+            return finalized
 
-    return _salary_from_description(
-        description or "",
-        location_raw=location_raw or _location(job),
-    )
+    return _salary_from_description(desc, location_raw=loc)
 
 
 class AshbyAdapter:

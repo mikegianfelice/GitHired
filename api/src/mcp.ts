@@ -1,8 +1,15 @@
 import { datasetFreshness, loadSnapshot } from "./dataset";
 import { matchProfile } from "./match";
 import { checkRateLimit, clientIp } from "./rate-limit";
-import { compactJob, getJobById, searchJobs, SearchFilterValidationError, parseSearchFilters } from "./search";
-import type { Env, MatchProfileInput, SearchFilters } from "./types";
+import {
+  compactJob,
+  getJobById,
+  searchJobs,
+  SearchFilterValidationError,
+  parseSearchFilters,
+  withLiveDiscoveredToday,
+} from "./search";
+import type { Env, MatchProfileInput } from "./types";
 import { acceptedResponse, json, optionsResponse } from "./rest";
 
 const PROTOCOL_VERSION = "2024-11-05";
@@ -299,7 +306,9 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
         dataset_id: result.dataset_id,
         generated_at: result.generated_at,
         dataset_fresh: freshness.fresh,
-        jobs: result.jobs.map(compactJob),
+        dataset_age_hours: freshness.age_hours,
+        stale_after_hours: freshness.stale_after_hours,
+        jobs: result.jobs.map((j) => compactJob(withLiveDiscoveredToday(j))),
         applied_filters: result.applied_filters,
         next_cursor: result.next_cursor,
         salary_note: "Filters use employer-advertised annual base only.",
@@ -319,7 +328,14 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
     if (!job) {
       return textContent({ error: "not_found", id });
     }
-    return textContent({ job, dataset_id: snapshot.dataset_id, generated_at: snapshot.generated_at });
+    return textContent({
+      job: withLiveDiscoveredToday(job),
+      dataset_id: snapshot.dataset_id,
+      generated_at: snapshot.generated_at,
+      dataset_fresh: freshness.fresh,
+      dataset_age_hours: freshness.age_hours,
+      stale_after_hours: freshness.stale_after_hours,
+    });
   }
 
   if (name === "list_companies") {
@@ -343,7 +359,12 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
   if (name === "match_profile") {
     const input = args as MatchProfileInput;
     const result = matchProfile(snapshot, input);
-    return textContent({ ...result, dataset_fresh: freshness.fresh });
+    return textContent({
+      ...result,
+      dataset_fresh: freshness.fresh,
+      dataset_age_hours: freshness.age_hours,
+      stale_after_hours: freshness.stale_after_hours,
+    });
   }
 
   if (name === "get_market_stats") {

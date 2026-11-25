@@ -359,25 +359,39 @@ export function getJobById(snapshot: ApiSnapshot, id: string): ApiJob | null {
   return job || null;
 }
 
+/** Recompute discovered_today from first_seen vs UTC today (export flag goes stale). */
+export function withLiveDiscoveredToday(job: ApiJob, now: Date = new Date()): ApiJob {
+  const raw = job.first_seen;
+  if (!raw) return { ...job, discovered_today: false };
+  const dt = new Date(`${raw}T00:00:00.000Z`);
+  if (!Number.isFinite(dt.getTime())) return { ...job, discovered_today: false };
+  const today = now.toISOString().slice(0, 10);
+  const seen = dt.toISOString().slice(0, 10);
+  return { ...job, discovered_today: seen === today };
+}
+
 export function compactJob(job: ApiJob): Record<string, unknown> {
+  const live = withLiveDiscoveredToday(job);
   return {
-    id: job.id,
-    title: job.title,
-    company: job.company,
-    location: job.location,
-    province: job.province,
-    work_arrangement: job.work_arrangement,
-    remote_scope: job.remote_scope,
-    seniority: job.seniority,
-    track: job.track,
-    salary_min: job.salary_min,
-    salary_max: job.salary_max,
-    salary_currency: job.salary_currency,
-    salary_available: job.salary_available,
-    salary_max_cad: job.salary_max_cad,
-    apply_url: job.apply_url,
-    technologies: job.technologies,
-    last_verified: job.last_verified,
-    source: job.source,
+    id: live.id,
+    title: live.title,
+    company: live.company,
+    location: live.location,
+    province: live.province,
+    work_arrangement: live.work_arrangement,
+    remote_scope: live.remote_scope,
+    seniority: live.seniority,
+    track: live.track,
+    salary_min: live.salary_min,
+    salary_max: live.salary_max,
+    salary_currency: live.salary_currency,
+    salary_available: live.salary_available,
+    salary_max_cad: live.salary_max_cad,
+    apply_url: live.apply_url,
+    technologies: live.technologies,
+    last_verified: live.last_verified,
+    first_seen: live.first_seen,
+    discovered_today: live.discovered_today,
+    source: live.source,
   };
 }

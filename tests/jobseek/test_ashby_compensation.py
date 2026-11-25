@@ -323,6 +323,188 @@ class AshbySalaryParseTests(unittest.TestCase):
         _, amin, amax, cur = _salary(job, location_raw="San Francisco")
         self.assertEqual((amin, amax, cur), (275000.0, 450000.0, "USD"))
 
+    def test_hopper_canada_remote_relabels_usd_stamp_to_cad_from_prose(self):
+        """Hopper Canada Remote stamps currencyCode=USD while tier prose says CAD.
+
+        Montréal twin publishes the same 360–425k base band as CAD. Keep the
+        Salary component amounts (base, not total-comp 400–520) but fix currency.
+        """
+        tier_summary = (
+            "The annual total compensation for this position ranges from "
+            "$400,000 to $520,000 CAD. Total compensation will include base "
+            "salary and equity (options). Base salary will be determined by "
+            "candidates' relevant qualifications. $360K – $425K • Offers Equity"
+        )
+        job = {
+            "location": "Canada - Remote",
+            "compensation": {
+                "compensationTiersSummary": "$360K – $425K • Offers Equity",
+                "scrapeableCompensationSalarySummary": "$360K - $425K",
+                "compensationTiers": [
+                    {
+                        "tierSummary": tier_summary,
+                        "components": [
+                            {
+                                "compensationType": "Salary",
+                                "interval": "1 YEAR",
+                                "currencyCode": "USD",
+                                "minValue": 360000,
+                                "maxValue": 425000,
+                                "summary": tier_summary,
+                            },
+                            {
+                                "compensationType": "EquityPercentage",
+                                "interval": "NONE",
+                                "minValue": None,
+                                "maxValue": None,
+                            },
+                        ],
+                    }
+                ],
+                "summaryComponents": [
+                    {
+                        "compensationType": "Salary",
+                        "interval": "1 YEAR",
+                        "currencyCode": "USD",
+                        "minValue": 360000,
+                        "maxValue": 425000,
+                    }
+                ],
+            },
+        }
+        _, amin, amax, cur = _salary(job, location_raw="Canada - Remote")
+        self.assertEqual(cur, "CAD")
+        self.assertEqual(amin, 360000.0)
+        self.assertEqual(amax, 425000.0)
+
+    def test_hopper_montreal_keeps_cad(self):
+        job = {
+            "location": "Montréal - Remote",
+            "compensation": {
+                "summaryComponents": [
+                    {
+                        "compensationType": "Salary",
+                        "interval": "1 YEAR",
+                        "currencyCode": "CAD",
+                        "minValue": 360000,
+                        "maxValue": 425000,
+                    }
+                ],
+                "compensationTiers": [
+                    {
+                        "tierSummary": (
+                            "The annual total compensation for this position "
+                            "ranges from $400,000 to $520,000 CAD. $360K – $425K"
+                        ),
+                        "components": [
+                            {
+                                "compensationType": "Salary",
+                                "interval": "1 YEAR",
+                                "currencyCode": "CAD",
+                                "minValue": 360000,
+                                "maxValue": 425000,
+                            }
+                        ],
+                    }
+                ],
+            },
+        }
+        _, amin, amax, cur = _salary(job, location_raw="Montréal - Remote")
+        self.assertEqual((amin, amax, cur), (360000.0, 425000.0, "CAD"))
+
+    def test_hopper_us_remote_keeps_usd(self):
+        job = {
+            "location": "US - Remote",
+            "compensation": {
+                "summaryComponents": [
+                    {
+                        "compensationType": "Salary",
+                        "interval": "1 YEAR",
+                        "currencyCode": "USD",
+                        "minValue": 360000,
+                        "maxValue": 425000,
+                    }
+                ],
+                "compensationTiers": [
+                    {
+                        "tierSummary": (
+                            "The annual total compensation for this position "
+                            "ranges from $400,000 to $520,000 USD. $360K – $425K"
+                        ),
+                        "components": [
+                            {
+                                "compensationType": "Salary",
+                                "interval": "1 YEAR",
+                                "currencyCode": "USD",
+                                "minValue": 360000,
+                                "maxValue": 425000,
+                            }
+                        ],
+                    }
+                ],
+            },
+        }
+        _, amin, amax, cur = _salary(job, location_raw="US - Remote")
+        self.assertEqual((amin, amax, cur), (360000.0, 425000.0, "USD"))
+
+    def test_us_location_prefers_usa_tiers_over_cad_summary(self):
+        """Cohere-shaped: US posting must not inherit Canada CAD summary envelope."""
+        job = {
+            "compensation": {
+                "summaryComponents": [
+                    {
+                        "compensationType": "Salary",
+                        "interval": "1 YEAR",
+                        "currencyCode": "CAD",
+                        "minValue": 175000,
+                        "maxValue": 385000,
+                    }
+                ],
+                "compensationTiers": [
+                    {
+                        "title": "Canada",
+                        "components": [
+                            {
+                                "compensationType": "Salary",
+                                "interval": "1 YEAR",
+                                "currencyCode": "CAD",
+                                "minValue": 175000,
+                                "maxValue": 385000,
+                            }
+                        ],
+                    },
+                    {
+                        "title": "USA - California, New York and Washington",
+                        "components": [
+                            {
+                                "compensationType": "Salary",
+                                "interval": "1 YEAR",
+                                "currencyCode": "USD",
+                                "minValue": 140000,
+                                "maxValue": 325000,
+                            }
+                        ],
+                    },
+                    {
+                        "title": "USA - All Other States",
+                        "components": [
+                            {
+                                "compensationType": "Salary",
+                                "interval": "1 YEAR",
+                                "currencyCode": "USD",
+                                "minValue": 120000,
+                                "maxValue": 275000,
+                            }
+                        ],
+                    },
+                ],
+            }
+        }
+        _, amin, amax, cur = _salary(job, location_raw="United States")
+        self.assertEqual(cur, "USD")
+        self.assertEqual(amin, 120000.0)
+        self.assertEqual(amax, 325000.0)
+
 
 class AshbyAdapterCompensationTests(unittest.TestCase):
     def test_requests_include_compensation_flag(self):

@@ -11,17 +11,17 @@ function norm(s: string): string {
   return s.trim().toLowerCase();
 }
 
-/** Conservative exact-match related hits (broad ≠ specific). */
+/**
+ * Profile specialization → broader job tag (confirmed only when job lists the broader label).
+ * Do NOT map PySpark→Python or Node→JavaScript — that invents confirmed skill overlap.
+ */
 const RELATED: Record<string, string[]> = {
   postgresql: ["sql"],
   mysql: ["sql"],
   "sql server": ["sql"],
-  pyspark: ["python", "spark"],
-  "node.js": ["javascript", "node"],
-  node: ["node.js", "javascript"],
-  javascript: ["node.js"],
 };
 
+/** Expand job-side tags so profile Python matches a job tagged PySpark. */
 const JOB_EXPAND: Record<string, string[]> = {
   pyspark: ["python", "spark"],
   "sql server": ["sql"],
@@ -77,13 +77,62 @@ const SENIORITY_STOP = new Set([
   "iv",
 ]);
 
+/** Preferred-role → job.track affinity (boost only; never satisfies the role gate alone). */
 const ROLE_TRACK_HINTS: Array<{ pattern: RegExp; tracks: string[] }> = [
   { pattern: /\bdata\s+engineer|\bdata\s+platform|\betl\b/i, tracks: ["data_engineering"] },
   { pattern: /\banalytics\s+engineer/i, tracks: ["analytics_engineering", "data_engineering"] },
-  { pattern: /\bplatform\s+engineer|\bcloud\s+engineer|\binfrastructure/i, tracks: ["platform_engineering", "devops_sre"] },
+  {
+    pattern: /\bforward[\s-]?deployed\b/i,
+    tracks: ["forward_deployed", "ai_engineering", "ml_engineering"],
+  },
+  {
+    pattern: /\b(?:ai|ml)\s+engineer\b|\bapplied\s+ai\b/i,
+    tracks: ["ai_engineering", "ml_engineering"],
+  },
+  {
+    pattern: /\bsolutions?\s+architect\b/i,
+    tracks: ["platform_engineering", "ai_engineering", "forward_deployed"],
+  },
+  // Avoid matching "Data Platform Engineer" as generic platform/devops.
+  {
+    pattern: /(?<!\bdata\s)\bplatform\s+engineer\b|\bcloud\s+engineer\b|\binfrastructure\b/i,
+    tracks: ["platform_engineering", "devops_sre"],
+  },
   { pattern: /\bfrontend|\bfront[\s-]?end|\breact\b/i, tracks: ["software_engineering"] },
-  { pattern: /\bsite\s+reliability|\bdevops|\bsre\b/i, tracks: ["devops_sre", "platform_engineering"] },
+  {
+    pattern: /\bsite\s+reliability|\bdevops\b|\bsre\b/i,
+    tracks: ["devops_sre", "platform_engineering"],
+  },
 ];
+
+/** Short tokens that carry role meaning (kept despite length ≤ 2). */
+const SHORT_ROLE_TOKENS = new Set(["ai", "ml", "bi", "qa", "ux", "ui", "sre", "de", "ae"]);
+
+/** Tokens that must not alone make "AI Engineer" match every engineer title. */
+const GENERIC_ROLE_TOKENS = new Set([
+  "engineer",
+  "developer",
+  "software",
+  "programmer",
+  "specialist",
+  "consultant",
+  "manager",
+  "associate",
+  "member",
+]);
+
+/**
+ * Preferred-role specific tokens → job-title synonyms (title gate only).
+ * Keeps "Data Engineer" discoverable for lakehouse/ETL titles without
+ * opening the gate for generic Software/DevOps engineers.
+ */
+const SPECIFIC_TOKEN_ALIASES: Record<string, string[]> = {
+  data: ["lakehouse", "etl"],
+  ai: ["llm", "ml"],
+  ml: ["ai", "llm"],
+  deployed: ["forward"],
+  forward: ["deployed"],
+};
 
 function canonicalSkill(skill: string): string {
   const s = norm(skill)
@@ -94,20 +143,27 @@ function canonicalSkill(skill: string): string {
   return SKILL_ALIASES[s] || s;
 }
 
+function skillMentionedInText(text: string, skill: string): boolean {
+  const escaped = skill
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    .replace(/\s+/g, "\\s+");
+  const re = new RegExp(`(?:^|[^a-z0-9+#./])${escaped}(?=[^a-z0-9+#./]|$)`, "i");
+  return re.test(text);
+}
+
 function skillHit(job: ApiJob, skill: string): boolean {
   const s = canonicalSkill(skill);
   if (!s) return false;
   const jobSkills = job.technologies.map((t) => canonicalSkill(t));
   const expanded = new Set(jobSkills);
   for (const t of jobSkills) {
-    for (const r of JOB_EXPAND[t] || []) expanded.add(r);
+    for (const r of JOB_EXPAND[t] || []) expanded.add(canonicalSkill(r));
   }
-  if (expanded.has(s) || (RELATED[s] || []).some((r) => expanded.has(r))) {
-    return true;
-  }
-  // Fallback: title / track / excerpt substring — not a confirmed requirement.
-  const blob = `${job.title} ${job.track || ""} ${(job.description_excerpt || "").slice(0, 800)}`.toLowerCase();
-  return blob.includes(s);
+  if (expanded.has(s)) return true;
+  if ((RELATED[s] || []).some((r) => expanded.has(canonicalSkill(r)))) return true;
+  // Word-boundary evidence only — never raw substring ("rag" in "storage", "mcp" in noise).
+  const blob = `${job.title} ${job.track || ""} ${(job.description_excerpt || "").slice(0, 800)}`;
+  return skillMentionedInText(blob, s);
 }
 
 function titleTokens(text: string): string[] {
@@ -118,26 +174,38 @@ function titleTokens(text: string): string[] {
 
 /** Role-family tokens with seniority/level words removed. */
 function roleFamilyTokens(text: string): string[] {
-  return titleTokens(text).filter((t) => t.length > 2 && !SENIORITY_STOP.has(t));
+  return titleTokens(text).filter((t) => {
+    if (SENIORITY_STOP.has(t)) return false;
+    if (t.length > 2) return true;
+    return SHORT_ROLE_TOKENS.has(t);
+  });
 }
 
 function tokenInTitle(title: string, token: string): boolean {
   // Whole-token match only — "data" must not hit "datastores" / "database".
   const parts = new Set(roleFamilyTokens(title).concat(titleTokens(title)));
-  return parts.has(token);
+  if (parts.has(token)) return true;
+  for (const alias of SPECIFIC_TOKEN_ALIASES[token] || []) {
+    if (parts.has(alias)) return true;
+  }
+  return false;
 }
 
 /**
  * Soft title relevance: exact substring, then family-token overlap.
- * "Senior Data Engineer" ↔ "Senior Data Platform Engineer" / "Lead Data Engineer".
+ * Specific tokens (data, ai, platform, …) must hit — "AI Engineer" must not
+ * match every title that merely contains "engineer".
  */
 export function roleFamilyScore(jobTitle: string, preferred: string): number {
   const job = norm(jobTitle);
   const pref = norm(preferred);
   if (!pref) return 0;
-  if (job === pref || job.includes(pref) || pref.includes(job)) {
-    // Guard: prefer exact / contiguous phrase matches.
-    if (job.includes(pref) || pref.includes(job)) return 1;
+  if (job === pref) return 1;
+  if (job.includes(pref) || pref.includes(job)) {
+    // Contiguous phrase match, but reject ultra-short preferred collapsing into generics.
+    const prefFamily = roleFamilyTokens(pref);
+    const specific = prefFamily.filter((t) => !GENERIC_ROLE_TOKENS.has(t));
+    if (!specific.length || specific.some((t) => tokenInTitle(job, t))) return 1;
   }
 
   const prefFamily = roleFamilyTokens(pref);
@@ -147,23 +215,50 @@ export function roleFamilyScore(jobTitle: string, preferred: string): number {
     const hits = toks.filter((t) => tokenInTitle(job, t)).length;
     return hits / toks.length;
   }
+
+  const specific = prefFamily.filter((t) => !GENERIC_ROLE_TOKENS.has(t));
+  const generic = prefFamily.filter((t) => GENERIC_ROLE_TOKENS.has(t));
+  if (specific.length) {
+    const specificHits = specific.filter((t) => tokenInTitle(job, t)).length;
+    if (specificHits === 0) {
+      return generic.some((t) => tokenInTitle(job, t)) ? 0.35 : 0;
+    }
+    const specScore = specificHits / specific.length;
+    const genBonus = generic.length
+      ? 0.15 * (generic.filter((t) => tokenInTitle(job, t)).length / generic.length)
+      : 0.1;
+    // Partial specific overlap still clears the family gate when at least one
+    // discriminative token hits (Data Platform Engineer ↔ Data Engineer).
+    const raw = specScore * 0.85 + genBonus;
+    return Math.min(1, Math.max(0.6, raw));
+  }
+
   const hits = prefFamily.filter((t) => tokenInTitle(job, t)).length;
   return hits / prefFamily.length;
 }
 
-function roleMatch(job: ApiJob, roles: string[]): { ok: boolean; score: number } {
-  if (!roles.length) return { ok: true, score: 0.5 };
+function trackAffinity(job: ApiJob, roles: string[]): number {
+  if (!roles.length || !job.track) return 0;
   let best = 0;
   for (const role of roles) {
-    best = Math.max(best, roleFamilyScore(job.title, role));
     for (const hint of ROLE_TRACK_HINTS) {
-      if (hint.pattern.test(role) && job.track && hint.tracks.includes(job.track)) {
-        best = Math.max(best, 0.7);
+      if (hint.pattern.test(role) && hint.tracks.includes(job.track)) {
+        best = Math.max(best, 1);
       }
     }
   }
-  // Require solid family overlap — not exact title equality.
-  return { ok: best >= 0.6, score: best };
+  return best;
+}
+
+function roleMatch(job: ApiJob, roles: string[]): { ok: boolean; score: number; track: number } {
+  if (!roles.length) return { ok: true, score: 0.5, track: 0 };
+  let best = 0;
+  for (const role of roles) {
+    best = Math.max(best, roleFamilyScore(job.title, role));
+  }
+  const track = trackAffinity(job, roles);
+  // Title family gate only — track affinity must not open the door alone.
+  return { ok: best >= 0.6, score: best, track };
 }
 
 function inferSeniorityFromYears(years: number | null | undefined): string | null {
@@ -501,19 +596,20 @@ export function matchProfile(
     const senScore = Math.min(1, band.score * years.mult);
 
     let score = 0;
-    // Title / role ~30%
-    if (roles.length) score += Math.round(30 * role.score);
+    // Title / role intent ~32%
+    if (roles.length) score += Math.round(32 * role.score);
     else score += 12;
-    // Skills ~20%
+    // Track affinity with preferred roles ~8% (cannot open the gate alone)
+    if (roles.length) score += Math.round(8 * role.track);
+    else if (job.track) score += 4;
+    // Skills ~18% — confirmed tags / word-boundary evidence only
     if (skills.length) {
-      score += Math.round(20 * (matchingSkills.length / skills.length));
+      score += Math.round(18 * (matchingSkills.length / skills.length));
     } else {
-      score += 6;
+      score += 5;
     }
-    // Seniority / experience ~30% — material influence
-    score += Math.round(30 * senScore);
-    // Discipline / track presence ~10%
-    if (job.track) score += 8;
+    // Seniority / experience ~28%
+    score += Math.round(28 * senScore);
     if (job.verified) score += 2;
     // Arrangement preference ~10% (confirmed allow-list only; unspecified already filtered)
     if (allowedArrangements.length) {
@@ -521,6 +617,10 @@ export function matchProfile(
       if (allowedArrangements.includes(arr)) score += 10;
     } else {
       score += 5;
+    }
+    // Cap when title is only a soft family hit and track disagrees.
+    if (roles.length && role.score < 0.75 && role.track < 1) {
+      score = Math.min(score, 78);
     }
     // Large seniority/experience gaps must not look like strong matches on skills alone.
     if (senScore < 0.4) {
