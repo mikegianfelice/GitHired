@@ -279,6 +279,20 @@ class PublicSiteStaticTests(unittest.TestCase):
         ):
             self.assertTrue((SITE / name).is_file(), name)
 
+    def test_cloudflare_web_analytics_beacon_on_every_html_page(self):
+        beacon = "static.cloudflareinsights.com/beacon.min.js"
+        token = "604c685c7f7442f7b5110f06b400c410"
+        pages = sorted(SITE.rglob("*.html"))
+        self.assertGreaterEqual(len(pages), 5)
+        for path in pages:
+            html = path.read_text(encoding="utf-8")
+            with self.subTest(path=str(path.relative_to(SITE))):
+                self.assertIn(beacon, html)
+                self.assertIn(token, html)
+                self.assertLess(html.rfind(beacon), html.rfind("</body>"))
+        privacy = (SITE / "privacy" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("Cloudflare Web Analytics", privacy)
+
     def test_find_my_matches_nav_present(self):
         html = (SITE / "index.html").read_text(encoding="utf-8")
         self.assertIn("Find My Matches", html)

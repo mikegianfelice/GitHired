@@ -48,6 +48,7 @@ SHELL = """<!DOCTYPE html>
 </head>
 <body>
   <p>Loading GitHired…</p>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "604c685c7f7442f7b5110f06b400c410"}'></script>
 </body>
 </html>
 """
