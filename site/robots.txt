@@ -8,6 +8,8 @@ Allow: /llms.txt
 Allow: /openapi.json
 Allow: /api-dataset.json
 Allow: /jobs.json
+Allow: /icon.png
+Allow: /icon.svg
 
 # Attribution landing paths — same homepage content; do not index as duplicates
 Disallow: /from/

@@ -19,7 +19,7 @@ from typing import Any
 
 from jobseek.public_shortlist.export import (
     DEFAULT_LIMIT,
-    DEFAULT_MAX_AGE_DAYS,
+    DEFAULT_MAX_AGE_DAYS,  # 21-day last_seen window; keep test fixtures relative to now
     DEFAULT_USD_TO_CAD,
     PUBLIC_SEARCH,
     PublicJob,
