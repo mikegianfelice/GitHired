@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from jobseek.api_snapshot import (
@@ -14,6 +15,11 @@ from jobseek.api_snapshot import (
     write_api_snapshot,
 )
 from jobseek.api_snapshot import dedupe_api_jobs
+
+
+def _iso_days_ago(days: float) -> str:
+    """Fresh fixture stamp so the 21-day snapshot cutoff cannot stale the suite."""
+    return (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _job(**kwargs):
@@ -31,8 +37,8 @@ def _job(**kwargs):
         "salary_min": 160_000,
         "salary_max": 190_000,
         "salary_currency": "CAD",
-        "first_seen": "2026-11-01T00:00:00Z",
-        "last_seen": "2026-11-04T00:00:00Z",
+        "first_seen": _iso_days_ago(2),
+        "last_seen": _iso_days_ago(1),
         "removed_at": None,
     }
     base.update(kwargs)

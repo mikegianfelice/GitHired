@@ -217,6 +217,8 @@ ALLOWED_IGNORE_NEGATIONS = {
     "!site/assets/brand/**/*.png",
     "!site/assets/brand/**/*.ico",
     "!site/assets/brand/**/*.webp",
+    # Stable public MCP / directory icon at site root (not personal data)
+    "!site/icon.png",
 }
 
 # Hook commands the template legitimately ships, as "<Event>:<command>" strings.

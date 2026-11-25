@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import re
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -19,7 +19,11 @@ from jobseek.public_shortlist.export import (
 
 ROOT = Path(__file__).resolve().parents[2]
 SITE = ROOT / "site"
-NOW = datetime(2026, 11, 4, 12, 0, tzinfo=timezone.utc)
+# Relative clock so export-script smoke tests (no injected now) stay inside the
+# 21-day max_age window regardless of when CI runs.
+NOW = datetime.now(timezone.utc).replace(microsecond=0)
+_FIRST_SEEN = (NOW - timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
+_LAST_SEEN = (NOW - timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _job(**overrides):
@@ -33,8 +37,8 @@ def _job(**overrides):
         "apply_url": "https://boards.greenhouse.io/exampleco/jobs/12345",
         "source": "greenhouse",
         "ats_provider": "greenhouse",
-        "first_seen": "2026-11-04T08:00:00Z",
-        "last_seen": "2026-11-04T10:00:00Z",
+        "first_seen": _FIRST_SEEN,
+        "last_seen": _LAST_SEEN,
         "salary_min": 150000,
         "salary_max": 180000,
         "salary_currency": "CAD",
@@ -198,8 +202,10 @@ class PublicShortlistSelectTests(unittest.TestCase):
         self.assertEqual(jobs, [])
 
     def test_discovered_today_false_when_first_seen_older(self):
+        older_first = (NOW - timedelta(days=5)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        recent_last = (NOW - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
         jobs = select_public_jobs(
-            [_job(first_seen="2026-10-01T00:00:00Z", last_seen="2026-11-03T00:00:00Z")],
+            [_job(first_seen=older_first, last_seen=recent_last)],
             limit=10,
             now=NOW,
         )
