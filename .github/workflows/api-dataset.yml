@@ -141,8 +141,15 @@ jobs:
             git commit -m "chore(api): refresh jobs snapshot"
             # Keep persist-credentials: false on checkout; authenticate only this push.
             git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-            # Rebase onto any concurrent bot commits; never force-push.
-            git pull --rebase origin "${GITHUB_REF_NAME}"
+            # Setup/discover leave tracked config (and similar) dirty; only the
+            # snapshot paths above are committed. Autostash so rebase can proceed
+            # without discarding the snapshot commit. Never force-push.
+            SNAP_BLOB="$(git rev-parse HEAD:api/data/jobs.snapshot.json)"
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+            if [ "$(git rev-parse HEAD:api/data/jobs.snapshot.json)" != "$SNAP_BLOB" ]; then
+              echo "::error::Snapshot blob lost during rebase; refusing to push."
+              exit 1
+            fi
             git push origin HEAD:"${GITHUB_REF_NAME}"
           fi
 
