@@ -40,12 +40,22 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Optional fixture list of raw job dicts (skips DB)",
     )
+    parser.add_argument(
+        "--prior-snapshot",
+        type=Path,
+        default=None,
+        help="Prior API snapshot used to preserve first_seen (default: --out if it exists)",
+    )
     args = parser.parse_args(argv)
 
     from jobseek.api_snapshot import build_api_snapshot, write_api_snapshot
     from jobseek.public_shortlist.export import DEFAULT_LIMIT
 
     limit = int(args.limit) if args.limit is not None else DEFAULT_LIMIT
+    out_path = Path(args.out)
+    prior = args.prior_snapshot
+    if prior is None and out_path.is_file():
+        prior = out_path
 
     if args.jobs_json is not None:
         jobs = json.loads(Path(args.jobs_json).read_text(encoding="utf-8"))
@@ -69,6 +79,7 @@ def main(argv: list[str] | None = None) -> int:
         jobs,
         limit=limit,
         max_age_days=int(args.max_age_days),
+        prior_snapshot_path=prior,
     )
     meta = write_api_snapshot(snapshot, Path(args.out))
     # Also mirror under site for Pages-hosted openapi consumers who want a static copy.

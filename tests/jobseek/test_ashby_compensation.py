@@ -505,6 +505,55 @@ class AshbySalaryParseTests(unittest.TestCase):
         self.assertEqual(amin, 120000.0)
         self.assertEqual(amax, 325000.0)
 
+    def test_base_vs_total_comp_annotated_not_conflated(self):
+        """Hopper-shaped: Salary component is base; total compensation stays separate."""
+        tier_summary = (
+            "The annual total compensation for this position ranges from "
+            "$360,000 to $420,000 USD. Total compensation will include base "
+            "salary and equity (options). $250K – $320K • Offers Equity"
+        )
+        job = {
+            "location": "Canada - Remote",
+            "compensation": {
+                "summaryComponents": [
+                    {
+                        "compensationType": "Salary",
+                        "interval": "1 YEAR",
+                        "currencyCode": "USD",
+                        "minValue": 250000,
+                        "maxValue": 320000,
+                    }
+                ],
+                "compensationTiers": [
+                    {
+                        "tierSummary": tier_summary,
+                        "components": [
+                            {
+                                "compensationType": "Salary",
+                                "interval": "1 YEAR",
+                                "currencyCode": "USD",
+                                "minValue": 250000,
+                                "maxValue": 320000,
+                                "summary": tier_summary,
+                            },
+                            {
+                                "compensationType": "EquityPercentage",
+                                "interval": "NONE",
+                                "minValue": None,
+                                "maxValue": None,
+                            },
+                        ],
+                    }
+                ],
+            },
+        }
+        raw, amin, amax, cur = _salary(job, location_raw="Canada - Remote")
+        # Employer stamps USD on Canada AI Trust — keep base as USD.
+        self.assertEqual((amin, amax, cur), (250000.0, 320000.0, "USD"))
+        self.assertIn("total_comp USD 360000-420000", raw or "")
+        # Filters must never treat 360–420 as base.
+        self.assertNotEqual(amax, 420000.0)
+
 
 class AshbyAdapterCompensationTests(unittest.TestCase):
     def test_requests_include_compensation_flag(self):

@@ -364,6 +364,81 @@ def _salary_from_description(
     return apply_salary_info_to_raw(info=info)
 
 
+_TOTAL_COMP_RANGE = re.compile(
+    r"annual\s+total\s+compensation[^\d]{0,40}"
+    r"(?P<cur_a>CAD|USD|CDN)?\s*\$?\s*(?P<a>\d{2,3}(?:,\d{3})?(?:k)?|\d{3}(?:,\d{3})+)"
+    r"[^\d]{1,24}"
+    r"(?P<cur_b>CAD|USD|CDN)?\s*\$?\s*(?P<b>\d{2,3}(?:,\d{3})?(?:k)?|\d{3}(?:,\d{3})+)"
+    r"(?:\s*(?P<cur_trail>CAD|USD|CDN))?",
+    re.I,
+)
+
+
+def _parse_money_token(token: str) -> float | None:
+    t = (token or "").strip().casefold().replace(",", "")
+    if not t:
+        return None
+    mult = 1.0
+    if t.endswith("k"):
+        mult = 1000.0
+        t = t[:-1]
+    try:
+        return float(t) * mult
+    except ValueError:
+        return None
+
+
+def _extract_total_compensation(
+    compensation: dict[str, Any] | None,
+    description: str | None,
+) -> tuple[float | None, float | None, str | None]:
+    """Parse employer-stated total compensation separately from base Salary.
+
+    Never returned as salary_min/max — filters must use base only.
+    """
+    prose = _compensation_prose(compensation, description)
+    m = _TOTAL_COMP_RANGE.search(prose)
+    if not m:
+        return None, None, None
+    amin = _parse_money_token(m.group("a"))
+    amax = _parse_money_token(m.group("b"))
+    if amin is None or amax is None:
+        return None, None, None
+    if amin > amax:
+        amin, amax = amax, amin
+    cur = None
+    for g in ("cur_a", "cur_b", "cur_trail"):
+        tok = m.group(g)
+        if not tok:
+            continue
+        u = tok.upper()
+        if u in ("CAD", "CDN"):
+            cur = "CAD"
+            break
+        if u == "USD":
+            cur = "USD"
+            break
+    if cur not in ("CAD", "USD"):
+        return None, None, None
+    return amin, amax, cur
+
+
+def _annotate_salary_raw(
+    raw: str | None,
+    *,
+    compensation: dict[str, Any] | None,
+    description: str | None,
+) -> str | None:
+    """Append total_comp provenance to salary_raw without changing base amounts."""
+    tmin, tmax, tcur = _extract_total_compensation(compensation, description)
+    if tmin is None or tmax is None or not tcur:
+        return raw
+    tag = f"total_comp {tcur} {tmin:g}-{tmax:g}"
+    if raw and tag in raw:
+        return raw
+    return f"{raw}; {tag}" if raw else tag
+
+
 def _finalize_structured_salary(
     parsed: tuple[str | None, float | None, float | None, str | None],
     *,
@@ -391,6 +466,7 @@ def _finalize_structured_salary(
     if smax is None:
         smax = smin
     raw = f"{scur} {smin:g}-{smax:g}" if scur else None
+    raw = _annotate_salary_raw(raw, compensation=compensation, description=description)
     return raw, smin, smax, scur
 
 
@@ -531,7 +607,15 @@ def _salary(
         if finalized is not None:
             return finalized
 
-    return _salary_from_description(desc, location_raw=loc)
+    raw, smin, smax, scur = _salary_from_description(desc, location_raw=loc)
+    if smin is None and smax is None:
+        return None, None, None, None
+    raw = _annotate_salary_raw(
+        raw,
+        compensation=compensation if isinstance(compensation, dict) else None,
+        description=desc,
+    )
+    return raw, smin, smax, scur
 
 
 class AshbyAdapter:

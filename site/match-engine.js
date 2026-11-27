@@ -910,35 +910,37 @@
 
   function locationHardFilter(profile, job) {
     // Public jobs are already Canada-eligible. Additional user province prefs.
+    // "Canada" expands national remote eligibility; with province/city tokens it
+    // must not open every out-of-province hybrid (those need regional match).
     const prefs = profile.preferred_locations || [];
     if (!prefs.length) return { ok: true, reason: "no location preference" };
-    const codes = prefs.filter((p) => /^[A-Z]{2}$/.test(p));
-    const cities = prefs.filter((p) => !/^[A-Z]{2}$/.test(p)).map((p) => p.toLowerCase());
-    if (job.remote_scope === "canada" && job.work_arrangement === "remote") {
-      return { ok: true, reason: "canada-wide remote" };
+    const country = prefs.filter((p) => /^(canada|canadian|ca)$/i.test(String(p).trim()));
+    const codes = prefs.filter((p) => /^[A-Z]{2}$/i.test(String(p).trim()) && !/^(ca)$/i.test(p));
+    const cities = prefs
+      .filter((p) => !/^[A-Z]{2}$/i.test(String(p).trim()) && !/^(canada|canadian|ca)$/i.test(String(p).trim()))
+      .map((p) => String(p).toLowerCase());
+    const isRemote = job.work_arrangement === "remote";
+    const canadaEligibleRemote =
+      isRemote &&
+      ["canada", "province", "americas", "local", "unspecified"].includes(
+        String(job.remote_scope || "").toLowerCase()
+      );
+    if (canadaEligibleRemote) {
+      return { ok: true, reason: "canada-eligible remote" };
     }
-    if (codes.length) {
-      if (job.province && codes.includes(job.province)) {
-        return { ok: true, reason: "province match" };
-      }
-      // Province-restricted remote outside preference → ineligible
-      if (job.remote_scope === "province" && job.province && !codes.includes(job.province)) {
-        return { ok: false, reason: "province-restricted remote outside preference" };
-      }
-      // Local hybrid/onsite outside province
-      if (job.work_arrangement !== "remote" && job.province && !codes.includes(job.province)) {
-        // still allow if city matches
-        const loc = String(job.location || "").toLowerCase();
-        if (cities.some((c) => c !== "canada" && loc.includes(c.toLowerCase()))) {
-          return { ok: true, reason: "city match" };
-        }
-        return { ok: false, reason: "location outside preferred provinces" };
-      }
+    const loc = String(job.location || "").toLowerCase();
+    const regionalHit =
+      (job.province && codes.includes(job.province)) ||
+      cities.some((c) => loc.includes(c));
+    if (codes.length || cities.length) {
+      if (regionalHit) return { ok: true, reason: "regional match" };
+      return { ok: false, reason: "location outside preferred provinces/cities" };
     }
-    if (cities.length) {
-      const loc = String(job.location || "").toLowerCase();
-      if (cities.includes("canada")) return { ok: true, reason: "canada preference" };
-      if (cities.some((c) => loc.includes(c))) return { ok: true, reason: "city match" };
+    if (country.length) {
+      if (job.province || /\bcanada\b|\bcanadian\b/i.test(loc)) {
+        return { ok: true, reason: "canada country preference" };
+      }
+      return { ok: false, reason: "not canada-facing for country preference" };
     }
     return { ok: true, reason: "location soft-pass" };
   }

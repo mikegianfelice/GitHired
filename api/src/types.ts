@@ -89,6 +89,12 @@ export interface MatchProfileInput {
    * When set, overrides remote_preference for arrangement filtering.
    */
   work_arrangements?: string[];
+  /**
+   * When remote+hybrid are both allowed: "equal" (default) ranks them together by
+   * relevance; "prefer_remote" applies a small remote boost without overriding large
+   * relevance gaps. Legacy remote_preference=true alone still means remote-only.
+   */
+  remote_preference_strength?: "equal" | "prefer_remote";
   minimum_salary?: number;
   /**
    * Salary floor semantics. Default flexible (max may meet floor) for API/MCP

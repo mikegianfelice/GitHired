@@ -3,10 +3,11 @@
 // try to fetch a short plain-text excerpt from the ATS using the job's apply_url.
 
 const MAX_EXCERPT = 900;
+const MAX_FULL_DESCRIPTION = 20_000;
 
-function stripHtml(html: string): string {
+function stripHtml(html: string, maxLen: number = MAX_EXCERPT): string {
   const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-  return text.length <= MAX_EXCERPT ? text : text.slice(0, MAX_EXCERPT - 1).trimEnd() + "…";
+  return text.length <= maxLen ? text : text.slice(0, maxLen - 1).trimEnd() + "…";
 }
 
 function ghApiUrl(url: string): string | null {
@@ -52,7 +53,11 @@ function smartRecruitersApiUrl(url: string): string | null {
   return null;
 }
 
-async function tryFetchJsonText(endpoint: string, jsonPathCandidates: string[]): Promise<string | null> {
+async function tryFetchJsonText(
+  endpoint: string,
+  jsonPathCandidates: string[],
+  maxLen: number = MAX_EXCERPT,
+): Promise<string | null> {
   try {
     const res = await fetch(endpoint, { cf: { cacheEverything: true }, headers: { accept: "application/json" } });
     if (!res.ok) return null;
@@ -69,7 +74,7 @@ async function tryFetchJsonText(endpoint: string, jsonPathCandidates: string[]):
         }
       }
       if (ok && typeof cur === "string" && cur.trim()) {
-        return stripHtml(cur);
+        return stripHtml(cur, maxLen);
       }
     }
   } catch {
@@ -78,30 +83,33 @@ async function tryFetchJsonText(endpoint: string, jsonPathCandidates: string[]):
   return null;
 }
 
-async function tryFetchHtml(url: string): Promise<string | null> {
+async function tryFetchHtml(url: string, maxLen: number = MAX_EXCERPT): Promise<string | null> {
   try {
     const res = await fetch(url, { cf: { cacheEverything: true }, headers: { accept: "text/html,application/xhtml+xml" } });
     if (!res.ok) return null;
     const html = await res.text();
     if (!html) return null;
-    return stripHtml(html);
+    return stripHtml(html, maxLen);
   } catch {
     return null;
   }
 }
 
-export async function fetchDescriptionExcerptOnDemand(applyUrl: string, source?: string | null): Promise<string | null> {
+async function fetchDescriptionOnDemand(
+  applyUrl: string,
+  maxLen: number,
+): Promise<string | null> {
   const url = applyUrl || "";
   // 1) Greenhouse
   const gh = ghApiUrl(url);
   if (gh) {
-    const text = await tryFetchJsonText(gh, ["content", "content.plain", "job_post.content"]);
+    const text = await tryFetchJsonText(gh, ["content", "content.plain", "job_post.content"], maxLen);
     if (text) return text;
   }
   // 2) Lever
   const lv = leverApiUrl(url);
   if (lv) {
-    const text = await tryFetchJsonText(lv, ["text", "descriptionPlain", "description"]);
+    const text = await tryFetchJsonText(lv, ["text", "descriptionPlain", "description"], maxLen);
     if (text) return text;
   }
   // 3) Ashby
@@ -115,8 +123,8 @@ export async function fetchDescriptionExcerptOnDemand(applyUrl: string, source?:
         const data = (await res.json()) as any;
         const posts: any[] = data?.jobs || data?.postings || [];
         const match = posts.find((p) => (p?.id || p?.jobPostingId) === ash.id);
-        const html = match?.descriptionHtml || match?.description || match?.contentHtml || "";
-        if (typeof html === "string" && html.trim()) return stripHtml(html);
+        const html = match?.descriptionHtml || match?.descriptionPlain || match?.description || match?.contentHtml || "";
+        if (typeof html === "string" && html.trim()) return stripHtml(html, maxLen);
       }
     } catch {
       // ignore
@@ -125,18 +133,32 @@ export async function fetchDescriptionExcerptOnDemand(applyUrl: string, source?:
   // 4) Workable
   const wk = workableApiUrl(url);
   if (wk) {
-    const text = await tryFetchJsonText(wk, ["full_description", "description"]);
+    const text = await tryFetchJsonText(wk, ["full_description", "description"], maxLen);
     if (text) return text;
   }
   // 5) SmartRecruiters
   const sr = smartRecruitersApiUrl(url);
   if (sr) {
-    const text = await tryFetchJsonText(sr, ["jobAd.sections.jobDescription.text", "jobAd.jobTitle", "jobAd.jobDescription"]);
+    const text = await tryFetchJsonText(
+      sr,
+      ["jobAd.sections.jobDescription.text", "jobAd.jobTitle", "jobAd.jobDescription"],
+      maxLen,
+    );
     if (text) return text;
   }
   // 6) Fallback: fetch page HTML and strip
-  const fallback = await tryFetchHtml(url);
-  return fallback;
+  return tryFetchHtml(url, maxLen);
+}
+
+export async function fetchDescriptionExcerptOnDemand(applyUrl: string, source?: string | null): Promise<string | null> {
+  void source;
+  return fetchDescriptionOnDemand(applyUrl, MAX_EXCERPT);
+}
+
+/** Longer plain-text JD for agents (still capped). Prefer ATS JSON over HTML scrape. */
+export async function fetchFullDescriptionOnDemand(applyUrl: string, source?: string | null): Promise<string | null> {
+  void source;
+  return fetchDescriptionOnDemand(applyUrl, MAX_FULL_DESCRIPTION);
 }
 
 // Export URL parsers for tests

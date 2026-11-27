@@ -1,5 +1,5 @@
 import type { ApiJob, ApiSnapshot, MatchProfileInput, SearchFilters } from "./types";
-import { jobMatchesFilters, remoteScopeRank } from "./search";
+import { jobMatchesFilters } from "./search";
 
 /**
  * Deterministic profile matching — port of site/match-engine.js intent.
@@ -481,6 +481,148 @@ function normalizeArrangements(input: MatchProfileInput): string[] {
   return [];
 }
 
+const COUNTRY_LOCATION_TOKENS = new Set(["canada", "canadian", "ca"]);
+
+function isCountryLocationToken(token: string): boolean {
+  return COUNTRY_LOCATION_TOKENS.has(norm(token));
+}
+
+function isProvinceCodeToken(token: string): boolean {
+  return /^[a-z]{2}$/i.test(token.trim()) && token.trim().length <= 2;
+}
+
+/**
+ * Geographic eligibility (hard filter) — applied before ranking.
+ *
+ * - Remote Canada-eligible jobs stay eligible when remote is allowed, regardless
+ *   of HQ province (nationwide remote ≠ out-of-province hybrid).
+ * - "Canada" in preferred_locations expands national remote eligibility and,
+ *   alone, any Canada-eligible hybrid/onsite. When combined with province/city
+ *   tokens, those regional tokens constrain hybrid/onsite — "Canada" must not
+ *   open every provincial hybrid.
+ */
+export function locationAllowed(
+  job: ApiJob,
+  locations: string[],
+  allowedArrangements: string[],
+): boolean {
+  if (!locations.length) return true;
+  const countryPrefs = locations.filter(isCountryLocationToken);
+  const regionalPrefs = locations.filter((l) => !isCountryLocationToken(l));
+  const arr = (job.work_arrangement || "").toLowerCase();
+  const remoteOk =
+    allowedArrangements.includes("remote") || allowedArrangements.length === 0;
+  const isRemote = arr === "remote";
+  const canadaEligibleRemote =
+    isRemote &&
+    ["canada", "province", "americas", "local", "unspecified"].includes(
+      (job.remote_scope || "").toLowerCase(),
+    );
+
+  if (isRemote && remoteOk && canadaEligibleRemote) {
+    // Nationwide / Canada-eligible remote: never reject solely for HQ province.
+    return true;
+  }
+
+  const locBlob = `${job.location} ${job.province || ""}`.toLowerCase();
+  const regionalHit = regionalPrefs.some((lraw) => {
+    const l = String(lraw || "").trim().toLowerCase();
+    if (!l) return false;
+    if (isProvinceCodeToken(l)) {
+      return (job.province || "").toUpperCase() === l.toUpperCase();
+    }
+    const re = new RegExp(`\\b${l.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}\\b`, "i");
+    return re.test(locBlob);
+  });
+
+  if (regionalPrefs.length) {
+    return regionalHit;
+  }
+  // Country-only preference: any Canada-facing listing (province set or Canada in location).
+  if (countryPrefs.length) {
+    if (job.province) return true;
+    return /\bcanada\b|\bcanadian\b/i.test(locBlob);
+  }
+  return true;
+}
+
+function skillCoverageScore(matchingCount: number, profileSkillCount: number): number {
+  // Broad profiles must not dilute confirmed overlap — score against a soft
+  // expected band rather than matching/total (which punishes long skill lists).
+  if (profileSkillCount <= 0) return 0.5;
+  const expected = Math.min(8, Math.max(4, Math.ceil(profileSkillCount * 0.45)));
+  return Math.min(1, matchingCount / expected);
+}
+
+function preferredRoleFamilyKey(role: string): string {
+  const t = norm(role);
+  if (/\bforward[\s-]?deployed\b/.test(t)) return "forward_deployed";
+  if (/\b(?:ai|ml)\s+engineer\b|\bapplied\s+ai\b/.test(t)) return "ai";
+  if (/\bdata\s+platform\b|\bdata\s+engineer\b|\betl\b/.test(t)) return "data";
+  if (/\bsolutions?\s+architect\b|\barchitect\b/.test(t)) return "architect";
+  if (/\bdevops\b|\bsre\b|\bsite\s+reliability\b/.test(t)) return "devops";
+  if (/\bfrontend|\bfront[\s-]?end\b/.test(t)) return "frontend";
+  if (/\bbackend\b|\bfull[\s-]?stack\b|\bsoftware\b/.test(t)) return "software";
+  return t.split(/\s+/).slice(0, 2).join("_") || "other";
+}
+
+function bestRoleFamily(job: ApiJob, roles: string[]): string | null {
+  if (!roles.length) return null;
+  let bestKey: string | null = null;
+  let bestScore = 0;
+  for (const role of roles) {
+    const s = roleFamilyScore(job.title, role);
+    if (s > bestScore) {
+      bestScore = s;
+      bestKey = preferredRoleFamilyKey(role);
+    }
+  }
+  return bestKey;
+}
+
+/**
+ * Soft multi-role coverage after score sort.
+ * Never promotes a weak match: candidates must be within ``scoreSlack`` of the
+ * next pure-relevance pick. Prefers an unseen preferred-role family when scores
+ * are close so FDE/AI are not buried under many DE-family hits.
+ */
+export function diversifyByRoleFamily<T extends { match_score: number; _family?: string | null }>(
+  ranked: T[],
+  opts: { limit: number; scoreSlack?: number },
+): T[] {
+  const limit = opts.limit;
+  const scoreSlack = opts.scoreSlack ?? 8;
+  if (ranked.length <= limit) return ranked.slice(0, limit);
+  const out: T[] = [];
+  const used = new Set<number>();
+  const families = new Set<string>();
+  while (out.length < limit) {
+    let bestIdx = -1;
+    for (let i = 0; i < ranked.length; i++) {
+      if (used.has(i)) continue;
+      if (bestIdx < 0) {
+        bestIdx = i;
+        continue;
+      }
+      const cand = ranked[i];
+      const best = ranked[bestIdx];
+      if (cand.match_score < best.match_score - scoreSlack) break;
+      const candNew = Boolean(cand._family && !families.has(cand._family));
+      const bestNew = Boolean(best._family && !families.has(best._family));
+      if (candNew && !bestNew) {
+        bestIdx = i;
+        break;
+      }
+    }
+    if (bestIdx < 0) break;
+    used.add(bestIdx);
+    const row = ranked[bestIdx];
+    out.push(row);
+    if (row._family) families.add(row._family);
+  }
+  return out;
+}
+
 function arrangementAllowed(job: ApiJob, allowed: string[]): boolean {
   if (!allowed.length) return true;
   const arr = (job.work_arrangement || "unknown").toLowerCase();
@@ -559,7 +701,11 @@ export function matchProfile(
     limit: 500,
   };
 
-  const scored: MatchResult[] = [];
+  const remoteStrength =
+    input.remote_preference_strength === "prefer_remote" ? "prefer_remote" : "equal";
+
+  type Scored = MatchResult & { _family?: string | null };
+  const scored: Scored[] = [];
   for (const job of snapshot.jobs) {
     if (!jobMatchesFilters(job, geoFilters, fx)) continue;
 
@@ -568,21 +714,7 @@ export function matchProfile(
     const sal = salaryMeetsMinimum(job, input.minimum_salary, salaryMode, fx);
     if (!sal.pass) continue;
 
-    if (locations.length) {
-      const locBlob = `${job.location} ${job.province || ""}`.toLowerCase();
-      const locOk = locations.some((lraw) => {
-        const l = String(lraw || "").trim().toLowerCase();
-        if (!l) return false;
-        // Province code (e.g., on, qc): require exact code match
-        if (l.length <= 2) {
-          return (job.province || "").toUpperCase() === l.toUpperCase();
-        }
-        // Full-name province or city substring with word boundary
-        const re = new RegExp(`\\b${l.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}\\b`, "i");
-        return re.test(locBlob);
-      }) || (allowedArrangements.includes("remote") && job.work_arrangement === "remote");
-      if (!locOk) continue;
-    }
+    if (!locationAllowed(job, locations, allowedArrangements)) continue;
 
     const role = roleMatch(job, roles);
     if (!role.ok) continue;
@@ -593,30 +725,40 @@ export function matchProfile(
     const band = seniorityBandScore(job.seniority, preferredBands, job.title);
     const jobYears = extractYearsRequired(job.description_excerpt || "");
     const years = yearsGapMultiplier(input.years_experience, jobYears, job.seniority);
-    const senScore = Math.min(1, band.score * years.mult);
+    // Unspecified seniority is not a penalty when the title lacks junior signals
+    // (common for Forward Deployed / Solutions Architect listings).
+    let senScore = Math.min(1, band.score * years.mult);
+    if (!(job.seniority || "").trim() && !titleJuniorSignal(job.title) && senScore < 0.7) {
+      senScore = Math.max(senScore, 0.72);
+    }
 
     let score = 0;
-    // Title / role intent ~32%
-    if (roles.length) score += Math.round(32 * role.score);
+    // Title / role intent ~34%
+    if (roles.length) score += Math.round(34 * role.score);
     else score += 12;
+    // Exact / near-exact title credit
+    if (roles.length && role.score >= 0.99) score += 4;
     // Track affinity with preferred roles ~8% (cannot open the gate alone)
     if (roles.length) score += Math.round(8 * role.track);
     else if (job.track) score += 4;
-    // Skills ~18% — confirmed tags / word-boundary evidence only
+    // Skills ~16% — coverage vs soft expected band (not diluted by long profiles)
     if (skills.length) {
-      score += Math.round(18 * (matchingSkills.length / skills.length));
+      score += Math.round(16 * skillCoverageScore(matchingSkills.length, skills.length));
     } else {
       score += 5;
     }
-    // Seniority / experience ~28%
-    score += Math.round(28 * senScore);
+    // Seniority / experience ~26%
+    score += Math.round(26 * senScore);
     if (job.verified) score += 2;
-    // Arrangement preference ~10% (confirmed allow-list only; unspecified already filtered)
+    // Arrangement preference ~8% flat when on the allow-list (remote≈hybrid when equal)
     if (allowedArrangements.length) {
       const arr = (job.work_arrangement || "").toLowerCase();
-      if (allowedArrangements.includes(arr)) score += 10;
+      if (allowedArrangements.includes(arr)) {
+        score += 8;
+        if (remoteStrength === "prefer_remote" && arr === "remote") score += 3;
+      }
     } else {
-      score += 5;
+      score += 4;
     }
     // Cap when title is only a soft family hit and track disagrees.
     if (roles.length && role.score < 0.75 && role.track < 1) {
@@ -720,25 +862,33 @@ export function matchProfile(
       work_arrangement: job.work_arrangement,
       remote_scope: job.remote_scope,
       province: job.province,
+      _family: bestRoleFamily(job, roles),
     });
   }
 
+  // Relevance first. Demote worldwide-remote only as a soft penalty / tie-break —
+  // never let canada-vs-province grouping override large match_score gaps.
   scored.sort((a, b) => {
-    // Prefer Canada/province scope above worldwide-remote even when scores tie or global scores higher.
-    const scopeDiff = remoteScopeRank(a as unknown as ApiJob) - remoteScopeRank(b as unknown as ApiJob);
-    if (scopeDiff !== 0) return scopeDiff;
+    const aGlobal = (a.remote_scope || "").toLowerCase() === "global" ? 1 : 0;
+    const bGlobal = (b.remote_scope || "").toLowerCase() === "global" ? 1 : 0;
+    if (aGlobal !== bGlobal) return aGlobal - bGlobal;
     return b.match_score - a.match_score || a.title.localeCompare(b.title);
   });
 
+  const diversified = diversifyByRoleFamily(scored, { limit });
+  const matches: MatchResult[] = diversified.map(({ _family: _f, ...rest }) => rest);
+
   return {
-    matches: scored.slice(0, limit),
+    matches,
     dataset_id: snapshot.dataset_id,
     generated_at: snapshot.generated_at,
     note:
       "Deterministic relevance against GitHired's tracked Canada-eligible and optional worldwide-remote jobs — not an LLM assessment, " +
       "not a probability of being hired, and not a full Canadian labour-market census. " +
-      "Worldwide-remote (remote_scope=global) ranks below Canada/province matches. " +
+      "Ranking is by match_score; worldwide-remote is demoted below Canada-eligible. " +
+      "When multiple preferred roles are set, near-peer role-family diversity may reorder close scores. " +
       `Arrangement filter: ${allowedArrangements.length ? allowedArrangements.join("+") : "none (all arrangements)"}; ` +
+      `remote preference strength: ${remoteStrength}; ` +
       `salary mode: ${salaryMode} (${salaryMode === "flexible" ? "max may meet floor" : "min must meet floor"}).`,
     filter_semantics: {
       arrangements: allowedArrangements,

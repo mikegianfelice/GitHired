@@ -16,6 +16,8 @@ const searchBundle = join(root, "test/.cache/search_quality.bundle.mjs");
 
 let matchProfile;
 let roleFamilyScore;
+let locationAllowed;
+let diversifyByRoleFamily;
 let withLiveDiscoveredToday;
 
 before(async () => {
@@ -55,6 +57,8 @@ before(async () => {
   const mod = await import(pathToFileURL(matchBundle).href + `?t=${Date.now()}`);
   matchProfile = mod.matchProfile;
   roleFamilyScore = mod.roleFamilyScore;
+  locationAllowed = mod.locationAllowed;
+  diversifyByRoleFamily = mod.diversifyByRoleFamily;
   const searchMod = await import(pathToFileURL(searchBundle).href + `?t=${Date.now()}`);
   withLiveDiscoveredToday = searchMod.withLiveDiscoveredToday;
 });
@@ -457,4 +461,155 @@ test("freshness threshold marks >48h datasets stale without raising the bar", ()
   assert.equal(f.fresh, false);
   assert.ok(f.age_hours > 48);
   assert.equal(f.stale_after_hours, 48);
+});
+
+test("relevance outranks canada-vs-province scope grouping", () => {
+  const jobs = [
+    job({
+      id: "weak-remote",
+      title: "Senior Software Engineer, Data Solutions",
+      company: "StackAdapt",
+      work_arrangement: "remote",
+      remote_scope: "canada",
+      province: null,
+      track: "software_engineering",
+      technologies: ["Python", "SQL"],
+    }),
+    job({
+      id: "strong-hybrid",
+      title: "AI Solutions Architect",
+      company: "RAVL",
+      work_arrangement: "hybrid",
+      remote_scope: "province",
+      province: "ON",
+      location: "Toronto, ON",
+      track: "ai_engineering",
+      technologies: ["Python", "LLM", "AWS"],
+    }),
+  ];
+  const result = matchProfile(snap(jobs), {
+    preferred_roles: ["Solutions Architect"],
+    skills: ["Python", "AWS", "LLM"],
+    years_experience: 5,
+    work_arrangements: ["remote", "hybrid"],
+    preferred_locations: ["Ontario", "Toronto", "Canada"],
+    minimum_salary: 100000,
+    salary_mode: "flexible",
+    limit: 5,
+  });
+  assert.equal(result.matches[0].id, "strong-hybrid");
+  assert.ok(result.matches[0].match_score > result.matches[1].match_score);
+});
+
+test("Canada + Ontario prefs keep out-of-province hybrid excluded", () => {
+  const qcHybrid = job({
+    id: "qc",
+    title: "Senior Data Engineer",
+    location: "Montreal, Canada",
+    province: "QC",
+    work_arrangement: "hybrid",
+    remote_scope: "province",
+  });
+  const onHybrid = job({
+    id: "on",
+    title: "Senior Data Engineer",
+    location: "Toronto, ON",
+    province: "ON",
+    work_arrangement: "hybrid",
+    remote_scope: "province",
+  });
+  const caRemote = job({
+    id: "ca",
+    title: "Senior Data Engineer",
+    location: "Remote - Canada",
+    province: null,
+    work_arrangement: "remote",
+    remote_scope: "canada",
+  });
+  assert.equal(locationAllowed(qcHybrid, ["ontario", "toronto", "canada"], ["remote", "hybrid"]), false);
+  assert.equal(locationAllowed(onHybrid, ["ontario", "toronto", "canada"], ["remote", "hybrid"]), true);
+  assert.equal(locationAllowed(caRemote, ["ontario", "toronto"], ["remote", "hybrid"]), true);
+  assert.equal(locationAllowed(qcHybrid, ["canada"], ["remote", "hybrid"]), true);
+});
+
+test("multi-role diversity elevates near-peer FDE without promoting weak matches", () => {
+  const ranked = [
+    { id: "de1", match_score: 88, _family: "data" },
+    { id: "de2", match_score: 86, _family: "data" },
+    { id: "de3", match_score: 85, _family: "data" },
+    { id: "fde", match_score: 82, _family: "forward_deployed" },
+    { id: "weak", match_score: 55, _family: "ai" },
+  ];
+  const out = diversifyByRoleFamily(ranked, { limit: 4, scoreSlack: 8 });
+  const ids = out.map((r) => r.id);
+  assert.ok(ids.includes("fde"), ids);
+  assert.ok(!ids.includes("weak"), ids);
+  assert.equal(ids[0], "de1");
+});
+
+test("long skill lists do not bury exact FDE title matches", () => {
+  const jobs = [
+    job({
+      id: "de-ok",
+      title: "Senior Data Engineer",
+      track: "data_engineering",
+      technologies: ["Python", "SQL", "Spark", "AWS"],
+      seniority: "senior",
+    }),
+    job({
+      id: "fde",
+      title: "Forward Deployed Engineer",
+      track: "forward_deployed",
+      technologies: ["Python", "AWS", "LLM"],
+      seniority: null,
+    }),
+    job({
+      id: "mgr",
+      title: "Engineering Manager",
+      track: "software_engineering",
+      technologies: ["Python", "SQL", "AWS", "Terraform", "CI/CD"],
+      seniority: "senior",
+    }),
+  ];
+  const skills = [
+    "Python",
+    "SQL",
+    "Databricks",
+    "PySpark",
+    "Spark",
+    "Snowflake",
+    "AWS",
+    "Terraform",
+    "ETL",
+    "CI/CD",
+    "RAG",
+    "LLM",
+    "MCP",
+    "OpenAI",
+    "Data Engineering",
+    "Unity Catalog",
+    "Delta Lake",
+  ];
+  const result = matchProfile(snap(jobs), {
+    preferred_roles: [
+      "Senior Data Engineer",
+      "AI Engineer",
+      "Forward Deployed Engineer",
+      "Solutions Architect",
+      "Data Platform Engineer",
+    ],
+    skills,
+    years_experience: 5,
+    work_arrangements: ["remote", "hybrid"],
+    preferred_locations: ["Canada", "Ontario", "Toronto"],
+    minimum_salary: 150000,
+    salary_mode: "flexible",
+    limit: 10,
+  });
+  const ids = result.matches.map((m) => m.id);
+  assert.ok(ids.includes("fde"), ids);
+  assert.ok(!ids.includes("mgr") || result.matches.find((m) => m.id === "fde").match_score >
+    result.matches.find((m) => m.id === "mgr").match_score);
+  const fdeRank = ids.indexOf("fde");
+  assert.ok(fdeRank >= 0 && fdeRank <= 2, `FDE rank ${fdeRank}: ${ids}`);
 });

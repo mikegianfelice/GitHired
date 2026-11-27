@@ -317,18 +317,26 @@ export function searchJobs(snapshot: ApiSnapshot, filters: SearchFilters): Searc
 
   const sort = filters.sort || "relevance";
   matched.sort((a, b) => {
-    // Always prefer Canada/province scope above worldwide-remote (global).
-    const scopeDiff = remoteScopeRank(a) - remoteScopeRank(b);
-    if (scopeDiff !== 0) return scopeDiff;
+    // Demote worldwide-remote below Canada-eligible; do not let canada vs
+    // province grouping override keyword relevance or salary sorts.
+    const aGlobal = (a.remote_scope || "").toLowerCase() === "global" ? 1 : 0;
+    const bGlobal = (b.remote_scope || "").toLowerCase() === "global" ? 1 : 0;
+    if (aGlobal !== bGlobal) return aGlobal - bGlobal;
     if (sort === "salary") {
-      return (salaryCad(b, fx) || 0) - (salaryCad(a, fx) || 0);
+      const pay = (salaryCad(b, fx) || 0) - (salaryCad(a, fx) || 0);
+      if (pay !== 0) return pay;
+      return remoteScopeRank(a) - remoteScopeRank(b);
     }
     if (sort === "freshness") {
-      return String(b.last_verified).localeCompare(String(a.last_verified));
+      const fresh = String(b.last_verified).localeCompare(String(a.last_verified));
+      if (fresh !== 0) return fresh;
+      return remoteScopeRank(a) - remoteScopeRank(b);
     }
     const rb = relevanceScore(b, filters.q);
     const ra = relevanceScore(a, filters.q);
     if (rb !== ra) return rb - ra;
+    const scopeDiff = remoteScopeRank(a) - remoteScopeRank(b);
+    if (scopeDiff !== 0) return scopeDiff;
     return (salaryCad(b, fx) || 0) - (salaryCad(a, fx) || 0);
   });
 

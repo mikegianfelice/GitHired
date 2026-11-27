@@ -131,7 +131,7 @@ const TOOLS = [
   {
     name: "get_job",
     description:
-      "Retrieve detailed information for one GitHired job by its stable id, including description excerpt when present. Use search_jobs or match_profile first to obtain ids.",
+      "Retrieve detailed information for one GitHired job by its stable id. Default response includes a truncated description_excerpt. description_complete means the underlying stored JD is complete — not that the excerpt is full text. Pass include_description=true to fetch a longer plain-text description from the employer ATS (best-effort, may increase latency/tokens).",
     annotations: READ_ONLY_OPEN_WORLD,
     inputSchema: {
       type: "object",
@@ -140,6 +140,11 @@ const TOOLS = [
           type: "string",
           description:
             "Stable GitHired job id from search_jobs / match_profile (hex string). Required. Example: \"a372d357d8537eef\".",
+        },
+        include_description: {
+          type: "boolean",
+          description:
+            "When true, attempt to attach description_full (longer plain text from the employer ATS). Default false keeps responses compact.",
         },
       },
       required: ["id"],
@@ -186,6 +191,12 @@ const TOOLS = [
           items: { type: "string", enum: ["remote", "hybrid", "onsite"] },
           description:
             "Hard allow-list of work arrangements. Values: remote | hybrid | onsite. Overrides remote_preference when provided. Example: [\"remote\", \"hybrid\"].",
+        },
+        remote_preference_strength: {
+          type: "string",
+          enum: ["equal", "prefer_remote"],
+          description:
+            "When remote and hybrid are both allowed: equal (default) ranks them together by relevance; prefer_remote applies a small remote boost without overriding large score gaps.",
         },
         minimum_salary: {
           type: "number",
@@ -328,8 +339,38 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env, r
     if (!job) {
       return textContent({ error: "not_found", id });
     }
+    let enriched: Record<string, unknown> = {
+      ...withLiveDiscoveredToday(job),
+      description_semantics:
+        "description_complete refers to the stored employer JD; description_excerpt may still be truncated for token size.",
+    };
+    if (args.include_description === true) {
+      try {
+        const { fetchFullDescriptionOnDemand } = await import("./excerpt");
+        const full = await fetchFullDescriptionOnDemand(job.apply_url || "", job.source || "");
+        if (full) {
+          enriched = {
+            ...enriched,
+            description_full: full,
+            description_full_source: "employer_ats_on_demand",
+          };
+        } else {
+          enriched = {
+            ...enriched,
+            description_full: null,
+            description_full_note: "Could not retrieve a longer description from the employer ATS.",
+          };
+        }
+      } catch {
+        enriched = {
+          ...enriched,
+          description_full: null,
+          description_full_note: "On-demand description fetch failed.",
+        };
+      }
+    }
     return textContent({
-      job: withLiveDiscoveredToday(job),
+      job: enriched,
       dataset_id: snapshot.dataset_id,
       generated_at: snapshot.generated_at,
       dataset_fresh: freshness.fresh,

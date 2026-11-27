@@ -83,7 +83,13 @@ def build_api_job(public: PublicJob, raw: dict[str, Any] | None) -> dict[str, An
         tech = _extract_technologies(public.title, public.location, full_plain) or tech
     elif desc:
         tech = _extract_technologies(public.title, public.location, desc) or tech
-    return {
+    total = _parse_total_compensation(str(raw.get("salary_raw") or ""))
+    posted = (raw.get("posted_date") or "").strip() or None
+    complete = bool(int(raw.get("description_complete") or 0)) if raw else public.verified
+    excerpt_truncated = bool(desc and full_plain and desc.rstrip("…").rstrip(".") != full_plain and "…" in (desc or ""))
+    if desc and full_plain and len(full_plain) > len(desc.rstrip("…")):
+        excerpt_truncated = True
+    row = {
         "id": public.id,
         "title": public.title,
         "company": public.company,
@@ -105,10 +111,39 @@ def build_api_job(public: PublicJob, raw: dict[str, Any] | None) -> dict[str, An
         "first_seen": public.first_seen,
         "last_verified": public.last_verified,
         "discovered_today": public.discovered_today,
+        "posted_date": posted,
         "technologies": tech,
         "source": public.source,
         "description_excerpt": desc,
-        "description_complete": bool(int(raw.get("description_complete") or 0)) if raw else public.verified,
+        # True when the underlying stored JD is complete — not that the excerpt is full text.
+        "description_complete": complete,
+        "description_excerpt_truncated": excerpt_truncated,
+    }
+    if total:
+        row["total_compensation_min"] = total["min"]
+        row["total_compensation_max"] = total["max"]
+        row["total_compensation_currency"] = total["currency"]
+        row["compensation_note"] = (
+            "salary_* fields are employer-advertised annual base only; "
+            "total_compensation_* is a separate employer-stated total band when present."
+        )
+    return row
+
+
+_TOTAL_COMP_IN_RAW = re.compile(
+    r"total_comp\s+(?P<cur>CAD|USD)\s+(?P<amin>\d+(?:\.\d+)?)-(?P<amax>\d+(?:\.\d+)?)",
+    re.I,
+)
+
+
+def _parse_total_compensation(salary_raw: str) -> dict[str, Any] | None:
+    m = _TOTAL_COMP_IN_RAW.search(salary_raw or "")
+    if not m:
+        return None
+    return {
+        "min": float(m.group("amin")),
+        "max": float(m.group("amax")),
+        "currency": m.group("cur").upper(),
     }
 
 
@@ -245,8 +280,11 @@ def build_api_snapshot(
     generated_at: datetime | None = None,
     repo_url: str = "https://github.com/mikegianfelice/GitHired",
     max_bytes: int = MAX_SNAPSHOT_BYTES,
+    prior_snapshot_path: Path | None = None,
 ) -> dict[str, Any]:
     """Build the versioned API/MCP dataset from DB-shaped job rows."""
+    from jobseek.discovery_history import preserve_discovery_timestamps
+
     generated_at = generated_at or datetime.now(timezone.utc)
     selected = select_public_jobs(
         raw_jobs,
@@ -259,6 +297,13 @@ def build_api_snapshot(
     by_id = _index_raw_jobs(raw_jobs)
     api_jobs = [build_api_job(j, by_id.get(j.id)) for j in selected]
     api_jobs = dedupe_api_jobs(api_jobs)
+    # CI rebuilds use a fresh DB — merge earliest first_seen from the prior
+    # committed/R2 snapshot so stable ids keep continuous discovery history.
+    preserve_discovery_timestamps(
+        api_jobs,
+        prior_snapshot_path=prior_snapshot_path,
+        today=generated_at.astimezone(timezone.utc).date(),
+    )
     return _fit_payload_with_slimming(
         api_jobs, limit=limit, generated_at=generated_at, repo_url=repo_url, max_bytes=max_bytes
     )

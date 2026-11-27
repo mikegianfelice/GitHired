@@ -157,16 +157,39 @@ export async function handleRest(request: Request, env: Env, url: URL): Promise<
     if (!job) {
       return json({ error: "not_found", message: `No job with id ${id}` }, 404);
     }
-    let enriched = job;
+    const url = new URL(request.url);
+    const includeDescription =
+      url.searchParams.get("include_description") === "1" ||
+      url.searchParams.get("include_description") === "true";
+    let enriched: Record<string, unknown> = {
+      ...job,
+      description_semantics:
+        "description_complete refers to the stored employer JD; description_excerpt may still be truncated for token size.",
+    };
     if (!job.description_excerpt || job.description_excerpt.length < 10) {
       try {
         const { fetchDescriptionExcerptOnDemand } = await import("./excerpt");
         const text = await fetchDescriptionExcerptOnDemand(job.apply_url || "", job.source || "");
         if (text) {
-          enriched = { ...job, description_excerpt: text };
+          enriched = { ...enriched, description_excerpt: text };
         }
       } catch {
         // best-effort fallback only
+      }
+    }
+    if (includeDescription) {
+      try {
+        const { fetchFullDescriptionOnDemand } = await import("./excerpt");
+        const full = await fetchFullDescriptionOnDemand(job.apply_url || "", job.source || "");
+        if (full) {
+          enriched = {
+            ...enriched,
+            description_full: full,
+            description_full_source: "employer_ats_on_demand",
+          };
+        }
+      } catch {
+        // best-effort
       }
     }
     return json({
