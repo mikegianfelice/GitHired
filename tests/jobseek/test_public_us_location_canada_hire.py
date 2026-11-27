@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import unittest
+from datetime import datetime, timezone
 
 from jobseek.filters.hard import apply_hard_filters
 from jobseek.filters.location import classify_canada_eligibility
@@ -51,7 +52,11 @@ class UsLocationCanadaHireTests(unittest.TestCase):
         self.assertNotEqual(label.casefold(), "united states (remote)")
         self.assertIn("canada", label.casefold())
 
-        selected = select_public_jobs([job], limit=10)
+        # Pin "now" to just after last_seen: the default 21-day freshness
+        # window otherwise drops this fixture once the calendar moves on.
+        selected = select_public_jobs(
+            [job], limit=10, now=datetime(2026, 11, 7, tzinfo=timezone.utc)
+        )
         self.assertEqual(len(selected), 1)
         self.assertNotEqual(selected[0].location.casefold(), "united states (remote)")
         self.assertIn("canada", selected[0].location.casefold())

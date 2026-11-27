@@ -141,6 +141,11 @@ def load_wontport(path: str) -> list[str]:
     return entries
 
 
+# GitHub rejects issue bodies over 65536 characters; leave room for the
+# "Last checked" header line the workflow prepends.
+DEFAULT_MAX_CHARS = 60000
+
+
 def commit_cell(short: str, sha: str, slug: str | None) -> str:
     if slug:
         return f"[`{short}`](https://github.com/{slug}/commit/{sha})"
@@ -153,6 +158,12 @@ def main() -> int:
     ap.add_argument("--remote", default="upstream")
     ap.add_argument("--branch", default="master")
     ap.add_argument("--wontport", default=".github/upstream-wontport.txt")
+    ap.add_argument(
+        "--max-chars", type=int, default=DEFAULT_MAX_CHARS,
+        help="Cap the report so it fits in a GitHub issue body "
+             f"(GitHub rejects bodies over 65536 characters; default {DEFAULT_MAX_CHARS}; "
+             "0 disables the cap).",
+    )
     args = ap.parse_args()
     ref = f"{args.remote}/{args.branch}"
     slug = remote_slug(args.remote)
@@ -221,23 +232,69 @@ def main() -> int:
         else:
             review.append((short, sha, subj, substantive))
 
+    crossref = _crossref_text(args.remote, args.branch)
+    # --max-chars 0 (or negative) disables the cap for local full reports.
+    budget = (args.max_chars - len(crossref) - 2) if args.max_chars > 0 else float("inf")
+    def fits(nr: int, ns: int) -> bool:
+        return len(render_report(ref, slug, behind, review, skip, nr, ns)) <= budget
+
+    def largest(lo: int, hi: int, ok) -> int:
+        # Largest n in [lo, hi] with ok(n), given ok(lo) holds and ok is monotone.
+        while lo < hi:
+            mid = (lo + hi + 1) // 2
+            if ok(mid):
+                lo = mid
+            else:
+                hi = mid - 1
+        return lo
+
+    # Keep every row when it fits. Otherwise trim the low-signal "probably
+    # skip" rows first, then the review rows, so the report fits the issue-body
+    # limit; omitted rows are counted in the report.
+    n_review, n_skip = len(review), len(skip)
+    if not fits(n_review, n_skip):
+        if fits(n_review, 0):
+            n_skip = largest(0, n_skip, lambda ns: fits(n_review, ns))
+        else:
+            n_skip = 0
+            n_review = largest(0, n_review, lambda nr: fits(nr, 0))
+    report = render_report(ref, slug, behind, review, skip, n_review, n_skip)
+
+    print(report)
+    print()
+    print(crossref)
+    return 0
+
+
+def render_report(ref, slug, behind, review, skip, n_review, n_skip) -> str:
     lines: list[str] = []
     lines.append(f"Upstream `{ref}` has **{len(behind)}** commit(s) this fork lacks: "
                  f"**{len(review)}** worth reviewing, **{len(skip)}** probably skippable.")
     lines.append("")
     lines.append("_This is a triage report. Nothing was merged - review and port by hand._")
     lines.append("")
+    if n_review < len(review) or n_skip < len(skip):
+        lines.append(
+            f"_Report trimmed to fit a GitHub issue: showing {n_review} of {len(review)} "
+            f"review rows and {n_skip} of {len(skip)} skip rows. Run "
+            f"`python tools/upstream_triage.py --remote upstream --branch master --max-chars 0` "
+            "locally for the full list._"
+        )
+        lines.append("")
+    shown_review = review[:n_review]
 
     lines.append("### Worth reviewing")
-    if review:
+    if shown_review:
         lines.append("")
         lines.append("| Commit | Subject | Relevant files it touches |")
         lines.append("|---|---|---|")
-        for short, sha, subj, present in review:
+        for short, sha, subj, present in shown_review:
             shown = ", ".join(f"`{p}`" for p in present[:4]) or "_(new/shared paths)_"
             if len(present) > 4:
                 shown += f" +{len(present) - 4} more"
             lines.append(f"| {commit_cell(short, sha, slug)} | {subj} | {shown} |")
+        if n_review < len(review):
+            lines.append(f"| … | _{len(review) - n_review} more not shown_ | |")
         # Ready-to-run cherry-pick lines - still information, not action. The
         # report stops here on purpose; a human runs (and verifies) these.
         lines.append("")
@@ -245,38 +302,47 @@ def main() -> int:
         lines.append("")
         lines.append("```bash")
         # Report rows stay newest first; commands must apply ancestors first.
-        for short, sha, subj, _ in reversed(review):
+        for short, sha, subj, _ in reversed(shown_review):
             lines.append(f"git cherry-pick {sha}  # {subj}")
         lines.append("```")
         lines.append("")
         lines.append("</details>")
+    elif review:
+        lines.append("")
+        lines.append(f"_{len(review)} commit(s) not shown (report size limit)._")
     else:
         lines.append("")
         lines.append("_None._")
     lines.append("")
 
     lines.append("### Probably skip")
-    if skip:
+    if n_skip:
         lines.append("")
         lines.append("| Commit | Subject | Why |")
         lines.append("|---|---|---|")
-        for short, sha, subj, why in skip:
+        for short, sha, subj, why in skip[:n_skip]:
             lines.append(f"| {commit_cell(short, sha, slug)} | {subj} | {why} |")
+        if n_skip < len(skip):
+            lines.append(f"| … | _{len(skip) - n_skip} more not shown_ | |")
+    elif skip:
+        lines.append("")
+        lines.append(f"_{len(skip)} commit(s) not shown (report size limit)._")
     else:
         lines.append("")
         lines.append("_None._")
+    return "\n".join(lines)
 
-    print("\n".join(lines))
-    _print_crossref(args.remote, args.branch)
-    return 0
+
+def _crossref_text(remote: str, branch: str) -> str:
+    return (
+        "_For personalized-file version stamps (which methodology files changed), "
+        f"run `python tools/check_upstream_updates.py --remote {shlex.quote(remote)} --branch {shlex.quote(branch)}`._"
+    )
 
 
 def _print_crossref(remote: str, branch: str) -> None:
     print()
-    print(
-        "_For personalized-file version stamps (which methodology files changed), "
-        f"run `python tools/check_upstream_updates.py --remote {shlex.quote(remote)} --branch {shlex.quote(branch)}`._"
-    )
+    print(_crossref_text(remote, branch))
 
 
 if __name__ == "__main__":

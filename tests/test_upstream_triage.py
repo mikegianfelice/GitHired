@@ -298,6 +298,41 @@ class WontPortTests(TriageRepoFixture):
         self.assertIn("on the fork's won't-port list", result.stdout)
 
 
+class ReportSizeTests(TriageRepoFixture):
+    """GitHub rejects issue bodies over 65536 characters, which failed the
+    weekly workflow when the fork fell far behind. The report must cap itself."""
+
+    def _many_upstream_commits(self, n: int) -> None:
+        for i in range(n):
+            self.write("kept.py", f"print({i})  # {'x' * 40}\n")
+            self.commit(f"upstream: change number {i} with a long descriptive subject line")
+        self.set_upstream_to_head()
+        git(self.root, "reset", "--hard", f"HEAD~{n}")
+
+    def test_report_is_trimmed_to_max_chars(self):
+        self._many_upstream_commits(40)
+        result = self.run_triage("--max-chars", "3000")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertLessEqual(len(result.stdout), 3000)
+        self.assertIn("Report trimmed", result.stdout)
+        self.assertIn("more not shown", result.stdout)
+        self.assertIn("**40** worth reviewing", result.stdout)
+
+    def test_zero_disables_cap(self):
+        self._many_upstream_commits(40)
+        result = self.run_triage("--max-chars", "0")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn("Report trimmed", result.stdout)
+        self.assertEqual(result.stdout.count("git cherry-pick "), 40)
+
+    def test_small_report_untouched_by_default(self):
+        self._many_upstream_commits(3)
+        result = self.run_triage()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn("Report trimmed", result.stdout)
+        self.assertEqual(result.stdout.count("git cherry-pick "), 3)
+
+
 class MissingUpstreamRefTests(TriageRepoFixture):
     def test_missing_ref_degrades_gracefully(self):
         # upstream/master ref never materialized.
